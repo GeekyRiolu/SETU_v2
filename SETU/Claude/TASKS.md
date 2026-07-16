@@ -88,14 +88,23 @@ Wrap the already-cloned teacher behind a stable interface.
 ## M3 — Preference Generation
 Turn teacher outputs into preference pairs for DPO.
 
-- [ ] Build the candidate set via kNN retrieval
-- [ ] Rank candidates by ChrF
-- [ ] Construct `PreferencePair` objects (preferred / dispreferred) with `quality_delta`
-- [ ] Write pairs to `data/preferences/`
-- [ ] Add an automated sanity check: preferred ChrF > dispreferred ChrF for every pair
-- [ ] Report: number of pairs, quality_delta distribution, a few examples
+- [x] Build the candidate set via kNN retrieval
+- [x] Rank candidates by ChrF
+- [x] Construct `PreferencePair` objects (preferred / dispreferred) with `quality_delta`
+- [x] Write pairs to `data/preferences/`
+- [x] Add an automated sanity check: preferred ChrF > dispreferred ChrF for every pair
+- [x] Report: number of pairs, quality_delta distribution, a few examples
 
-**Done when:** a validated `PreferencePair` dataset exists for Hindi↔English.
+**Done when:** a validated `PreferencePair` dataset exists for Hindi↔English. ✅
+
+> **M3 note (2026-07-16):** Candidate set = teacher n-best (4) ∪ kNN-retrieved neighbour
+> translations (char n-gram TF-IDF, self excluded); ranked by sentence ChrF vs the corpus
+> reference; `best_vs_each` pairing with `quality_delta` = ChrF gap; pairs below Δ5 dropped.
+> `validate_pairs` (Δ>0, preferred≠dispreferred, non-empty) + a ChrF spot-check gate the
+> write — nothing invalid reaches disk. Run: **500 corpus entries → 3494 candidates →
+> 2074 validated pairs** (920 dropped as too-noisy); quality_delta min/median/p90/max =
+> 5.0 / 31.3 / 63.4 / 97.3. `max_entries` is config-scalable (CPU teacher ≈ 4 s/entry).
+> Target moved: none directly — this is the DPO training signal for M4.
 
 ---
 

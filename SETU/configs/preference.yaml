@@ -1,0 +1,13 @@
+# Preference-pair generation (M3).
+
+max_entries: 500         # corpus entries to turn into pairs per run (CPU teacher is
+                         # ~2.4 s/entry; raise on a GPU box — pipeline is unchanged)
+teacher_candidates: 4    # n-best from the teacher per source sentence
+teacher_batch_size: 8    # sentences per teacher.generate_candidates_batch call
+knn:
+  neighbors: 3           # retrieved neighbour translations added as candidates
+  ngram_range: [2, 4]    # char n-grams for the TF-IDF index
+pairing: best_vs_each    # best_vs_each | best_vs_worst
+min_quality_delta: 5.0   # ChrF gap below this = too noisy to teach from, pair dropped
+max_gen_length: 128      # cap teacher decode length — tames the long-sentence beam-search tail
+output_dir: data/preferences
