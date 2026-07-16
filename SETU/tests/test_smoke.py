@@ -1,6 +1,7 @@
 """M0 smoke tests: package imports, config loads, stub engine translates."""
 
 import dataclasses
+from pathlib import Path
 
 import pytest
 
@@ -8,6 +9,13 @@ import setu
 from setu import InferenceEngine, TranslationResult
 from setu.cli import main
 from setu.config import load_languages, load_model_config, load_training_config, resolve_language
+
+
+def tmp_models_root() -> str:
+    # conftest already isolates the engine to an empty models dir, so the
+    # default engine is a deterministic stub; this points somewhere with no
+    # artifacts to be explicit.
+    return "/nonexistent-setu-models"
 
 
 def test_package_imports():
@@ -39,9 +47,12 @@ def test_model_config_is_config_driven():
 
 
 def test_stub_engine_translates_passthrough():
-    result = InferenceEngine().translate("नमस्ते दुनिया", "hi", "en")
+    # no trained model for this pair in a fresh checkout -> stub passthrough
+    engine = InferenceEngine(models_root=tmp_models_root())
+    assert engine.is_stub
+    result = engine.translate("नमस्ते दुनिया", "hi", "en")
     assert isinstance(result, TranslationResult)
-    assert result.translated_text == "नमस्ते दुनिया"  # M0 passthrough
+    assert result.translated_text == "नमस्ते दुनिया"  # passthrough
     assert result.src_lang == "hi"
     assert result.tgt_lang == "en"
     assert result.latency_ms is not None and result.latency_ms >= 0
@@ -52,7 +63,7 @@ def test_stub_engine_translates_passthrough():
 
 
 def test_engine_rejects_bad_pairs():
-    engine = InferenceEngine()
+    engine = InferenceEngine(models_root=tmp_models_root())
     with pytest.raises(ValueError):
         engine.translate("hello", "hi", "hi")
     with pytest.raises(ValueError):
