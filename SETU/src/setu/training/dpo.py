@@ -14,6 +14,8 @@ from __future__ import annotations
 import copy
 from typing import Any
 
+from setu.training.device import batch_to, model_device, resolve_device
+
 
 def _sequence_logprob(model, input_ids, attention_mask, labels):
     """Sum of log-probs of `labels` under the seq2seq model, PAD-masked."""
@@ -63,9 +65,10 @@ class DPOTrainer:
     def __init__(self, policy_model, dpo_config: dict[str, Any]):
         import torch
 
-        self.policy = policy_model
-        self.reference = freeze_reference(policy_model)  # snapshot BEFORE training
         self.config = dpo_config
+        self.device = resolve_device(dpo_config.get("device", "auto"))
+        self.policy = policy_model.to(self.device)
+        self.reference = freeze_reference(self.policy)  # frozen snapshot BEFORE training
         self.beta = dpo_config.get("beta", 0.1)
         self.optimizer = torch.optim.AdamW(
             self.policy.parameters(), lr=dpo_config.get("lr", 5e-6)
@@ -76,8 +79,10 @@ class DPOTrainer:
         batch_size = batch_size or self.config.get("batch_size", 8)
         history = []
         self.policy.train()
+        device = model_device(self.policy)
         for epoch in range(epochs):
             for step, batch in enumerate(dataset.batches(batch_size)):
+                batch = batch_to(batch, device)
                 loss, metrics = dpo_loss(self.policy, self.reference, batch, self.beta)
                 self.optimizer.zero_grad()
                 loss.backward()

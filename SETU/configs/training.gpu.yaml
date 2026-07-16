@@ -1,0 +1,30 @@
+# GPU training hyperparameters (Kaggle T4/P100). Copy over training.yaml on GPU:
+#   cp configs/training.gpu.yaml configs/training.yaml
+
+seed: 42
+
+sft:
+  epochs: 10
+  lr: 5.0e-4
+  batch_size: 64        # 16 GB GPU handles this comfortably
+  warmup_steps: 4000
+  device: auto          # -> cuda when available
+
+dpo:
+  beta: 0.1
+  lr: 5.0e-6
+  epochs: 1
+  batch_size: 32
+  reference_checkpoint: null
+  device: auto
+
+aio_kd:
+  enabled: false
+  directions: []
+  cross_lingual_balancing: temperature
+  sampling_temperature: 1.5
+
+ewc:
+  enabled: false
+  fisher_samples: 1000
+  lambda: 0.4

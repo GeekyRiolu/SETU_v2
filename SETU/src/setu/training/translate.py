@@ -18,7 +18,8 @@ def student_translate(
     # embeddings overflow — truncate the encoder input and cap decode length
     max_pos = getattr(model.config, "max_position_embeddings", max_length)
     src_ids = _truncate(tokenizer.encode_source(text, src_flores, tgt_flores), max_pos)
-    input_ids = torch.tensor([src_ids], dtype=torch.long)
+    device = next(model.parameters()).device
+    input_ids = torch.tensor([src_ids], dtype=torch.long, device=device)
     max_length = min(max_length, max_pos)
     model.eval()
     with torch.no_grad():

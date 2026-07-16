@@ -6,6 +6,7 @@ seed: 42
 
 sft:
   # Distilled/SFT student baseline; its frozen snapshot becomes the DPO reference model.
+  # CPU defaults; GPU runs use configs/training.gpu.yaml (bigger batch, more epochs).
   epochs: 3
   lr: 5.0e-4
   batch_size: 16      # small batch keeps CPU-box memory bounded (no swap)

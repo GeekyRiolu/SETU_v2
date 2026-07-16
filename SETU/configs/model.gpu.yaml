@@ -1,0 +1,21 @@
+# Full-size student for GPU training (Kaggle T4/P100, Colab).
+# Copy over configs/model.yaml on a GPU box:  cp configs/model.gpu.yaml configs/model.yaml
+#
+# ~52M params (d=512, 6+6 layers). INT8 lands ~55 MB (still << 200 MB target).
+# Too big for the 7.4 GB CPU box (swaps), fine on a 16 GB GPU.
+
+language_pair: hin_Deva-eng_Latn
+
+params:
+  architecture: transformer
+  encoder_layers: 6
+  decoder_layers: 6
+  hidden_size: 512
+  ffn_size: 2048
+  attention_heads: 8
+  vocab_size: 32000
+  max_seq_len: 256
+
+quantization:
+  mode: none
+  format: onnx
