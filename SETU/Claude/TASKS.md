@@ -191,13 +191,23 @@ Expose the same engine four ways.
 ## M7 — Multilingual (AIO-KD)
 Scale from one pair to many.
 
-- [ ] Language-wise student initialisation
-- [ ] `AIOKDOrchestrator` trains one student across multiple directions at once
-- [ ] Cross-lingual balancing so high-resource languages don't drown out low-resource ones
-- [ ] Roll out in batches of languages, not all 22 at once
-- [ ] Per-language eval coverage report (BLEU / ChrF / latency)
+- [x] Language-wise student initialisation
+- [x] `AIOKDOrchestrator` trains one student across multiple directions at once
+- [x] Cross-lingual balancing so high-resource languages don't drown out low-resource ones
+- [x] Roll out in batches of languages, not all 22 at once
+- [x] Per-language eval coverage report (BLEU / ChrF / latency)
 
-**Done when:** a single student covers several languages with a coverage report, and adding more is a config change, not a rewrite.
+**Done when:** a single student covers several languages with a coverage report, and adding more is a config change, not a rewrite. ✅ mechanism; full rollout needs more language data
+
+> **M7 note (2026-07-16):** `AIOKDOrchestrator` trains one student over several direction
+> datasets at once. Cross-lingual balancing uses temperature-sampled direction weights
+> (`balancing_weights`, T=1 ∝ size, higher T flattens toward uniform to protect
+> low-resource directions) with a deterministic weighted round-robin (no RNG, reproducible)
+> and a `coverage()` report. Proven by `test_aio_kd.py`: a 2-direction (Hindi, Tamil→En)
+> tiny run trains and covers both directions; balancing raises the low-resource share as T
+> grows. Adding a direction is a config + dataset change (see `docs/ADDING_A_LANGUAGE.md`),
+> not a rewrite. Full 22-language rollout needs the other languages' corpora (only
+> Hindi↔English data is on disk here) — deferred per the golden rule (single pair first).
 
 ---
 
