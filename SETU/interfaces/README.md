@@ -8,7 +8,7 @@ stub so all interfaces stay callable.
 
 | Interface  | Entry point | Notes |
 |------------|-------------|-------|
-| CLI        | `../setu.py` → `setu.cli` | `--text`, `--file`, or piped stdin; `--json` |
+| CLI        | `../setu_cli.py` → `setu.cli` | `--text`, `--file`, or piped stdin; `--json` |
 | REST API   | `rest/app.py` (FastAPI) | `POST /translate`, `GET /languages`, `GET /health` |
 | PWA        | `pwa/` (served at `/app`) | offline app shell via service worker; calls `/translate` |
 | Mobile SDK | `sdk/android`, `sdk/ios` | `translate(text, srcLang, tgtLang)` stubs |
@@ -22,9 +22,9 @@ uvicorn interfaces.rest.app:app --host 0.0.0.0 --port 8000
 #   PWA:  http://localhost:8000/app/
 
 # CLI
-python setu.py --src hi --tgt en --text "नमस्ते दुनिया"
-python setu.py --src hi --tgt en --file sentences.txt
-cat sentences.txt | python setu.py --src hi --tgt en --json
+python setu_cli.py --src hi --tgt en --text "नमस्ते दुनिया"
+python setu_cli.py --src hi --tgt en --file sentences.txt
+cat sentences.txt | python setu_cli.py --src hi --tgt en --json
 ```
 
 ## Offline PWA

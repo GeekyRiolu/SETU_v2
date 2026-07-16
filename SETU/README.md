@@ -39,7 +39,7 @@ ungated author-released checkpoints and Samanantar data (see `docs/TEACHER.md`).
 ## Run
 
 ```bash
-python setu.py --src hi --tgt en --text "नमस्ते दुनिया"
+python setu_cli.py --src hi --tgt en --text "नमस्ते दुनिया"
 # or, after install:
 setu --src hi --tgt en --text "नमस्ते दुनिया" --json
 ```
@@ -74,7 +74,7 @@ pytest
 
 ```
 SETU/
-├── setu.py              # CLI entry point
+├── setu_cli.py              # CLI entry point
 ├── configs/             # languages.yaml (22-language registry), model.yaml, training.yaml
 ├── src/setu/            # package: types, config, inference/ (later: corpus, teacher,
 │                        #   preference, training, quantise)

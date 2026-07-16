@@ -58,5 +58,5 @@ pick it up automatically:
 
 ```bash
 unzip setu_model.zip -d SETU/models/
-cd SETU && python setu.py --src hi --tgt en --text "भारत एक विशाल देश है।"
+cd SETU && python setu_cli.py --src hi --tgt en --text "भारत एक विशाल देश है।"
 ```

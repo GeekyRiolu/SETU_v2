@@ -5,8 +5,9 @@ import pytest
 
 _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-# The root entry script setu.py shadows the `setu` package when pytest runs
-# with the project root on sys.path; keep src/ ahead of it.
+# Put src/ ahead of the project root so `import setu` resolves to the package.
+# (The root entry script is setu_cli.py — deliberately not setu.py — so it can't
+# shadow the package; src-first keeps things robust regardless.)
 sys.path.insert(0, os.path.join(_ROOT, "src"))
 # ...but append the root too, so `interfaces` (the REST/PWA/SDK front-ends) is
 # importable. src/ comes first, so `import setu` still resolves to the package.
