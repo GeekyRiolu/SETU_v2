@@ -22,8 +22,16 @@ pairs via **DPO**, scale to many directions with **AIO-KD**, expand to new langu
 ```bash
 cd SETU
 python3 -m venv .venv && source .venv/bin/activate
-pip install -e ".[dev]"
+pip install -e ".[dev]"            # core + tests
+pip install -e ".[dev,data]"       # + corpus pipeline (HF datasets streaming)
+pip install torch --index-url https://download.pytorch.org/whl/cpu   # CPU boxes
+pip install -e ".[dev,data,teacher]"   # + IndicTrans2 teacher stack
 ```
+
+Optional HF credentials: the `ai4bharat` BPCC dataset and original IndicTrans2
+checkpoints are gated — accept their terms on huggingface.co and run
+`huggingface-cli login` to use them. Without credentials SETU falls back to
+ungated author-released checkpoints and Samanantar data (see `docs/TEACHER.md`).
 
 ## Run
 

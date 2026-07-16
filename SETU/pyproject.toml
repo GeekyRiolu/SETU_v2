@@ -20,6 +20,17 @@ dev = [
 data = [
     "datasets>=3.0",
 ]
+teacher = [
+    # install torch from https://download.pytorch.org/whl/cpu on CPU-only boxes
+    "torch>=2.6",
+    # <4.54: the IndicTrans2 remote modeling code uses the legacy tuple
+    # past_key_values API that transformers removed in 4.54
+    "transformers>=4.42,<4.54",
+    "sacrebleu>=2.3",
+    "sentencepiece>=0.2",
+    "einops",  # needed by the rotary-indictrans2 remote modeling code
+    "IndicTransToolkit>=1.1",  # postprocess_batch(num_return_sequences=...) needed
+]
 
 [project.scripts]
 setu = "setu.cli:main"

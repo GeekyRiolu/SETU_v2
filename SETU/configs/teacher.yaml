@@ -1,0 +1,21 @@
+# Teacher model (IndicTrans2) configuration.
+#
+# Defaults are the RoPE variants released by IndicTrans2 author Raj Dabre
+# (linked from the IndicTrans2 README) because the ai4bharat originals are
+# GATED on HF — swap back once terms are accepted + `huggingface-cli login`:
+#   indic-en: ai4bharat/indictrans2-indic-en-dist-200M   (or -1B)
+#   en-indic: ai4bharat/indictrans2-en-indic-dist-200M   (or -1B)
+#   indic-indic: ai4bharat/indictrans2-indic-indic-dist-320M
+# Distilled 200M is the default size: this machine is CPU-only with 7.4 GB RAM;
+# the 1B teachers need ~5 GB for weights alone.
+
+checkpoints:
+  indic-en: prajdabre/rotary-indictrans2-indic-en-dist-200M
+  en-indic: prajdabre/rotary-indictrans2-en-indic-dist-200M
+  indic-indic: null  # no ungated rotary release; needs gated ai4bharat checkpoint
+
+generation:
+  num_beams: 5        # beam search; num_return_sequences (=n candidates) must be <= num_beams
+  max_length: 256
+
+device: cpu

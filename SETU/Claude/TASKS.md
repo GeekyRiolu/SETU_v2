@@ -64,13 +64,24 @@ Get clean Hindi↔English data ready for training.
 ## M2 — Teacher Integration (IndicTrans2)
 Wrap the already-cloned teacher behind a stable interface.
 
-- [ ] Inspect the local IndicTrans2 clone: report its path, required checkpoints, and language-code mapping; flag anything missing
-- [ ] Implement `TeacherModel` exposing `generate_candidates(src_text, src_lang, tgt_lang) -> list[str]`
-- [ ] Add a quality score per candidate (ChrF)
-- [ ] Nothing outside this module may import IndicTrans2 internals
-- [ ] Smoke test: feed a few Hindi sentences, confirm sensible English candidates
+- [x] Inspect the local IndicTrans2 clone: report its path, required checkpoints, and language-code mapping; flag anything missing
+- [x] Implement `TeacherModel` exposing `generate_candidates(src_text, src_lang, tgt_lang) -> list[str]`
+- [x] Add a quality score per candidate (ChrF)
+- [x] Nothing outside this module may import IndicTrans2 internals
+- [x] Smoke test: feed a few Hindi sentences, confirm sensible English candidates
 
-**Done when:** the pipeline can call `TeacherModel` and get candidates + scores, with IndicTrans2 fully hidden behind the interface.
+**Done when:** the pipeline can call `TeacherModel` and get candidates + scores, with IndicTrans2 fully hidden behind the interface. ✅
+
+> **M2 note (2026-07-16):** Full inspection report in `docs/TEACHER.md`. Key flags:
+> **ai4bharat checkpoints + BPCC are gated on HF** → defaults use the author-released
+> ungated `prajdabre/rotary-indictrans2-*-dist-200M`; **machine is CPU-only, 7.4 GB RAM**
+> → 1B teachers don't fit, dist-200M is the working teacher (config-swappable).
+> Stack: Python 3.12 venv + transformers 4.53 (<4.54 — remote code uses the legacy
+> cache API). Fixed a real deadlock: `IndicProcessor.postprocess_batch` blocks forever
+> unless told `num_return_sequences` when n>1 candidates are decoded per input.
+> Smoke: 2 Hindi sentences → 4 fluent English candidates each, ~2.5 s/sentence (CPU),
+> top candidate ChrF > 40 vs reference. Wall enforced by `test_teacher_wall`.
+> Target moved: none yet — teacher quality is the ceiling M4 measures against.
 
 ---
 
