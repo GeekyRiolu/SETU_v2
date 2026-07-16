@@ -1,0 +1,24 @@
+# Student model configuration — mirrors the ModelConfig data object
+# (language_pair, params, quantization). Field names are stable across modules.
+#
+# The language pair lives HERE, never in source. First thin slice is
+# Hindi↔English per the golden rule; widening is a config change.
+
+language_pair: hin_Deva-eng_Latn
+
+params:
+  # Student SLM architecture. Stub values until M4 pins the final student;
+  # sized for the ≤ 200 MB quantised / < 500 ms ARM targets.
+  architecture: transformer
+  encoder_layers: 6
+  decoder_layers: 6
+  hidden_size: 512
+  ffn_size: 2048
+  attention_heads: 8
+  vocab_size: 32000
+  max_seq_len: 256
+
+quantization:
+  # none | int8 | int4 — progressive: INT8 first with a benchmark, then INT4 (M5).
+  mode: none
+  format: onnx

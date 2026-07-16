@@ -1,0 +1,111 @@
+# Registry of the 22 scheduled languages of India, plus English (pivot).
+#
+# iso    — short code used by the CLI / API (`--src hi --tgt en`)
+# flores — FLORES-style code used by the IndicTrans2 teacher (script-qualified)
+# script — primary writing system
+# alt_flores/alt_script — second script for dual-script languages
+#
+# This file is the single source of truth for language identity. No language
+# pair is ever hard-coded in source; adding a language starts here.
+
+pivot:
+  name: English
+  iso: en
+  flores: eng_Latn
+  script: Latin
+
+languages:
+  - name: Assamese
+    iso: as
+    flores: asm_Beng
+    script: Bengali
+  - name: Bengali
+    iso: bn
+    flores: ben_Beng
+    script: Bengali
+  - name: Bodo
+    iso: brx
+    flores: brx_Deva
+    script: Devanagari
+  - name: Dogri
+    iso: doi
+    flores: doi_Deva
+    script: Devanagari
+  - name: Gujarati
+    iso: gu
+    flores: guj_Gujr
+    script: Gujarati
+  - name: Hindi
+    iso: hi
+    flores: hin_Deva
+    script: Devanagari
+  - name: Kannada
+    iso: kn
+    flores: kan_Knda
+    script: Kannada
+  - name: Kashmiri
+    iso: ks
+    flores: kas_Arab
+    script: Perso-Arabic
+    alt_flores: kas_Deva
+    alt_script: Devanagari
+  - name: Konkani
+    iso: gom
+    flores: gom_Deva
+    script: Devanagari
+  - name: Maithili
+    iso: mai
+    flores: mai_Deva
+    script: Devanagari
+  - name: Malayalam
+    iso: ml
+    flores: mal_Mlym
+    script: Malayalam
+  - name: Manipuri
+    iso: mni
+    flores: mni_Beng
+    script: Bengali
+    alt_flores: mni_Mtei
+    alt_script: Meetei Mayek
+  - name: Marathi
+    iso: mr
+    flores: mar_Deva
+    script: Devanagari
+  - name: Nepali
+    iso: ne
+    flores: npi_Deva
+    script: Devanagari
+  - name: Odia
+    iso: or
+    flores: ory_Orya
+    script: Odia
+  - name: Punjabi
+    iso: pa
+    flores: pan_Guru
+    script: Gurmukhi
+  - name: Sanskrit
+    iso: sa
+    flores: san_Deva
+    script: Devanagari
+  - name: Santali
+    iso: sat
+    flores: sat_Olck
+    script: Ol Chiki
+  - name: Sindhi
+    iso: sd
+    flores: snd_Arab
+    script: Perso-Arabic
+    alt_flores: snd_Deva
+    alt_script: Devanagari
+  - name: Tamil
+    iso: ta
+    flores: tam_Taml
+    script: Tamil
+  - name: Telugu
+    iso: te
+    flores: tel_Telu
+    script: Telugu
+  - name: Urdu
+    iso: ur
+    flores: urd_Arab
+    script: Perso-Arabic

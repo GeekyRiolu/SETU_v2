@@ -1,0 +1,35 @@
+# Training hyperparameters — consumed by the training modules (M4+).
+# Stub values; tuned when each stage lands. No language pairs here —
+# the pair comes from model.yaml.
+
+seed: 42
+
+sft:
+  # Distilled/SFT student baseline; its frozen snapshot becomes the DPO reference model.
+  epochs: 3
+  lr: 5.0e-4
+  batch_size: 64
+  warmup_steps: 4000
+
+dpo:
+  # Standard DPO loss — no reward model, no policy gradient.
+  # reference_checkpoint must point at the FROZEN SFT snapshot.
+  beta: 0.1
+  lr: 5.0e-6
+  epochs: 1
+  batch_size: 32
+  reference_checkpoint: null
+
+aio_kd:
+  # All-In-One knowledge distillation across directions (M7). Off until the
+  # single pair works end-to-end.
+  enabled: false
+  directions: []
+  cross_lingual_balancing: temperature
+  sampling_temperature: 1.5
+
+ewc:
+  # Elastic Weight Consolidation for language expansion (M8).
+  enabled: false
+  fisher_samples: 1000
+  lambda: 0.4
