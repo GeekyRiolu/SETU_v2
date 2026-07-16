@@ -80,7 +80,8 @@ def ewc_train_step(model, optimizer, batch, regularizer: EWCRegularizer) -> dict
                 labels=batch["labels"])
     penalty = regularizer.penalty()
     total = out.loss + penalty
+    penalty_val = float(penalty.detach())
     optimizer.zero_grad()
     total.backward()
     optimizer.step()
-    return {"task_loss": out.loss.item(), "ewc_penalty": float(penalty), "total_loss": total.item()}
+    return {"task_loss": out.loss.item(), "ewc_penalty": penalty_val, "total_loss": total.item()}
