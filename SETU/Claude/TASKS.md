@@ -167,14 +167,24 @@ Make it small, fast, and internet-free.
 ## M6 — Interfaces
 Expose the same engine four ways.
 
-- [ ] REST API (FastAPI): `POST /translate` with `{source_lang, target_lang, text}` → `TranslationResult`
-- [ ] CLI: finalise `python setu.py --src hi --tgt en --text "..."` (file / stdin input too)
-- [ ] Mobile SDK stubs: `translate(text, srcLang, tgtLang)` for Android + iOS
-- [ ] Offline PWA: pick languages, enter text, get translation; caches assets so it works with no connectivity after first load
-- [ ] All four call the **same** `InferenceEngine` — no duplicated translation logic
-- [ ] Integration test hitting the REST endpoint
+- [x] REST API (FastAPI): `POST /translate` with `{source_lang, target_lang, text}` → `TranslationResult`
+- [x] CLI: finalise `python setu.py --src hi --tgt en --text "..."` (file / stdin input too)
+- [x] Mobile SDK stubs: `translate(text, srcLang, tgtLang)` for Android + iOS
+- [x] Offline PWA: pick languages, enter text, get translation; caches assets so it works with no connectivity after first load
+- [x] All four call the **same** `InferenceEngine` — no duplicated translation logic
+- [x] Integration test hitting the REST endpoint
 
-**Done when:** all four interfaces translate through one shared engine.
+**Done when:** all four interfaces translate through one shared engine. ✅
+
+> **M6 note (2026-07-16):** Four thin front-ends, one `InferenceEngine`, zero duplicated
+> translation logic. REST (FastAPI): `POST /translate`, `GET /languages` (all 23),
+> `GET /health`; CLI: `--text`/`--file`/piped-stdin + `--json` (batch aware); PWA served
+> at `/app` with a service worker precaching the shell (`index.html`, `app.js`, manifest,
+> icon) so it loads offline after first visit, calling `/translate` on the same origin;
+> Android (Kotlin) + iOS (Swift) SDK stubs with the shared `translate(text, srcLang,
+> tgtLang)` contract and `TODO(offline)` markers for on-device ONNX Runtime Mobile.
+> 15 interface tests (REST integration, CLI file/stdin/JSON, PWA shell+serving). Target
+> moved: none new — Offline reinforced (PWA shell caching + loopback-only SDKs).
 
 ---
 
