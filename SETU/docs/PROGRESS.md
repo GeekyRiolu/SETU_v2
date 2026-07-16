@@ -164,8 +164,29 @@ model, full corpus, GPU) — the plumbing is done.
 `kaggle/setu_gpu_train.ipynb` runs the whole pipeline on a free Kaggle T4/P100:
 clone+install → `setu-data` → `setu-prefs` → `scripts/train_full.py` →
 `setu-quantize` → `setu-report` → test → download. Uses the full 52M student and
-`device: auto` → CUDA. See `docs/KAGGLE.md`. **Awaiting the first GPU run's
-numbers** (to be logged here + drive `docs/PAPER_PLAN.md`).
+`device: auto` → CUDA. See `docs/KAGGLE.md`.
+
+### Kaggle GPU run #1 — 2026-07-17 (partial: data + prefs OK, training OOM, fixed)
+
+First real GPU numbers (T4, 15 GB), on `hin_Deva-eng_Latn`:
+
+- **Data** ✅ — 30,000 Samanantar streamed → **29,705 kept** (135 wrong-script,
+  151 length-ratio, 7 too-long, 2 dups). BPCC skipped (gated).
+- **Preferences** ✅ — 8,000 entries → 55,910 candidates → **33,535 validated
+  pairs** (14,375 dropped low-delta); quality_delta min/p50/p90/max =
+  5.0 / 29.5 / 63.3 / 97.9, mean 32.7. (Much larger than the CPU run's 2,074.)
+- **Teacher dev BLEU (200-sentence dev)** = **27.11** — the ceiling; student
+  needs ≥ 21.7 BLEU for the 80% target.
+- **SFT** ❌ — **CUDA OOM**: 52M student at batch 64 *plus the teacher still
+  resident on the GPU* (from the BLEU step) exceeded 15 GB. Cascaded to quantize
+  (no `sft/` checkpoint → optimum treated the missing path as a repo id) and to
+  scorecard 1/4 (correctly UNVERIFIED, not fake passes).
+
+**Fixes applied (commit — see changelog):** free the teacher's GPU memory before
+training (`scripts/train_full.py`); GPU batch **64→32 (SFT), 32→16 (DPO)** in
+`training.gpu.yaml`; `PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True`; and
+`export_onnx` now resolves an absolute path + errors clearly if the checkpoint is
+missing. **Re-run pending** — expected to complete training → quantise → report.
 
 ## 8. Test suite
 
@@ -194,6 +215,11 @@ balancing, EWC anti-forgetting, device resolution, scorecard.
 - **2026-07-17 (cont.)** — Housekeeping: stopped the last open monitor (was still
   tailing the abandoned CPU big-training log) and confirmed no stray monitor/
   waiter processes remain. Reaffirmed the convention to keep committing + pushing
-  docs to GitHub after every session. Next expected input: the user's first
-  Kaggle GPU run results → fold real numbers into the scorecard here and the
-  tables in `PAPER_PLAN.md`.
+  docs to GitHub after every session.
+- **2026-07-17 (Kaggle run #1)** — First real GPU run: data (29,705 kept) and
+  preferences (**33,535 validated pairs**) succeeded; teacher dev BLEU **27.11**;
+  SFT hit CUDA OOM (52M @ batch 64 + resident teacher > 15 GB), cascading to
+  quantize + report. Fixed: free teacher before training, GPU batch 64→32 / 32→16,
+  `expandable_segments`, `export_onnx` absolute-path + missing-checkpoint guard.
+  Local tests still green (8/8 for quantize+training). Re-run pending. Details in
+  §7 "Kaggle GPU run #1".

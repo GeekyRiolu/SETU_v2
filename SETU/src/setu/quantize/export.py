@@ -29,7 +29,14 @@ def export_onnx(model_dir: Path | str, out_dir: Path | str) -> Path:
     """Export a saved HF seq2seq student to ONNX and validate it loads in ORT."""
     from optimum.onnxruntime import ORTModelForSeq2SeqLM
 
-    out_dir = Path(out_dir)
+    # absolute path so optimum treats it as a local dir, not a HF repo id
+    model_dir = Path(model_dir).resolve()
+    if not model_dir.is_dir():
+        raise FileNotFoundError(
+            f"student checkpoint not found: {model_dir} — did training finish? "
+            "(run scripts/train_full.py / setu-train first)"
+        )
+    out_dir = Path(out_dir).resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
     ort_model = ORTModelForSeq2SeqLM.from_pretrained(str(model_dir), export=True)
     ort_model.save_pretrained(str(out_dir))

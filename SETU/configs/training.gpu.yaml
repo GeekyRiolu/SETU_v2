@@ -6,7 +6,9 @@ seed: 42
 sft:
   epochs: 10
   lr: 5.0e-4
-  batch_size: 64        # 16 GB GPU handles this comfortably
+  # batch 32 fits a 15 GB T4: the [batch, seq, 32k-vocab] logits + backward
+  # dominate memory. Raise toward 64 on a bigger GPU (A100/40GB).
+  batch_size: 32
   warmup_steps: 4000
   device: auto          # -> cuda when available
 
@@ -14,7 +16,9 @@ dpo:
   beta: 0.1
   lr: 5.0e-6
   epochs: 1
-  batch_size: 32
+  # DPO holds policy + frozen reference and does 4 forward passes/step, so it
+  # needs a smaller batch than SFT.
+  batch_size: 16
   reference_checkpoint: null
   device: auto
 
