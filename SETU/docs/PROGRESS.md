@@ -223,3 +223,10 @@ balancing, EWC anti-forgetting, device resolution, scorecard.
   `expandable_segments`, `export_onnx` absolute-path + missing-checkpoint guard.
   Local tests still green (8/8 for quantize+training). Re-run pending. Details in
   §7 "Kaggle GPU run #1".
+- **2026-07-17 (GPU utilisation)** — Noted on Kaggle T4×2: the 2nd GPU sits idle
+  (code is single-GPU, `device: auto` → cuda:0; fine for a 52M model), and GPU 0
+  was only ~32% busy during preference generation because the teacher decoded at
+  `teacher_batch_size: 8`. Bumped the default to **32** (push to 64 on GPU) for
+  much better utilisation — the cheaper win than multi-GPU. Optional future work:
+  shard preference generation across both GPUs (embarrassingly parallel over
+  sentences) if that step ever dominates.

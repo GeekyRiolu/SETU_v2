@@ -3,7 +3,10 @@
 max_entries: 500         # corpus entries to turn into pairs per run (CPU teacher is
                          # ~2.4 s/entry; raise on a GPU box — pipeline is unchanged)
 teacher_candidates: 4    # n-best from the teacher per source sentence
-teacher_batch_size: 8    # sentences per teacher.generate_candidates_batch call
+# sentences per teacher.generate_candidates_batch call. Bigger batch = far
+# better GPU utilisation (autoregressive decoding is latency-bound at batch 8).
+# 32 is a good default; push to 64 on a 15 GB GPU. CPU tolerates it (small teacher).
+teacher_batch_size: 32
 knn:
   neighbors: 3           # retrieved neighbour translations added as candidates
   ngram_range: [2, 4]    # char n-grams for the TF-IDF index
