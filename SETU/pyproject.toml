@@ -17,9 +17,13 @@ dependencies = [
 dev = [
     "pytest>=8.0",
 ]
+data = [
+    "datasets>=3.0",
+]
 
 [project.scripts]
 setu = "setu.cli:main"
+setu-data = "setu.corpus.pipeline:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

@@ -1,0 +1,34 @@
+# Data pipeline configuration (M1). The language pair itself comes from
+# model.yaml — this file only says where corpora live and how to clean them.
+#
+# sample_limit caps entries drawn per source. Full-corpus runs (null) download
+# tens of GB — deliberately opt-in.
+
+sample_limit: 50000
+
+sources:
+  - name: bpcc-seed
+    type: hf_zip
+    dataset: ai4bharat/BPCC
+    # Human-annotated gold pairs, 67 MB zip. GATED repo: needs an HF account
+    # that accepted the terms at https://huggingface.co/datasets/ai4bharat/BPCC
+    # plus `huggingface-cli login` (or HF_TOKEN). Skipped with a warning until then.
+    # The 14.8 GB mined BPCC (additional/BPCC.zip) is deliberately not listed.
+    file: BPCC-seed.zip
+    requires_auth: true
+  - name: samanantar
+    type: hf_stream
+    dataset: ai4bharat/samanantar
+    # Samanantar configs are the Indic ISO code ("hi", "bn", ...).
+    config_from: indic_iso
+    fields:
+      eng: src        # English side
+      indic: tgt      # Indic side
+
+cleaning:
+  min_chars: 3
+  max_chars: 1024
+  max_length_ratio: 3.0   # alignment sanity: |src|/|tgt| beyond this = misaligned
+  min_script_fraction: 0.5  # letters that must be in the language's script
+
+output_dir: data/processed

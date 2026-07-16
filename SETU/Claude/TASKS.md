@@ -39,15 +39,25 @@ Get a skeleton that runs before any real logic exists.
 ## M1 — Data Pipeline (one pair)
 Get clean Hindi↔English data ready for training.
 
-- [ ] `CorpusLoader` reads BPCC + Samanantar into the `CorpusEntry` shape
-- [ ] Script normalisation & cleaning
-- [ ] Sentence alignment
-- [ ] Deduplication + basic quality filtering
-- [ ] Write processed data to `data/processed/`
-- [ ] Short data report: counts, before/after dedup, a few sample rows
-- [ ] Ask before any large download; check disk space first
+- [x] `CorpusLoader` reads BPCC + Samanantar into the `CorpusEntry` shape
+- [x] Script normalisation & cleaning
+- [x] Sentence alignment
+- [x] Deduplication + basic quality filtering
+- [x] Write processed data to `data/processed/`
+- [x] Short data report: counts, before/after dedup, a few sample rows
+- [x] Ask before any large download; check disk space first
 
-**Done when:** a clean, deduped Hindi↔English parallel set exists on disk with a summary.
+**Done when:** a clean, deduped Hindi↔English parallel set exists on disk with a summary. ✅
+
+> **M1 note (2026-07-16):** Pipeline = load → normalise (NFC, control-char strip, ZWJ/ZWNJ
+> preserved) → filter (length, length-ratio alignment check, script check) → exact dedup →
+> JSONL + report. Sample run: 50,000 Samanantar pairs streamed → **49,520 kept** (476
+> filtered: 253 length_ratio, 213 wrong-script, 10 too_long; 4 dups) at
+> `data/processed/hin_Deva-eng_Latn/train.jsonl`. Disk checked first (378 GB free).
+> **Open items:** (1) BPCC is a *gated* HF dataset — the `hf_zip` adapter for BPCC-seed
+> (67 MB) is wired but skipped until the user accepts terms + `huggingface-cli login`;
+> (2) full corpora (14.8 GB mined BPCC, ~1.9 GB Samanantar-hi) are opt-in — set
+> `sample_limit: null` after approval. Target moved: none directly — this feeds M3/M4 quality.
 
 ---
 
