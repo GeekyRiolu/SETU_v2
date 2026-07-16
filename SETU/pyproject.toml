@@ -20,6 +20,14 @@ dev = [
 data = [
     "datasets>=3.0",
 ]
+prefs = [
+    "scikit-learn>=1.4",  # char n-gram TF-IDF kNN for candidate retrieval
+]
+quantize = [
+    "onnx>=1.16",
+    "onnxruntime>=1.18",
+    "optimum[onnxruntime]>=1.20",
+]
 teacher = [
     # install torch from https://download.pytorch.org/whl/cpu on CPU-only boxes
     "torch>=2.6",
@@ -35,6 +43,10 @@ teacher = [
 [project.scripts]
 setu = "setu.cli:main"
 setu-data = "setu.corpus.pipeline:main"
+setu-prefs = "setu.preference.pipeline:main"
+setu-train = "setu.training.pipeline:main"
+setu-quantize = "setu.quantize.pipeline:main"
+setu-report = "setu.report:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

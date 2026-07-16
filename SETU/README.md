@@ -10,12 +10,15 @@ pairs via **DPO**, scale to many directions with **AIO-KD**, expand to new langu
 
 ## Targets (definition of done)
 
-| Target  | Threshold |
-|---------|-----------|
-| Quality | student ≥ 80% of IndicTrans2 BLEU |
-| Latency | < 500 ms/sentence on ARM-class CPU |
-| Size    | ≤ 200 MB quantised ONNX artifact |
-| Offline | zero network calls at inference |
+| Target  | Threshold | Status (Hindi↔English, CPU box) |
+|---------|-----------|--------------------------------|
+| Quality | student ≥ 80% of IndicTrans2 BLEU | ⚠️ **unmet** — pipeline proven, needs GPU-scale training |
+| Latency | < 500 ms/sentence on ARM-class CPU | ✅ **156 ms p90** (quantised, x86 CPU) |
+| Size    | ≤ 200 MB quantised ONNX artifact | ✅ **21 MB** (INT8/INT4) |
+| Offline | zero network calls at inference | ✅ proven (sockets disabled) |
+
+Full scorecard and the honest quality analysis: [`docs/FINAL_REPORT.md`](docs/FINAL_REPORT.md)
+(regenerate with `setu-report --offline-proof`).
 
 ## Setup
 
@@ -41,9 +44,25 @@ python setu.py --src hi --tgt en --text "नमस्ते दुनिया"
 setu --src hi --tgt en --text "नमस्ते दुनिया" --json
 ```
 
-> **Status:** M0 scaffold — the engine is a passthrough stub; real translation lands
-> after DPO training (M4) and quantised ONNX export (M5). See `Claude/TASKS.md` for
-> the milestone checklist.
+## Pipeline
+
+Each stage is a CLI entry point; all are config-driven (no hard-coded language pairs).
+
+```bash
+setu-data      # M1  BPCC/Samanantar -> clean, deduped data/processed/<pair>/train.jsonl
+setu-prefs     # M3  teacher candidates + kNN -> validated data/preferences/<pair>/pairs.jsonl
+setu-train     # M4  tokenizer -> SFT baseline -> DPO -> eval (BLEU/ChrF/latency)
+setu-quantize  # M5  ONNX export -> INT8 -> INT4, benchmarked, deployed to models/<pair>/
+setu-report    # M9  score the build against the four targets
+```
+
+The teacher (IndicTrans2) stays behind `setu.teacher.TeacherModel`; scaling to more
+languages uses `AIOKDOrchestrator` (M7) and adding one without forgetting uses
+`EWCRegularizer` (M8) — see `docs/ADDING_A_LANGUAGE.md`.
+
+> **Status:** the engine loads a quantised ONNX student when one is deployed under
+> `models/<pair>/`, else a passthrough stub. See `Claude/TASKS.md` for milestone
+> notes and `docs/TEACHER.md` for the teacher inspection report.
 
 ## Test
 

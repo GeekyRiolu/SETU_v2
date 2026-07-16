@@ -7,3 +7,6 @@ data/processed/*
 data/preferences/*
 !data/**/.gitkeep
 checkpoints/
+models/
+*.onnx
+.DS_Store

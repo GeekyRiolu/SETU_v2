@@ -9,8 +9,6 @@ from __future__ import annotations
 import time
 from typing import Any, Callable
 
-from setu.types import TranslationResult
-
 
 def corpus_bleu_chrf(hypotheses: list[str], references: list[str]) -> dict[str, float]:
     from sacrebleu.metrics import BLEU, CHRF
@@ -48,16 +46,3 @@ def evaluate_model(
         result["bleu_ratio"] = scores["bleu"] / teacher_bleu if teacher_bleu else 0.0
         result["meets_quality_target"] = result["bleu_ratio"] >= 0.80
     return result
-
-
-def to_translation_result(
-    hypothesis: str, src_lang: str, tgt_lang: str, metrics: dict[str, Any], latency_ms: float
-) -> TranslationResult:
-    return TranslationResult(
-        translated_text=hypothesis,
-        src_lang=src_lang,
-        tgt_lang=tgt_lang,
-        bleu=metrics.get("bleu"),
-        chrf=metrics.get("chrf"),
-        latency_ms=latency_ms,
-    )
