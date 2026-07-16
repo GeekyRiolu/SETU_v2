@@ -191,3 +191,9 @@ balancing, EWC anti-forgetting, device resolution, scorecard.
   convention: append a dated entry here at the end of every session. Prior to
   this: completed M0–M9, GPU/Kaggle support, and the package-shadowing fix (all
   pushed); ~70 tests green; scorecard 3/4 (quality pending GPU training).
+- **2026-07-17 (cont.)** — Housekeeping: stopped the last open monitor (was still
+  tailing the abandoned CPU big-training log) and confirmed no stray monitor/
+  waiter processes remain. Reaffirmed the convention to keep committing + pushing
+  docs to GitHub after every session. Next expected input: the user's first
+  Kaggle GPU run results → fold real numbers into the scorecard here and the
+  tables in `PAPER_PLAN.md`.
