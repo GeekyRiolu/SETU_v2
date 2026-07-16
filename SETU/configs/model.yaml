@@ -7,16 +7,17 @@
 language_pair: hin_Deva-eng_Latn
 
 params:
-  # Student SLM architecture. Stub values until M4 pins the final student;
-  # sized for the ≤ 200 MB quantised / < 500 ms ARM targets.
+  # Compact student SLM, sized for the ≤ 200 MB quantised / < 500 ms ARM targets.
+  # ~15M params: 4+4 layers, d=256. INT8 lands ~15-20 MB and keeps CPU latency
+  # low. Widen (d=512, 6+6) only when training on GPU with the full corpus.
   architecture: transformer
-  encoder_layers: 6
-  decoder_layers: 6
-  hidden_size: 512
-  ffn_size: 2048
+  encoder_layers: 4
+  decoder_layers: 4
+  hidden_size: 256
+  ffn_size: 1024
   attention_heads: 8
-  vocab_size: 32000
-  max_seq_len: 256
+  vocab_size: 8000
+  max_seq_len: 128
 
 quantization:
   # none | int8 | int4 — progressive: INT8 first with a benchmark, then INT4 (M5).

@@ -20,8 +20,16 @@ class FakeTeacher(TeacherModel):
 
 
 def test_teacher_wall():
-    """Nothing outside setu/teacher/ may import IndicTrans2 internals."""
-    forbidden = re.compile(r"^\s*(import|from)\s+(IndicTransToolkit|transformers|torch)\b", re.M)
+    """Nothing outside setu/teacher/ may touch IndicTrans2 internals: no
+    IndicTransToolkit import and no IndicTrans2 checkpoint identifier. Generic
+    infra (torch, transformers) and prose mentions are allowed elsewhere — the
+    wall is about the teacher staying swappable, not the word being unspeakable."""
+    forbidden = re.compile(
+        r"(^\s*(import|from)\s+IndicTransToolkit\b)"      # importing the toolkit
+        r"|(indictrans2-)"                                 # a checkpoint id, e.g. indictrans2-en-indic
+        r"|(ai4bharat/indictrans)",                        # a gated teacher repo
+        re.M | re.I,
+    )
     offenders = [
         str(p) for p in SRC_ROOT.rglob("*.py")
         if "teacher" not in p.parts and forbidden.search(p.read_text(encoding="utf-8"))

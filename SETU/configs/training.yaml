@@ -8,7 +8,7 @@ sft:
   # Distilled/SFT student baseline; its frozen snapshot becomes the DPO reference model.
   epochs: 3
   lr: 5.0e-4
-  batch_size: 64
+  batch_size: 16      # small batch keeps CPU-box memory bounded (no swap)
   warmup_steps: 4000
 
 dpo:
@@ -17,7 +17,7 @@ dpo:
   beta: 0.1
   lr: 5.0e-6
   epochs: 1
-  batch_size: 32
+  batch_size: 8       # DPO holds policy+reference; small batch avoids swap on CPU
   reference_checkpoint: null
 
 aio_kd:
