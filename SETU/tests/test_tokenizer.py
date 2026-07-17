@@ -38,9 +38,12 @@ def test_encode_source_prepends_direction_tags(tokenizer):
     assert ids[-1] == EOS
 
 
-def test_encode_target_wraps_bos_eos(tokenizer):
+def test_encode_target_ends_with_eos_no_leading_bos(tokenizer):
+    # labels are [tokens, EOS]; the model prepends decoder_start itself, so
+    # encode_target must NOT add a leading BOS (that caused empty translations)
     ids = tokenizer.encode_target("the weather is nice today")
-    assert ids[0] == BOS and ids[-1] == EOS
+    assert ids[-1] == EOS
+    assert ids[0] != BOS
 
 
 def test_decode_strips_specials(tokenizer):

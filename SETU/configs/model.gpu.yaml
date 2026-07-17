@@ -13,7 +13,10 @@ params:
   hidden_size: 512
   ffn_size: 2048
   attention_heads: 8
-  vocab_size: 32000
+  # 16k concentrates learning for a ~25-50k-sentence run (32k left most tokens
+  # undertrained -> degenerate decoding). Raise toward 32k only with a much
+  # larger corpus.
+  vocab_size: 16000
   max_seq_len: 256
 
 quantization:

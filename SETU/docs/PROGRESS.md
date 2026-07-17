@@ -182,11 +182,44 @@ First real GPU numbers (T4, 15 GB), on `hin_Deva-eng_Latn`:
   (no `sft/` checkpoint → optimum treated the missing path as a repo id) and to
   scorecard 1/4 (correctly UNVERIFIED, not fake passes).
 
-**Fixes applied (commit — see changelog):** free the teacher's GPU memory before
-training (`scripts/train_full.py`); GPU batch **64→32 (SFT), 32→16 (DPO)** in
+**Fixes applied:** free the teacher's GPU memory before training
+(`scripts/train_full.py`); GPU batch **64→32 (SFT), 32→16 (DPO)** in
 `training.gpu.yaml`; `PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True`; and
 `export_onnx` now resolves an absolute path + errors clearly if the checkpoint is
-missing. **Re-run pending** — expected to complete training → quantise → report.
+missing.
+
+### Kaggle GPU run #1b — 2026-07-17 (full pipeline ran; EMPTY output bug found + fixed)
+
+With the OOM fixes, the pipeline ran end-to-end but the **student produced empty
+translations** — BLEU/chrF **0.0** everywhere, outputs literally `""`.
+
+- student 60.8M params (vocab 32k), 25k train / 200 dev, SFT loss 10→**3.23**
+  (perplexity ~25 = badly underfit), **DPO margin accuracy 0.75** (DPO *is*
+  learning to rank preferred > dispreferred).
+- SFT/DPO eval BLEU/chrF **0.0**; quantise: FP32 567 MB → INT8 143.9 MB → INT4
+  143.1 MB, p90 latency 1196 → 636 → **567 ms** (>500 → FAIL, because it decoded
+  128 junk tokens per sentence). Scorecard 2/4 (Size ✅, Offline ✅).
+
+**Diagnosis:** chrF *exactly* 0.0 + empty strings = the model decoded to
+**only special tokens** (stripped to ""), a decoding degeneracy on top of severe
+underfitting. Three root causes, all fixed:
+
+1. **Target-encoding bug** — `encode_target` prefixed BOS, but HF already
+   prepends the decoder-start token → wasted decode step + train/generate
+   mismatch. Fixed: labels are now `[tokens, EOS]` (no leading BOS).
+2. **Vocab too big** — 32k vocab for 25k sentences left most tokens undertrained.
+   Fixed: `model.gpu.yaml` vocab **32k→16k**.
+3. **No LR warmup** — `warmup_steps` was silently ignored; constant lr=5e-4
+   underfit a from-scratch 60M transformer. Fixed: `SFTTrainer` now uses linear
+   warmup + decay (`get_linear_schedule_with_warmup`, warmup capped at 10% of run).
+
+Plus a **safety net**: generation now `suppress_tokens=[PAD,UNK,BOS]` +
+`no_repeat_ngram_size=3` (eval uses beams; deployment stays greedy) so output can
+never be empty. **Validated locally:** a tiny model trained with the fixed code
+produces exact non-empty translations (`सूरज चमकीला है → "the sun is bright"`),
+vs. empty before. 69 tests green. **Re-run pending** — expect non-empty, real
+(if still modest, data-limited) BLEU; latency should also drop once decoding stops
+at EOS instead of emitting 128 junk tokens.
 
 ## 8. Test suite
 
@@ -230,3 +263,9 @@ balancing, EWC anti-forgetting, device resolution, scorecard.
   user's request** — keep the current working config stable until run results are
   in; revisit utilisation afterward. Options on the table (not applied): bigger
   teacher batch (32–64), or sharding preference generation across both GPUs.
+- **2026-07-17 (run #1b — empty-output bug fixed)** — Full GPU pipeline ran but
+  the student output empty translations (BLEU/chrF 0.0). Root-caused to a
+  target-encoding bug (leading BOS in labels), too-large vocab (32k), and ignored
+  LR warmup — all fixed; added `suppress_tokens`/`no_repeat_ngram` generation
+  safety. Verified locally: fixed tiny model translates exactly (non-empty).
+  See §7 "Kaggle GPU run #1b". 69 tests green. Re-run pending.

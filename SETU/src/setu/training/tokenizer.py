@@ -76,7 +76,11 @@ class StudentTokenizer:
         return [*tags, *self._sp.encode(text), EOS]
 
     def encode_target(self, text: str) -> list[int]:
-        return [BOS, *self._sp.encode(text), EOS]
+        # labels are [tokens, EOS]. Do NOT prefix BOS: the seq2seq model builds
+        # decoder_input_ids by prepending decoder_start_token_id itself, so a
+        # leading BOS here wastes a decode step and mis-aligns train vs. generate
+        # (it made the student emit only special tokens -> empty translations).
+        return [*self._sp.encode(text), EOS]
 
     def decode(self, ids: list[int]) -> str:
         specials = {PAD, UNK, BOS, EOS}

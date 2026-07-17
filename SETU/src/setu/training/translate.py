@@ -5,12 +5,16 @@ and (via ONNX in M5) by the real InferenceEngine.
 from __future__ import annotations
 
 from setu.training.dataset import _truncate
-from setu.training.tokenizer import BOS, EOS, StudentTokenizer
+from setu.training.tokenizer import BOS, EOS, PAD, UNK, StudentTokenizer
+
+# PAD/UNK/BOS must never appear in output — suppressing them stops a weak student
+# from decoding to only-special-tokens (which strips to an empty translation).
+_SUPPRESS = [PAD, UNK, BOS]
 
 
 def student_translate(
     model, tokenizer: StudentTokenizer, text: str, src_flores: str, tgt_flores: str,
-    max_length: int = 128,
+    max_length: int = 128, num_beams: int = 4,
 ) -> str:
     import torch
 
@@ -26,9 +30,11 @@ def student_translate(
         generated = model.generate(
             input_ids=input_ids,
             max_length=max_length,
-            num_beams=1,
+            num_beams=num_beams,
+            no_repeat_ngram_size=3,
+            suppress_tokens=_SUPPRESS,
             decoder_start_token_id=BOS,
             eos_token_id=EOS,
-            pad_token_id=0,
+            pad_token_id=PAD,
         )
     return tokenizer.decode(generated[0].tolist())

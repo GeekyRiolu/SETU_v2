@@ -24,8 +24,19 @@ class SFTTrainer:
         )
 
     def train(self, dataset, epochs: int | None = None, batch_size: int | None = None):
+        from transformers import get_linear_schedule_with_warmup
+
         epochs = epochs or self.config.get("epochs", 3)
         batch_size = batch_size or self.config.get("batch_size", 32)
+
+        # linear warmup + decay — a from-scratch transformer is unstable under a
+        # constant LR (the old code silently ignored warmup_steps). Cap warmup at
+        # 10% of the run so short runs still get a real decay phase.
+        n_batches = max(1, (len(dataset.entries) + batch_size - 1) // batch_size)
+        total_steps = n_batches * epochs
+        warmup = min(self.config.get("warmup_steps", 0), max(1, total_steps // 10))
+        scheduler = get_linear_schedule_with_warmup(self.optimizer, warmup, total_steps)
+
         history = []
         self.model.train()
         device = model_device(self.model)
@@ -40,5 +51,6 @@ class SFTTrainer:
                 self.optimizer.zero_grad()
                 out.loss.backward()
                 self.optimizer.step()
+                scheduler.step()
                 history.append({"epoch": epoch, "step": step, "loss": out.loss.item()})
         return history

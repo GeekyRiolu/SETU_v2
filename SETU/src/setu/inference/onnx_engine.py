@@ -13,17 +13,21 @@ from pathlib import Path
 
 from setu.config import resolve_language
 from setu.training.dataset import _truncate
-from setu.training.tokenizer import BOS, EOS, StudentTokenizer
+from setu.training.tokenizer import BOS, EOS, PAD, UNK, StudentTokenizer
 from setu.types import TranslationResult
 
 
 class ONNXTranslator:
-    def __init__(self, model_dir: Path | str, tokenizer_model: Path | str, max_length: int = 128):
+    def __init__(self, model_dir: Path | str, tokenizer_model: Path | str,
+                 max_length: int = 128, num_beams: int = 1):
         from optimum.onnxruntime import ORTModelForSeq2SeqLM
 
         self.model = ORTModelForSeq2SeqLM.from_pretrained(str(model_dir))
         self.tokenizer = StudentTokenizer(tokenizer_model)
         self.max_length = max_length
+        # deployment default is greedy (num_beams=1) for latency; the eval harness
+        # uses beams for quality. suppress_tokens keeps output non-empty either way.
+        self.num_beams = num_beams
 
     def translate(self, text: str, src_lang: str, tgt_lang: str) -> TranslationResult:
         import torch
@@ -42,10 +46,12 @@ class ONNXTranslator:
             input_ids=input_ids,
             attention_mask=attention_mask,
             max_length=min(self.max_length, max_pos),
-            num_beams=1,
+            num_beams=self.num_beams,
+            no_repeat_ngram_size=3,
+            suppress_tokens=[PAD, UNK, BOS],
             decoder_start_token_id=BOS,
             eos_token_id=EOS,
-            pad_token_id=0,
+            pad_token_id=PAD,
         )
         out_ids = generated[0].tolist() if hasattr(generated[0], "tolist") else list(generated[0])
         translated = self.tokenizer.decode(out_ids)
