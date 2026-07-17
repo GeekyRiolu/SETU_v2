@@ -19,8 +19,11 @@ class SFTTrainer:
         self.config = sft_config
         self.device = resolve_device(sft_config.get("device", "auto"))
         self.model = model.to(self.device)
+        self.label_smoothing = sft_config.get("label_smoothing", 0.0)
         self.optimizer = torch.optim.AdamW(
-            model.parameters(), lr=sft_config.get("lr", 5e-4)
+            model.parameters(),
+            lr=sft_config.get("lr", 5e-4),
+            weight_decay=sft_config.get("weight_decay", 0.01),
         )
 
     def train(self, dataset, epochs: int | None = None, batch_size: int | None = None):
@@ -48,9 +51,21 @@ class SFTTrainer:
                     attention_mask=batch["attention_mask"],
                     labels=batch["labels"],
                 )
+                if self.label_smoothing > 0:
+                    import torch.nn.functional as F
+
+                    logits = out.logits
+                    loss = F.cross_entropy(
+                        logits.reshape(-1, logits.size(-1)),
+                        batch["labels"].reshape(-1),
+                        ignore_index=-100,
+                        label_smoothing=self.label_smoothing,
+                    )
+                else:
+                    loss = out.loss
                 self.optimizer.zero_grad()
-                out.loss.backward()
+                loss.backward()
                 self.optimizer.step()
                 scheduler.step()
-                history.append({"epoch": epoch, "step": step, "loss": out.loss.item()})
+                history.append({"epoch": epoch, "step": step, "loss": loss.item()})
         return history

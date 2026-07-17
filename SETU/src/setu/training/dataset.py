@@ -65,7 +65,12 @@ class CorpusDataset:
         tgt = [_truncate(self.tok.encode_target(e.tgt_text), self.max_len) for e in batch]
         src_ids, src_mask = _pad(src)
         tgt_ids, _ = _pad(tgt)
-        return {"input_ids": src_ids, "attention_mask": src_mask, "labels": tgt_ids}
+        # mask padding in the labels so the loss ignores it (-100). Otherwise the
+        # model gets free credit for predicting PAD, hiding the real translation
+        # loss (this made SFT loss look ~0.27 while the model wasn't translating).
+        labels = tgt_ids.clone()
+        labels[labels == PAD] = -100
+        return {"input_ids": src_ids, "attention_mask": src_mask, "labels": labels}
 
     def batches(self, batch_size: int):
         for i in range(0, len(self.entries), batch_size):

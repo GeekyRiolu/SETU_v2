@@ -30,6 +30,7 @@ def _marian_config(model_config: ModelConfig, vocab_size: int):
         encoder_ffn_dim=p.get("ffn_size", 2048),
         decoder_ffn_dim=p.get("ffn_size", 2048),
         max_position_embeddings=p.get("max_seq_len", 256),
+        dropout=p.get("dropout", 0.1),  # regularisation — raise for small corpora
         decoder_start_token_id=2,  # BOS, matches StudentTokenizer
         pad_token_id=0,
         eos_token_id=3,

@@ -18,6 +18,7 @@ params:
   # larger corpus.
   vocab_size: 16000
   max_seq_len: 256
+  dropout: 0.2          # more regularisation — the corpus is small vs. the model
 
 quantization:
   mode: none

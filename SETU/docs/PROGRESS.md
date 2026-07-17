@@ -217,9 +217,38 @@ Plus a **safety net**: generation now `suppress_tokens=[PAD,UNK,BOS]` +
 `no_repeat_ngram_size=3` (eval uses beams; deployment stays greedy) so output can
 never be empty. **Validated locally:** a tiny model trained with the fixed code
 produces exact non-empty translations (`सूरज चमकीला है → "the sun is bright"`),
-vs. empty before. 69 tests green. **Re-run pending** — expect non-empty, real
-(if still modest, data-limited) BLEU; latency should also drop once decoding stops
-at EOS instead of emitting 128 junk tokens.
+vs. empty before.
+
+### Kaggle GPU run #2 — 2026-07-17 (non-empty output; overfitting + a pad-loss bug)
+
+Empty-output bug gone — the student now produces real English. But it overfits
+and doesn't condition on the source:
+
+- 52.6M params (vocab 16k), 25k train / 200 dev, SFT loss 10→**0.274** (!),
+  DPO margin **0.5** (DPO didn't help this run).
+- SFT eval BLEU **0.31** / chrF **14.9**; DPO eval BLEU 0.18 / chrF 17.9;
+  quantised INT8 BLEU 0.40 / chrF 18.2, **p90 latency 418 ms ✅, size 105 MB ✅**.
+  **Scorecard 3/4** (Latency ✅ Size ✅ Offline ✅, Quality FAIL ratio 0.007).
+- Outputs: fluent but wrong — *every* input → "The police are investigating the
+  case." The decoder acts as an unconditional LM (ignores the source).
+
+**Diagnosis:** SFT loss 0.274 (ppl ~1.3) is implausibly low → the loss was
+**counting padding**. Root causes + fixes:
+
+1. **Padding not masked in the loss** — `CorpusDataset` labels padded with PAD(0),
+   which HF's loss (ignore_index=−100) did NOT ignore, so the model got free
+   credit for predicting PAD → fake-low loss, diluted translation signal. Fixed:
+   labels now use **−100** at pad positions.
+2. **Overfitting on tiny data** — 10 epochs over 25k sentences memorised. Fixes:
+   **label smoothing 0.1**, **dropout 0.2**, **weight decay 0.01**, epochs 10→6.
+3. **Data far too small** — 25k is tiny for NMT (the teacher saw hundreds of M).
+   The dominant lever: notebook now pulls **150k** and trains on **120k / dev 500**.
+
+**Validated locally:** the fixed tiny model translates all 8 held-out pairs
+exactly *and conditioned on the source* (loss an honest 0.83, not fake 0.27).
+69 tests green. **Re-run pending** — expect real, source-conditioned translations
+and a meaningfully non-zero BLEU (still short of the 21.7 target until the corpus
+grows toward the full millions).
 
 ## 8. Test suite
 
@@ -268,4 +297,11 @@ balancing, EWC anti-forgetting, device resolution, scorecard.
   target-encoding bug (leading BOS in labels), too-large vocab (32k), and ignored
   LR warmup — all fixed; added `suppress_tokens`/`no_repeat_ngram` generation
   safety. Verified locally: fixed tiny model translates exactly (non-empty).
-  See §7 "Kaggle GPU run #1b". 69 tests green. Re-run pending.
+  See §7 "Kaggle GPU run #1b". 69 tests green.
+- **2026-07-17 (run #2 — non-empty; fixed pad-loss + overfitting)** — Output now
+  real English but source-agnostic ("The police…" for everything); SFT loss a
+  fake-low 0.274. Found padding wasn't masked in the loss (free PAD credit) →
+  fixed with −100 labels; added label smoothing 0.1 / dropout 0.2 / weight decay;
+  epochs 10→6; scaled notebook data to 150k (train 120k / dev 500). Verified
+  locally: fixed tiny model translates all pairs exactly, source-conditioned.
+  See §7 "Kaggle GPU run #2". 69 tests green. Re-run pending.

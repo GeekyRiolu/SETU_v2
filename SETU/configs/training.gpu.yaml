@@ -4,12 +4,16 @@
 seed: 42
 
 sft:
-  epochs: 10
+  # 6 epochs over more data generalises better than 10 over little (which just
+  # memorised). Scale --limit up (data is the dominant quality lever).
+  epochs: 6
   lr: 5.0e-4
-  # batch 32 fits a 15 GB T4: the [batch, seq, 32k-vocab] logits + backward
+  # batch 32 fits a 15 GB T4: the [batch, seq, 16k-vocab] logits + backward
   # dominate memory. Raise toward 64 on a bigger GPU (A100/40GB).
   batch_size: 32
-  warmup_steps: 4000
+  warmup_steps: 2000
+  label_smoothing: 0.1  # standard NMT regularisation against overconfidence
+  weight_decay: 0.01
   device: auto          # -> cuda when available
 
 dpo:
