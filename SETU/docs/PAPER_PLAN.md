@@ -168,3 +168,21 @@ Beyond the current single-run notebook:
 Publish-worthy **iff** S2 (or S3) shows a real, significant BLEU/COMET advantage
 over S1 SeqKD at matched size across languages — or a clean, well-analysed
 negative result. Without that comparison it's a good system, not a paper.
+
+## 11. Real results so far (Kaggle GPU, hin_Deva-eng_Latn, 120k train)
+
+First genuine data point — **S2 (DPO-distill) works** (run #3, 2026-07-17):
+
+| System | Params | BLEU | chrF | % of teacher | Notes |
+|--------|-------:|-----:|-----:|-------------:|-------|
+| Teacher (rotary dist-200M) | 200M | 30.64 | — | 100% | dev=500, ceiling |
+| S0 SFT (ours, beam-4) | 52.6M | 13.42 | 37.85 | 43.8% | honest loss 3.39 |
+| **S2 SFT+DPO (ours, beam-4)** | 52.6M | 13.01 | **40.33** | 42.5% | DPO margin 0.92 |
+| S2 deployed INT8 (greedy) | 52.6M | 10.2 | 36.5 | — | 302 ms p90, 105 MB |
+
+Early findings: (a) **DPO with ChrF-ranked preferences lifts chrF (37.8→40.3) but
+not BLEU** — a coherent, reportable result (the objective optimises chrF-shaped
+signal); (b) data scale dominates (25k→120k took BLEU 0.3→13.4). **Still missing
+for the paper:** the **S1 SeqKD baseline** (train on teacher 1-best) at matched
+size — the head-to-head that IS the contribution — plus COMET, FLORES/IN22 eval,
+significance, and ≥2 more languages. Build the SeqKD trainer next.

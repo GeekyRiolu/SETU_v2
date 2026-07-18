@@ -144,20 +144,20 @@ Each milestone is one commit; `Claude/TASKS.md` has the per-milestone notes too.
 6. **`models_root` str vs Path**, **stub/real test isolation** (`SETU_MODELS_ROOT`
    + autouse fixture), **package shadowing** (rename) — all fixed.
 
-## 6. Current status — final scorecard
-
-`setu-report --offline-proof` on the real artifacts (`hin_Deva-eng_Latn`):
+## 6. Current status — best scorecard (Kaggle GPU run #3, 120k train)
 
 | Target | Value | Threshold | Status |
 |--------|-------|-----------|--------|
-| Quality | BLEU ratio 0.003 | ≥ 0.80 | **FAIL** (undertrained on CPU) |
-| Latency | 158 ms p90 | < 500 ms | **PASS** |
-| Size | 21.18 MB | ≤ 200 MB | **PASS** |
+| Quality | BLEU ratio **0.42–0.44** (student 13.4 / teacher 30.6) | ≥ 0.80 | **FAIL** (but real) |
+| Latency | 266–302 ms p90 (INT4/INT8) | < 500 ms | **PASS** |
+| Size | 104 MB (INT8/INT4) | ≤ 200 MB | **PASS** |
 | Offline | sockets disabled, still translates | no network | **PASS** |
 
-**3 / 4 pass.** Quality is the honest gap: a 9.5M student on 1,500 sentences for
-3 CPU epochs cannot learn translation. Closing it is a compute change (bigger
-model, full corpus, GPU) — the plumbing is done.
+**3 / 4 pass, and the model genuinely translates** (`भारत एक विशाल देश है। →
+"India is a huge country."`). Quality climbed 0.003 → 0.007 → **0.44** across
+runs as the pad-loss bug was fixed and data grew to 120k. Deployed INT8 (greedy)
+scores BLEU ~10; the model in beam-4 eval scores BLEU ~13.4. Remaining gap to the
+0.80 target is **data scale** — see §7 run #3 and next steps.
 
 ## 7. GPU / Kaggle path
 
@@ -246,9 +246,27 @@ and doesn't condition on the source:
 
 **Validated locally:** the fixed tiny model translates all 8 held-out pairs
 exactly *and conditioned on the source* (loss an honest 0.83, not fake 0.27).
-69 tests green. **Re-run pending** — expect real, source-conditioned translations
-and a meaningfully non-zero BLEU (still short of the 21.7 target until the corpus
-grows toward the full millions).
+
+### Kaggle GPU run #3 — 2026-07-17 (BREAKTHROUGH: real translation, ratio 0.44)
+
+The pad-loss fix + 150k data made it genuinely translate.
+
+- 52.6M params (vocab 16k), **120k train / 500 dev**, 6 epochs. SFT loss honest
+  **3.39** (was fake 0.27). Teacher dev BLEU **30.64**.
+- **SFT eval: BLEU 13.42, chrF 37.85, ratio 0.438** (beam-4).
+- **DPO: margin accuracy 0.923** (was 0.5!), loss 0.337. DPO eval BLEU 13.01,
+  **chrF 40.33** — DPO (ChrF-ranked prefs) lifts chrF (37.8→40.3), BLEU ~flat.
+- Quantised (deployed, greedy): INT8 BLEU 10.2 / chrF 36.5 / **p90 302 ms** / 105
+  MB; INT4 BLEU 9.21 / **p90 266 ms** / 104 MB. **Scorecard 3/4** (Quality 0.424).
+- Real outputs: `भारत एक विशाल देश है। → "India is a huge country."`,
+  `मुझे किताबें पढ़ना पसंद है। → "I love books."`.
+
+**Takeaways:** (1) the pad-loss mask + honest loss was the unlock; (2) data is the
+dominant lever (25k→120k drove BLEU 0.3→13.4); (3) DPO now works and improves
+chrF as expected from ChrF-ranked preferences. **Next (run #4):** scale data to
+~200–250k (notebook bumped) to push the ratio toward 0.6+; then consider more
+epochs / a bigger student / beam-search deployment (latency has headroom). To hit
+0.80 likely needs 500k–1M pairs (approaching the full corpus).
 
 ## 8. Test suite
 
@@ -304,4 +322,10 @@ balancing, EWC anti-forgetting, device resolution, scorecard.
   fixed with −100 labels; added label smoothing 0.1 / dropout 0.2 / weight decay;
   epochs 10→6; scaled notebook data to 150k (train 120k / dev 500). Verified
   locally: fixed tiny model translates all pairs exactly, source-conditioned.
-  See §7 "Kaggle GPU run #2". 69 tests green. Re-run pending.
+  See §7 "Kaggle GPU run #2". 69 tests green.
+- **2026-07-17 (run #3 — BREAKTHROUGH)** — Real translation at last: **BLEU 13.4,
+  chrF 37.8, ratio 0.44**, DPO margin **0.92**; correct outputs ("India is a huge
+  country."). Scorecard 3/4 (Quality 0.42, Latency ✅ Size ✅ Offline ✅). Logged
+  in §6/§7 and `PAPER_PLAN.md` §11 (first real S2 numbers). Bumped notebook to
+  250k data / 200k train for run #4 to push the ratio higher (data is the proven
+  lever). Next paper task: build the S1 SeqKD baseline for the head-to-head.
