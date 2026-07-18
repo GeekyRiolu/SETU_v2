@@ -263,10 +263,29 @@ The pad-loss fix + 150k data made it genuinely translate.
 
 **Takeaways:** (1) the pad-loss mask + honest loss was the unlock; (2) data is the
 dominant lever (25k→120k drove BLEU 0.3→13.4); (3) DPO now works and improves
-chrF as expected from ChrF-ranked preferences. **Next (run #4):** scale data to
-~200–250k (notebook bumped) to push the ratio toward 0.6+; then consider more
-epochs / a bigger student / beam-search deployment (latency has headroom). To hit
-0.80 likely needs 500k–1M pairs (approaching the full corpus).
+chrF as expected from ChrF-ranked preferences.
+
+### Kaggle GPU run #4 — 2026-07-17 (200k train → COLLAPSE; missing gradient clipping)
+
+Counter-intuitively, **more data made it worse** — a training collapse:
+
+- 200k train / 500 dev, 6 epochs. SFT loss rose to **4.40** (vs 3.39 at 120k),
+  **BLEU 0.03 / chrF 7.8** (was 13.4 / 37.8). DPO margin 1.0 but BLEU 0.009.
+- Output degenerated to `"What is the"` for every input — the decoder collapsed
+  to a single high-frequency phrase (same failure shape as run #2, but from
+  instability, not the pad bug).
+
+**Diagnosis:** run #3 (120k) worked and run #4 (200k) collapsed on the *same
+code* → not underfitting. More data = more steps = more chances to hit a gradient
+spike, and **there was no gradient clipping** — the single most standard
+stabiliser for training a transformer from scratch. Run #3 got lucky; run #4
+didn't.
+
+**Fix:** added `clip_grad_norm_(…, max_grad_norm=1.0)` to **SFT and DPO** (config
+`max_grad_norm: 1.0`); bumped warmup 2000→4000 for the longer runs. LR kept at
+5e-4 (proven at run #3). 69 tests green. **Re-run pending** at 200k — clipping
+should keep it stable and beat run #3's 13.4. Fallback if it still collapses:
+lower LR to 3e-4.
 
 ## 8. Test suite
 
@@ -329,3 +348,9 @@ balancing, EWC anti-forgetting, device resolution, scorecard.
   in §6/§7 and `PAPER_PLAN.md` §11 (first real S2 numbers). Bumped notebook to
   250k data / 200k train for run #4 to push the ratio higher (data is the proven
   lever). Next paper task: build the S1 SeqKD baseline for the head-to-head.
+- **2026-07-17 (run #4 — collapse + gradient clipping fix)** — 200k train
+  *collapsed* (BLEU 0.03, output "What is the" for everything, SFT loss 4.40) —
+  same code that worked at 120k. Root cause: no gradient clipping (missing
+  transformer-training stabiliser). Added `clip_grad_norm_(1.0)` to SFT + DPO,
+  warmup 2000→4000, LR unchanged. 69 tests green. Re-run at 200k pending; run #3
+  (13.4 BLEU) remains the best-so-far until then.

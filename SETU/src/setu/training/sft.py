@@ -20,6 +20,7 @@ class SFTTrainer:
         self.device = resolve_device(sft_config.get("device", "auto"))
         self.model = model.to(self.device)
         self.label_smoothing = sft_config.get("label_smoothing", 0.0)
+        self.max_grad_norm = sft_config.get("max_grad_norm", 1.0)
         self.optimizer = torch.optim.AdamW(
             model.parameters(),
             lr=sft_config.get("lr", 5e-4),
@@ -27,6 +28,7 @@ class SFTTrainer:
         )
 
     def train(self, dataset, epochs: int | None = None, batch_size: int | None = None):
+        import torch
         from transformers import get_linear_schedule_with_warmup
 
         epochs = epochs or self.config.get("epochs", 3)
@@ -65,6 +67,10 @@ class SFTTrainer:
                     loss = out.loss
                 self.optimizer.zero_grad()
                 loss.backward()
+                # gradient clipping — the key stabiliser for a from-scratch
+                # transformer. Without it, a gradient spike collapses the model to
+                # a degenerate output ("What is the …") — seen at 200k train.
+                torch.nn.utils.clip_grad_norm_(self.model.parameters(), self.max_grad_norm)
                 self.optimizer.step()
                 scheduler.step()
                 history.append({"epoch": epoch, "step": step, "loss": loss.item()})

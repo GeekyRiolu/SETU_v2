@@ -70,11 +70,14 @@ class DPOTrainer:
         self.policy = policy_model.to(self.device)
         self.reference = freeze_reference(self.policy)  # frozen snapshot BEFORE training
         self.beta = dpo_config.get("beta", 0.1)
+        self.max_grad_norm = dpo_config.get("max_grad_norm", 1.0)
         self.optimizer = torch.optim.AdamW(
             self.policy.parameters(), lr=dpo_config.get("lr", 5e-6)
         )
 
     def train(self, dataset, epochs: int | None = None, batch_size: int | None = None):
+        import torch
+
         epochs = epochs or self.config.get("epochs", 1)
         batch_size = batch_size or self.config.get("batch_size", 8)
         history = []
@@ -86,6 +89,7 @@ class DPOTrainer:
                 loss, metrics = dpo_loss(self.policy, self.reference, batch, self.beta)
                 self.optimizer.zero_grad()
                 loss.backward()
+                torch.nn.utils.clip_grad_norm_(self.policy.parameters(), self.max_grad_norm)
                 self.optimizer.step()
                 metrics["epoch"] = epoch
                 metrics["step"] = step

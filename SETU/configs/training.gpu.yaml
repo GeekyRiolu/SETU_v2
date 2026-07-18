@@ -11,9 +11,10 @@ sft:
   # batch 32 fits a 15 GB T4: the [batch, seq, 16k-vocab] logits + backward
   # dominate memory. Raise toward 64 on a bigger GPU (A100/40GB).
   batch_size: 32
-  warmup_steps: 2000
+  warmup_steps: 4000    # more warmup stabilises the longer (200k+) runs
   label_smoothing: 0.1  # standard NMT regularisation against overconfidence
   weight_decay: 0.01
+  max_grad_norm: 1.0    # gradient clipping — prevents the collapse seen at 200k
   device: auto          # -> cuda when available
 
 dpo:
