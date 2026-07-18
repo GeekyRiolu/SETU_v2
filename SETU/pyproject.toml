@@ -44,6 +44,7 @@ teacher = [
 setu = "setu.cli:main"
 setu-data = "setu.corpus.pipeline:main"
 setu-prefs = "setu.preference.pipeline:main"
+setu-distill = "setu.distill.pipeline:main"
 setu-train = "setu.training.pipeline:main"
 setu-quantize = "setu.quantize.pipeline:main"
 setu-report = "setu.report:main"

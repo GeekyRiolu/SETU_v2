@@ -54,6 +54,7 @@ def run(
     data_root: Path | str = "data",
     dev_size: int = 50,
     teacher_bleu: float | None = None,
+    train_corpus: str = "processed",
 ) -> dict[str, Any]:
     model_config = load_model_config()
     training_config = load_training_config()
@@ -61,12 +62,21 @@ def run(
 
     ckpt_dir = Path(ckpt_root) / pair
     ckpt_dir.mkdir(parents=True, exist_ok=True)
-    corpus_path = Path(data_root) / "processed" / pair / "train.jsonl"
 
-    # held-out dev set (last dev_size entries of the used slice) for eval
-    all_entries = _read_entries(corpus_path, (limit + dev_size) if limit else None)
-    dev = all_entries[-dev_size:] if len(all_entries) > dev_size else []
-    train_entries = all_entries[: len(all_entries) - len(dev)]
+    # Dev is ALWAYS held out from real references (data/processed) so the eval is
+    # fair regardless of what the student trained on. Training targets come from
+    # `train_corpus`: "processed" (human refs, S0/S2) or "distilled" (teacher
+    # 1-best, the SeqKD baseline S1) — both share the same source order.
+    ref_path = Path(data_root) / "processed" / pair / "train.jsonl"
+    all_refs = _read_entries(ref_path, (limit + dev_size) if limit else None)
+    dev = all_refs[-dev_size:] if len(all_refs) > dev_size else []
+    n_train = len(all_refs) - len(dev)
+
+    if train_corpus == "processed":
+        train_entries = all_refs[:n_train]
+    else:
+        train_path = Path(data_root) / train_corpus / pair / "train.jsonl"
+        train_entries = _read_entries(train_path, n_train)
 
     # 1. tokenizer (trained on the train split only)
     text_file = ckpt_dir / "sp_train.txt"
@@ -86,6 +96,7 @@ def run(
 
     report: dict[str, Any] = {
         "pair": pair,
+        "train_corpus": train_corpus,
         "student_params": param_count(student),
         "train_entries": len(train_entries),
         "dev_entries": len(dev),
@@ -115,10 +126,13 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--dev-size", type=int, default=50, help="held-out dev entries for eval")
     parser.add_argument("--teacher-bleu", type=float, default=None, help="teacher BLEU for the 80%% ratio")
     parser.add_argument("--skip-dpo", action="store_true")
+    parser.add_argument("--train-corpus", default="processed", choices=["processed", "distilled"],
+                        help="SFT targets: human refs (processed) or teacher 1-best (distilled=SeqKD)")
     args = parser.parse_args(argv)
     report = run(
         pair=args.pair, limit=args.limit, skip_dpo=args.skip_dpo,
         dev_size=args.dev_size, teacher_bleu=args.teacher_bleu,
+        train_corpus=args.train_corpus,
     )
     print(json.dumps(report, indent=2))
     return 0

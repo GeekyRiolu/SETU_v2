@@ -154,9 +154,12 @@ Beyond the current single-run notebook:
 5. Run the **EWC expansion** experiment (Table 4) with real before/after BLEU.
 6. Produce the **quantisation table** (Table 3) incl. an ARM latency profile.
 
-### Engineering deltas needed (not yet built)
+### Engineering deltas
 
-- [ ] SeqKD trainer (sequence-level KD on teacher 1-best) as the S1 baseline.
+- [x] **SeqKD baseline (S1)** — `setu-distill` writes teacher-1-best targets;
+      `train_full.py --train-corpus distilled` trains on them; eval stays on real
+      references. Head-to-head procedure: `docs/SEQKD_COMPARISON.md` + notebook
+      `kaggle/setu_seqkd_compare.ipynb`. **Run it to fill Table 1's S1 row.**
 - [ ] COMET into the eval harness.
 - [ ] FLORES/IN22 eval-set loaders.
 - [ ] Bootstrap significance in the eval report.

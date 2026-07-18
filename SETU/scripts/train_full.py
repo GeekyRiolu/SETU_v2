@@ -35,6 +35,8 @@ def main() -> int:
     ap.add_argument("--limit", type=int, default=25000, help="training sentences")
     ap.add_argument("--dev-size", type=int, default=200)
     ap.add_argument("--skip-dpo", action="store_true")
+    ap.add_argument("--train-corpus", default="processed", choices=["processed", "distilled"],
+                    help="SFT targets: human refs (processed) or teacher 1-best (distilled=SeqKD)")
     ap.add_argument("--no-teacher-bleu", action="store_true",
                     help="skip the teacher-ceiling eval (faster; no quality ratio)")
     args = ap.parse_args()
@@ -73,7 +75,8 @@ def main() -> int:
 
     t0 = time.time()
     report = run(pair=pair, limit=args.limit, dev_size=args.dev_size,
-                 skip_dpo=args.skip_dpo, teacher_bleu=teacher_bleu)
+                 skip_dpo=args.skip_dpo, teacher_bleu=teacher_bleu,
+                 train_corpus=args.train_corpus)
     report["teacher_dev_bleu"] = teacher_bleu
     print(f"[train] done in {time.time()-t0:.0f}s", flush=True)
     print(json.dumps(report, indent=2, ensure_ascii=False))

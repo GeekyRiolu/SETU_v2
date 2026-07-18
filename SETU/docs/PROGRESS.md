@@ -380,3 +380,11 @@ balancing, EWC anti-forgetting, device resolution, scorecard.
   + `PAPER_PLAN.md` §11 (data curve, extrapolates to 0.80 ≈ 350–500k). Bumped
   notebook to 350k data / 250k train for run #6. Gradient clipping was the last
   major training bug.
+- **2026-07-17 (SeqKD baseline built)** — Added the paper's S1 baseline:
+  `setu.distill` (`SeqKDDistiller` + `setu-distill`) writes teacher-1-best targets
+  to `data/distilled/`; the training pipeline gained `--train-corpus
+  {processed,distilled}` (eval stays on real references for fairness). Head-to-head
+  procedure in `docs/SEQKD_COMPARISON.md` + `kaggle/setu_seqkd_compare.ipynb`
+  (S0/S1/S2/S3). 4 new tests (73 total, all green). Ready to run for Table 1's S1
+  row — the comparison that makes DPO-distillation a contribution. Does not affect
+  the user's run #6 quality scaling.
