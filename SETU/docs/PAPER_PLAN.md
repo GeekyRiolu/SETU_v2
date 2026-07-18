@@ -183,8 +183,12 @@ Best data point — **S2 (DPO-distill) works**, run #5, 200k train (2026-07-17):
 | S2 SFT+DPO (ours, beam-4) | 52.6M | 17.53 | **45.94** | 61.6% | DPO margin 1.0 |
 | S2 deployed INT8 (greedy) | 52.6M | 18.26 | 43.8 | — | 317 ms p90, 105 MB |
 
-Data-scaling curve (SFT BLEU / ratio): 25k → 0.3 · 120k → 13.4 / 0.44 · **200k →
-18.6 / 0.65**. Extrapolates to ≥0.80 around 350–500k pairs.
+Data-scaling curve (SFT BLEU / ratio): 25k → 0.3 · 120k → 13.4 / 0.44 · 200k →
+18.6 / 0.65 · **250k → 18.6 / 0.66**. **The curve plateaus at ~0.66** (200k→250k
+flat) — with the 52M student on Samanantar references, data volume has saturated.
+This is itself a result: it motivates SeqKD (cleaner teacher targets) and
+capacity scaling as the levers to break past the reference-noise ceiling. A clean
+data-scaling + plateau plot belongs in the paper.
 
 Findings: (a) **DPO with ChrF-ranked preferences lifts chrF but slightly lowers
 BLEU** — consistent across runs #3 and #5 (the objective optimises a chrF-shaped

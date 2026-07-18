@@ -144,20 +144,22 @@ Each milestone is one commit; `Claude/TASKS.md` has the per-milestone notes too.
 6. **`models_root` str vs Path**, **stub/real test isolation** (`SETU_MODELS_ROOT`
    + autouse fixture), **package shadowing** (rename) — all fixed.
 
-## 6. Current status — best scorecard (Kaggle GPU run #5, 200k train)
+## 6. Current status — best scorecard (Kaggle GPU runs #5/#6, 200–250k train)
 
 | Target | Value | Threshold | Status |
 |--------|-------|-----------|--------|
-| Quality | BLEU ratio **0.62–0.65** (student **18.6** / teacher 28.5) | ≥ 0.80 | **FAIL** (close) |
-| Latency | 310–317 ms p90 (INT4/INT8) | < 500 ms | **PASS** |
+| Quality | BLEU ratio **0.65–0.68** (student **18.6–19.3** / teacher 28.4) | ≥ 0.80 | **FAIL** (plateaued) |
+| Latency | 184–191 ms p90 (INT4/INT8) | < 500 ms | **PASS** |
 | Size | 104 MB (INT8/INT4) | ≤ 200 MB | **PASS** |
 | Offline | sockets disabled, still translates | no network | **PASS** |
 
-**3 / 4 pass, and it translates well** (`भारत एक विशाल देश है। → "India is a huge
-country."`, `मुझे किताबें पढ़ना पसंद है। → "I like to read books."`). Quality
-trajectory: 0.003 → 0.007 → 0.44 (120k) → **0.65 (200k)**. Deployed INT8 scores
-BLEU 18.3 / chrF 43.8. The remaining gap to 0.80 is **data scale** — 120k→200k
-took the ratio 0.44→0.65; ~350–500k should reach 0.80. See §7 run #5.
+**3 / 4 pass, translates well** (`भारत एक विशाल देश है। → "India is a huge
+country."`). Deploy the **INT4** artifact (104 MB, BLEU 19.3 greedy — smallest
+*and* best here). Quality trajectory: 0.003 → 0.007 → 0.44 (120k) → 0.65 (200k)
+→ **0.66 (250k)** — i.e. **plateaued**: 200k→250k added nothing. Data volume is
+no longer the lever; the bottleneck is target quality (noisy Samanantar refs) or
+model capacity. Next levers: **SeqKD (teacher targets)**, bigger model, more
+epochs. See §7 run #6.
 
 ## 7. GPU / Kaggle path
 
@@ -380,6 +382,26 @@ balancing, EWC anti-forgetting, device resolution, scorecard.
   + `PAPER_PLAN.md` §11 (data curve, extrapolates to 0.80 ≈ 350–500k). Bumped
   notebook to 350k data / 250k train for run #6. Gradient clipping was the last
   major training bug.
+### Kaggle GPU run #6 — 2026-07-19 (250k train → PLATEAU at ratio ~0.66)
+
+Scaled to 250k; quality **flat** vs run #5's 200k:
+
+- 250k train / 500 dev, 6 epochs (gradient-clipped, stable). SFT loss 3.60.
+  Teacher dev BLEU 28.36.
+- **SFT eval BLEU 18.64 / chrF 45.46 / ratio 0.657** (was 18.60/0.654 at 200k).
+  DPO eval 17.55 / chrF 45.66 / 0.619 (DPO again trades ~1 BLEU for chrF).
+- Deployed **INT4** BLEU **19.33** (greedy) / chrF 47.1 / **p90 191 ms** / 104 MB
+  — smallest and best variant (INT8 dipped to 16.2, quantisation variance).
+  Scorecard 3/4 (Quality 0.62 by the beam-DPO metric, ~0.68 by deployed INT4).
+
+**Finding — the data lever has saturated for this model.** 120k→200k lifted the
+ratio 0.44→0.65, but 200k→250k added ≈0. The bottleneck is no longer data volume
+but **target quality** (Samanantar is noisy mined data) or **capacity** (52M).
+This makes the **SeqKD comparison** the highest-value next run: teacher-distilled
+targets are exactly what breaks a reference-noise plateau — and it's the paper's
+key experiment. Alternative levers: bigger student (d=640 / more layers, keep INT8
+≤ 200 MB), more epochs (6→10), or BLEU/COMET-ranked DPO preferences.
+
 - **2026-07-17 (SeqKD baseline built)** — Added the paper's S1 baseline:
   `setu.distill` (`SeqKDDistiller` + `setu-distill`) writes teacher-1-best targets
   to `data/distilled/`; the training pipeline gained `--train-corpus
@@ -388,3 +410,17 @@ balancing, EWC anti-forgetting, device resolution, scorecard.
   (S0/S1/S2/S3). 4 new tests (73 total, all green). Ready to run for Table 1's S1
   row — the comparison that makes DPO-distillation a contribution. Does not affect
   the user's run #6 quality scaling.
+- **2026-07-17 (SeqKD notebook hardening)** — Comparison cell crashed with a raw
+  FileNotFoundError when an upstream step didn't finish; hardened the notebook
+  (assert distill output, `&&`-chain report copies with PASS/FAIL markers,
+  defensive comparison cell). Committed `78ffdaf`.
+- **2026-07-17 (Kaggle cwd fix)** — SeqKD notebook failed with `getcwd: cannot
+  access parent directories` → re-running the clone cell `rm -rf`'d the kernel's
+  own cwd → `No module named setu` everywhere (not a distill/code bug). Fixed both
+  notebooks' clone cells to `%cd /kaggle/working` before the `rm -rf`. Committed
+  `7d48bf5`.
+- **2026-07-19 (run #6 — data plateau)** — 250k train gave BLEU 18.6 / ratio 0.66,
+  **flat vs 200k** → data volume saturated for the 52M student on noisy Samanantar
+  refs. Deployed INT4 19.3 BLEU / 191 ms / 104 MB. Updated §6/§7 + PAPER_PLAN §11
+  (plateau is a paper-worthy result). Next run pivots to the **SeqKD comparison**
+  (cleaner teacher targets = plateau-breaker + the paper's head-to-head).
