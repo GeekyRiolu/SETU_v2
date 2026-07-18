@@ -169,20 +169,24 @@ Publish-worthy **iff** S2 (or S3) shows a real, significant BLEU/COMET advantage
 over S1 SeqKD at matched size across languages — or a clean, well-analysed
 negative result. Without that comparison it's a good system, not a paper.
 
-## 11. Real results so far (Kaggle GPU, hin_Deva-eng_Latn, 120k train)
+## 11. Real results so far (Kaggle GPU, hin_Deva-eng_Latn)
 
-First genuine data point — **S2 (DPO-distill) works** (run #3, 2026-07-17):
+Best data point — **S2 (DPO-distill) works**, run #5, 200k train (2026-07-17):
 
 | System | Params | BLEU | chrF | % of teacher | Notes |
 |--------|-------:|-----:|-----:|-------------:|-------|
-| Teacher (rotary dist-200M) | 200M | 30.64 | — | 100% | dev=500, ceiling |
-| S0 SFT (ours, beam-4) | 52.6M | 13.42 | 37.85 | 43.8% | honest loss 3.39 |
-| **S2 SFT+DPO (ours, beam-4)** | 52.6M | 13.01 | **40.33** | 42.5% | DPO margin 0.92 |
-| S2 deployed INT8 (greedy) | 52.6M | 10.2 | 36.5 | — | 302 ms p90, 105 MB |
+| Teacher (rotary dist-200M) | 200M | 28.45 | — | 100% | dev=500, ceiling |
+| S0 SFT (ours, beam-4) | 52.6M | **18.60** | 45.40 | **65.4%** | loss 3.21 |
+| S2 SFT+DPO (ours, beam-4) | 52.6M | 17.53 | **45.94** | 61.6% | DPO margin 1.0 |
+| S2 deployed INT8 (greedy) | 52.6M | 18.26 | 43.8 | — | 317 ms p90, 105 MB |
 
-Early findings: (a) **DPO with ChrF-ranked preferences lifts chrF (37.8→40.3) but
-not BLEU** — a coherent, reportable result (the objective optimises chrF-shaped
-signal); (b) data scale dominates (25k→120k took BLEU 0.3→13.4). **Still missing
-for the paper:** the **S1 SeqKD baseline** (train on teacher 1-best) at matched
-size — the head-to-head that IS the contribution — plus COMET, FLORES/IN22 eval,
-significance, and ≥2 more languages. Build the SeqKD trainer next.
+Data-scaling curve (SFT BLEU / ratio): 25k → 0.3 · 120k → 13.4 / 0.44 · **200k →
+18.6 / 0.65**. Extrapolates to ≥0.80 around 350–500k pairs.
+
+Findings: (a) **DPO with ChrF-ranked preferences lifts chrF but slightly lowers
+BLEU** — consistent across runs #3 and #5 (the objective optimises a chrF-shaped
+signal); a real, nuanced result — and a knob (BLEU/COMET-ranked prefs, β, DPO LR)
+worth an ablation. (b) Training needed gradient clipping to stay stable at scale
+(run #4 collapsed without it). **Still missing for the paper:** the **S1 SeqKD
+baseline** (train on teacher 1-best) at matched size — the head-to-head that IS
+the contribution — plus COMET, FLORES/IN22 eval, significance, ≥2 more languages.

@@ -144,20 +144,20 @@ Each milestone is one commit; `Claude/TASKS.md` has the per-milestone notes too.
 6. **`models_root` str vs Path**, **stub/real test isolation** (`SETU_MODELS_ROOT`
    + autouse fixture), **package shadowing** (rename) — all fixed.
 
-## 6. Current status — best scorecard (Kaggle GPU run #3, 120k train)
+## 6. Current status — best scorecard (Kaggle GPU run #5, 200k train)
 
 | Target | Value | Threshold | Status |
 |--------|-------|-----------|--------|
-| Quality | BLEU ratio **0.42–0.44** (student 13.4 / teacher 30.6) | ≥ 0.80 | **FAIL** (but real) |
-| Latency | 266–302 ms p90 (INT4/INT8) | < 500 ms | **PASS** |
+| Quality | BLEU ratio **0.62–0.65** (student **18.6** / teacher 28.5) | ≥ 0.80 | **FAIL** (close) |
+| Latency | 310–317 ms p90 (INT4/INT8) | < 500 ms | **PASS** |
 | Size | 104 MB (INT8/INT4) | ≤ 200 MB | **PASS** |
 | Offline | sockets disabled, still translates | no network | **PASS** |
 
-**3 / 4 pass, and the model genuinely translates** (`भारत एक विशाल देश है। →
-"India is a huge country."`). Quality climbed 0.003 → 0.007 → **0.44** across
-runs as the pad-loss bug was fixed and data grew to 120k. Deployed INT8 (greedy)
-scores BLEU ~10; the model in beam-4 eval scores BLEU ~13.4. Remaining gap to the
-0.80 target is **data scale** — see §7 run #3 and next steps.
+**3 / 4 pass, and it translates well** (`भारत एक विशाल देश है। → "India is a huge
+country."`, `मुझे किताबें पढ़ना पसंद है। → "I like to read books."`). Quality
+trajectory: 0.003 → 0.007 → 0.44 (120k) → **0.65 (200k)**. Deployed INT8 scores
+BLEU 18.3 / chrF 43.8. The remaining gap to 0.80 is **data scale** — 120k→200k
+took the ratio 0.44→0.65; ~350–500k should reach 0.80. See §7 run #5.
 
 ## 7. GPU / Kaggle path
 
@@ -283,9 +283,29 @@ didn't.
 
 **Fix:** added `clip_grad_norm_(…, max_grad_norm=1.0)` to **SFT and DPO** (config
 `max_grad_norm: 1.0`); bumped warmup 2000→4000 for the longer runs. LR kept at
-5e-4 (proven at run #3). 69 tests green. **Re-run pending** at 200k — clipping
-should keep it stable and beat run #3's 13.4. Fallback if it still collapses:
-lower LR to 3e-4.
+5e-4 (proven at run #3).
+
+### Kaggle GPU run #5 — 2026-07-17 (clipping worked — BLEU 18.6, ratio 0.65)
+
+Same 200k that collapsed in run #4, now with gradient clipping — stable and a big
+jump over run #3:
+
+- 200k train / 500 dev, 6 epochs. SFT loss honest **3.21** (no collapse).
+  Teacher dev BLEU 28.45.
+- **SFT eval: BLEU 18.60, chrF 45.40, ratio 0.654** (beam-4).
+- DPO: margin **1.0**, loss 0.16. DPO eval BLEU 17.53, chrF 45.94.
+- Quantised (deployed, greedy): INT8 BLEU **18.26** / chrF 43.8 / **p90 317 ms** /
+  105 MB; INT4 BLEU 18.65 / **p90 310 ms** / 104 MB. **Scorecard 3/4** (Quality
+  0.62).
+- Clean outputs: "India is a huge country.", "I like to read books.", "Today is
+  good weather."
+
+**Findings:** (1) gradient clipping fixed the collapse — the last major training
+bug; (2) 120k→200k lifted the ratio 0.44→0.65 — data still the lever; (3) DPO
+again slightly **lowers BLEU** (18.60→17.53) while holding chrF (~45) — the
+ChrF-ranked preferences trade BLEU for chrF (reportable; for max BLEU deploy the
+SFT checkpoint via `setu-quantize --student sft`). **Next (run #6):** ~250k train
+(notebook bumped) toward ratio 0.72+; 350–500k should reach the 0.80 target.
 
 ## 8. Test suite
 
@@ -352,5 +372,11 @@ balancing, EWC anti-forgetting, device resolution, scorecard.
   *collapsed* (BLEU 0.03, output "What is the" for everything, SFT loss 4.40) —
   same code that worked at 120k. Root cause: no gradient clipping (missing
   transformer-training stabiliser). Added `clip_grad_norm_(1.0)` to SFT + DPO,
-  warmup 2000→4000, LR unchanged. 69 tests green. Re-run at 200k pending; run #3
-  (13.4 BLEU) remains the best-so-far until then.
+  warmup 2000→4000, LR unchanged. 69 tests green.
+- **2026-07-17 (run #5 — clipping worked, new best)** — 200k with clipping is
+  stable and jumps to **BLEU 18.60 / chrF 45.40 / ratio 0.654** (deployed INT8
+  18.3 / 310–317 ms / 105 MB); clean correct translations. DPO margin 1.0 but
+  again trades ~1 BLEU for chrF. Updated §6 best scorecard (0.44→0.65) + §7 run #5
+  + `PAPER_PLAN.md` §11 (data curve, extrapolates to 0.80 ≈ 350–500k). Bumped
+  notebook to 350k data / 250k train for run #6. Gradient clipping was the last
+  major training bug.
