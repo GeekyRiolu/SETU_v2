@@ -155,11 +155,15 @@ Each milestone is one commit; `Claude/TASKS.md` has the per-milestone notes too.
 
 **3 / 4 pass, translates well** (`भारत एक विशाल देश है। → "India is a huge
 country."`). Deploy the **INT4** artifact (104 MB, BLEU 19.3 greedy — smallest
-*and* best here). Quality trajectory: 0.003 → 0.007 → 0.44 (120k) → 0.65 (200k)
-→ **0.66 (250k)** — i.e. **plateaued**: 200k→250k added nothing. Data volume is
-no longer the lever; the bottleneck is target quality (noisy Samanantar refs) or
-model capacity. Next levers: **SeqKD (teacher targets)**, bigger model, more
-epochs. See §7 run #6.
+*and* best here). Reference-SFT trajectory: 0.003 → 0.007 → 0.44 (120k) → 0.65
+(200k) → **0.66 (250k)** — **plateaued** at the reference-noise ceiling.
+
+**KEY FINDING (2026-07-19): SeqKD ≫ reference training.** The SeqKD comparison
+(100k, matched size) settled it: training on the **teacher's** outputs gives
+**BLEU 17.1 / ratio 0.607**, vs **10.95 / 0.389** for SFT-on-references and
+**11.10 / 0.394** for ref-SFT+DPO. SeqKD at 100k ≈ the 250k reference plateau with
+< half the data, and isn't saturated. **The best model — and the deployable one —
+should be trained with SeqKD, scaled to 200–250k** (§7, `PAPER_PLAN.md` §11).
 
 ## 7. GPU / Kaggle path
 
@@ -419,6 +423,14 @@ key experiment. Alternative levers: bigger student (d=640 / more layers, keep IN
   own cwd → `No module named setu` everywhere (not a distill/code bug). Fixed both
   notebooks' clone cells to `%cd /kaggle/working` before the `rm -rf`. Committed
   `7d48bf5`.
+- **2026-07-19 (SeqKD comparison — KEY RESULT)** — On Colab (100k, matched 52M
+  student, eval on real refs): **S1 SeqKD BLEU 17.09 / ratio 0.607 ≫ S0 SFT-refs
+  10.95 / 0.389 and S2 ref+DPO 11.10 / 0.394.** SeqKD wins by +6.1 BLEU (+56%);
+  DPO on a ref base adds ~nothing. Refutes the original H1 and flips the paper's
+  thesis to "SeqKD beats DPO-distillation for compact Indic MT; reference noise is
+  the bottleneck." Filled `PAPER_PLAN.md` §11 Table 1 + revised §3 hypotheses.
+  Next: SeqKD at 200–250k for the best deployable model (breaks the 0.66 ceiling)
+  and S3 = SeqKD+DPO.
 - **2026-07-19 (Colab SeqKD notebook)** — Kaggle's hard 12 h cap killed the SeqKD
   run mid-S1-training. Added a **resumable Colab notebook**
   (`colab/setu_seqkd_colab.ipynb`): all artifacts persist to Google Drive

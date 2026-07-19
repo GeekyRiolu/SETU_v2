@@ -38,10 +38,15 @@ paper already did exactly this.
 
 ## 3. Hypotheses
 
-- **H1:** At a fixed small student size, DPO-distillation ≥ sequence-level KD in
-  BLEU/chrF/COMET on Indic↔English (esp. low-resource).
-- **H2:** ChrF-ranked preference pairs (+ kNN-retrieved negatives) beat random or
-  score-agnostic negatives (ablation).
+- **H1 (REFUTED, 2026-07-19):** *DPO-distillation ≥ sequence-level KD.* The opposite
+  holds — **SeqKD ≫ DPO-distill** (17.1 vs 11.1 BLEU at 100k, matched size). The
+  paper's thesis flips to: **SeqKD from teacher outputs beats preference/DPO
+  distillation on noisy human references for compact Indic MT** (see §11 Table 1).
+- **H1′ (new, supported):** Reference noise (mined Samanantar) caps reference-trained
+  students (~0.66 ratio plateau); teacher-distilled targets break the ceiling and
+  SeqKD scales past it.
+- **H2:** ChrF-ranked preference pairs (+ kNN negatives) beat random/score-agnostic
+  negatives — still worth testing, but DPO's overall effect here is small.
 - **H3:** EWC-expansion adds a new language while retaining ≥ 95% of prior-language
   BLEU, vs. large drops for naïve fine-tuning.
 - **H4:** The quantised student meets <500 ms (ARM) and ≤200 MB with < X BLEU drop.
@@ -172,23 +177,42 @@ Publish-worthy **iff** S2 (or S3) shows a real, significant BLEU/COMET advantage
 over S1 SeqKD at matched size across languages — or a clean, well-analysed
 negative result. Without that comparison it's a good system, not a paper.
 
-## 11. Real results so far (Kaggle GPU, hin_Deva-eng_Latn)
+## 11. Real results — the headline finding
 
-Best data point — **S2 (DPO-distill) works**, run #5, 200k train (2026-07-17):
+### Table 1 — S0/S1/S2 head-to-head (100k train, matched 52M student, eval on real refs)
 
-| System | Params | BLEU | chrF | % of teacher | Notes |
-|--------|-------:|-----:|-----:|-------------:|-------|
-| Teacher (rotary dist-200M) | 200M | 28.45 | — | 100% | dev=500, ceiling |
-| S0 SFT (ours, beam-4) | 52.6M | **18.60** | 45.40 | **65.4%** | loss 3.21 |
-| S2 SFT+DPO (ours, beam-4) | 52.6M | 17.53 | **45.94** | 61.6% | DPO margin 1.0 |
-| S2 deployed INT8 (greedy) | 52.6M | 18.26 | 43.8 | — | 317 ms p90, 105 MB |
+Colab run, 2026-07-19, `hin_Deva-eng_Latn`, teacher dev BLEU 28.15 (dev=500):
 
-Data-scaling curve (SFT BLEU / ratio): 25k → 0.3 · 120k → 13.4 / 0.44 · 200k →
-18.6 / 0.65 · **250k → 18.6 / 0.66**. **The curve plateaus at ~0.66** (200k→250k
-flat) — with the 52M student on Samanantar references, data volume has saturated.
-This is itself a result: it motivates SeqKD (cleaner teacher targets) and
-capacity scaling as the levers to break past the reference-noise ceiling. A clean
-data-scaling + plateau plot belongs in the paper.
+| System | Train targets | BLEU | chrF | ratio | SFT loss |
+|--------|---------------|-----:|-----:|------:|---------:|
+| Teacher (rotary dist-200M) | — | 28.15 | — | 1.00 | — |
+| **S1 SeqKD** | teacher 1-best | **17.09** | **44.52** | **0.607** | **2.30** |
+| S0 SFT | human refs | 10.95 | 35.44 | 0.389 | 3.45 |
+| S2 SFT-ref + DPO (ours) | refs + DPO prefs | 11.10 | 37.23 | 0.394 | — |
+
+**SeqKD dominates: +6.1 BLEU (+56% rel.) / +9 chrF over reference-SFT, at the same
+size and data.** DPO on a reference-SFT base adds almost nothing (+0.15 BLEU,
++1.8 chrF). This **refutes the original H1** (DPO-distill ≥ SeqKD) — cleanly, with
+a strong alternative — and it's the paper's core result.
+
+**The revised thesis:** *for compact on-device Indic MT, sequence-level KD from the
+teacher's outputs strongly beats preference/DPO distillation on human references;
+the mined-reference noise is the bottleneck, and teacher targets break it.* SeqKD's
+lower SFT loss (2.30 vs 3.45) confirms the mechanism — teacher outputs are more
+consistent/learnable, so the student generalises to *human references* better than
+one trained *on* them (the classic Kim & Rush effect, confirmed for Indic + on-device).
+
+**Corroborating data-scaling curve** (reference-SFT, SFT BLEU / ratio): 25k → 0.3 ·
+120k → 13.4 / 0.44 · 200k → 18.6 / 0.65 · 250k → 18.6 / 0.66 — **plateaus at ~0.66**,
+the reference-noise ceiling. SeqKD at just **100k already hits 0.607** (≈ the 250k
+reference plateau, < half the data) and is *not* saturated → scaling SeqKD is the
+path past 0.66 toward the teacher.
+
+### Still to run
+- **SeqKD at scale** (200–250k) — the best deployable model; likely breaks the 0.66
+  ceiling toward 0.80.
+- **S3 = SeqKD + DPO** — does DPO help on a *strong* base? (It didn't on the weak one.)
+- COMET, FLORES/IN22, bootstrap significance, ≥2 more languages (for the paper).
 
 Findings: (a) **DPO with ChrF-ranked preferences lifts chrF but slightly lowers
 BLEU** — consistent across runs #3 and #5 (the objective optimises a chrF-shaped
