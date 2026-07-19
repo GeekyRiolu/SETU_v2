@@ -419,6 +419,12 @@ key experiment. Alternative levers: bigger student (d=640 / more layers, keep IN
   own cwd → `No module named setu` everywhere (not a distill/code bug). Fixed both
   notebooks' clone cells to `%cd /kaggle/working` before the `rm -rf`. Committed
   `7d48bf5`.
+- **2026-07-19 (Colab SeqKD notebook)** — Kaggle's hard 12 h cap killed the SeqKD
+  run mid-S1-training. Added a **resumable Colab notebook**
+  (`colab/setu_seqkd_colab.ipynb`): all artifacts persist to Google Drive
+  (`MyDrive/setu_seqkd/`), so a disconnect just means Run-All-again skips completed
+  steps. Added `setu-distill --beams` (greedy `--beams 1` = ~4–5× faster teacher
+  distill, fits a session). Distill tests green. Committed + pushed.
 - **2026-07-19 (run #6 — data plateau)** — 250k train gave BLEU 18.6 / ratio 0.66,
   **flat vs 200k** → data volume saturated for the 52M student on noisy Samanantar
   refs. Deployed INT4 19.3 BLEU / 191 ms / 104 MB. Updated §6/§7 + PAPER_PLAN §11

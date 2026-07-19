@@ -35,6 +35,7 @@ def run(
     pair: str | None = None,
     limit: int | None = None,
     batch_size: int = 32,
+    beams: int | None = None,
     teacher: Any | None = None,
     data_root: Path | str = "data",
 ) -> dict[str, Any]:
@@ -49,6 +50,12 @@ def run(
         from setu.teacher import IndicTrans2Teacher
 
         teacher = IndicTrans2Teacher()
+
+    # optional beam override (beams=1 => greedy: ~4-5x faster teacher inference,
+    # a fine SeqKD target and the difference that makes it fit a Colab session)
+    if beams is not None and hasattr(teacher, "config"):
+        gen = {**teacher.config.get("generation", {}), "num_beams": beams}
+        teacher.config = {**teacher.config, "generation": gen}
 
     distiller = SeqKDDistiller(teacher, batch_size=batch_size)
     distilled = distiller.distill(entries)
@@ -75,8 +82,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--pair", default=None)
     parser.add_argument("--limit", type=int, default=None)
     parser.add_argument("--batch-size", type=int, default=32)
+    parser.add_argument("--beams", type=int, default=None,
+                        help="teacher beam count (1 = greedy, much faster; default = teacher.yaml)")
     args = parser.parse_args(argv)
-    report = run(pair=args.pair, limit=args.limit, batch_size=args.batch_size)
+    report = run(pair=args.pair, limit=args.limit, batch_size=args.batch_size, beams=args.beams)
     print(json.dumps(report, indent=2, ensure_ascii=False))
     return 0
 

@@ -48,6 +48,18 @@ paper's contribution.
 ## Cost & scale
 
 Each training is hours on a T4; the distill step is teacher inference over
-`--limit` sources. Use `--limit 100000` for a controlled comparison (~5–6 h
-total in `setu_seqkd_compare.ipynb`); lower it if GPU budget is tight. Keep the
-limit identical across S0–S3 so the comparison is fair.
+`--limit` sources. Keep the limit identical across S0–S3 so the comparison is fair.
+
+**Speed:** `setu-distill --beams 1` uses greedy teacher output — ~4–5× faster than
+the default beam-5 and a perfectly good SeqKD target. That's what makes the whole
+comparison fit one session.
+
+## Where to run it
+
+- **Google Colab (recommended): `colab/setu_seqkd_colab.ipynb`.** Resumable — all
+  artifacts (data, preferences, distilled corpus, each report) persist on Google
+  Drive (`MyDrive/setu_seqkd/`), so if Colab disconnects you just Run All again and
+  it skips completed steps. Greedy distill; `LIMIT = 100000`. This is the right
+  choice given Kaggle's hard 12 h cap killed the mid-run.
+- **Kaggle: `kaggle/setu_seqkd_compare.ipynb`.** Self-contained but not resumable —
+  the full run can exceed Kaggle's 12 h session limit at `LIMIT=100000`.
