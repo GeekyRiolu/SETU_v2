@@ -423,6 +423,12 @@ key experiment. Alternative levers: bigger student (d=640 / more layers, keep IN
   own cwd → `No module named setu` everywhere (not a distill/code bug). Fixed both
   notebooks' clone cells to `%cd /kaggle/working` before the `rm -rf`. Committed
   `7d48bf5`.
+- **2026-07-19 (SeqKD deploy notebook)** — Added `colab/setu_seqkd_deploy.ipynb`:
+  one-click, resumable (Drive + done-markers) — trains the **best model via SeqKD**
+  at `LIMIT=200000` (no prefs needed; `--train-corpus distilled --skip-dpo`),
+  quantises to INT8/INT4 ONNX, scores, tests offline, and zips the deployable model
+  to Drive. The trained checkpoint is saved to Drive on success so a resume skips
+  training too. This is the notebook to run for the shippable Hindi→English model.
 - **2026-07-19 (SeqKD comparison — KEY RESULT)** — On Colab (100k, matched 52M
   student, eval on real refs): **S1 SeqKD BLEU 17.09 / ratio 0.607 ≫ S0 SFT-refs
   10.95 / 0.389 and S2 ref+DPO 11.10 / 0.394.** SeqKD wins by +6.1 BLEU (+56%);
