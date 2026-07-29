@@ -19,6 +19,8 @@
 #        # detach with Ctrl-b then d ; reattach with: tmux attach -t setu
 #
 # ENV OVERRIDES (all optional)
+#   PAIR=hin_Deva-eng_Latn  language pair (any FLORES pair; e.g. tam_Taml-eng_Latn,
+#                           ben_Beng-eng_Latn, or the reverse eng_Latn-tam_Taml)
 #   LIMIT=500000       training sentences (250k = strongest deployable target)
 #   BATCH=32           distill batch size (32 is safe for 16 GB; raise on 48 GB)
 #   SETU_BASE=~/setu   where the repo, state markers and outputs live
@@ -27,6 +29,7 @@
 # =============================================================================
 set -euo pipefail
 
+PAIR="${PAIR:-hin_Deva-eng_Latn}"
 LIMIT="${LIMIT:-500000}"
 BATCH="${BATCH:-32}"
 SETU_BASE="${SETU_BASE:-$HOME/setu}"
@@ -34,7 +37,7 @@ CHECK_ONLY="${CHECK_ONLY:-0}"
 MANAGE_TORCH="${MANAGE_TORCH:-0}"
 REPO_URL="https://github.com/GeekyRiolu/SETU_v2.git"
 REPO="$SETU_BASE/SETU_v2/SETU"
-STATE="$SETU_BASE/state"
+STATE="$SETU_BASE/state/$PAIR"     # per-pair markers so switching PAIR never false-skips
 OUT="$SETU_BASE/out"
 
 mkdir -p "$SETU_BASE" "$STATE" "$OUT"
@@ -54,7 +57,7 @@ echo "python : $PY  ($($PY -V 2>&1))"
 echo "alloc  : PYTORCH_CUDA_ALLOC_CONF=$PYTORCH_CUDA_ALLOC_CONF"
 echo "pip    : $(command -v pip || command -v pip3 || echo MISSING)"
 if have nvidia-smi; then nvidia-smi -L || true; else echo "nvidia-smi: NOT FOUND (no driver?)"; fi
-echo "base   : $SETU_BASE   | LIMIT=$LIMIT  BATCH=$BATCH"
+echo "base   : $SETU_BASE   | PAIR=$PAIR  LIMIT=$LIMIT  BATCH=$BATCH"
 echo "disk   : $(df -h "$SETU_BASE" | tail -1)"
 
 # ----------------------------------------------------------------------------
@@ -169,10 +172,12 @@ else
 fi
 
 # ----------------------------------------------------------------------------
-log "GPU configs"
+log "GPU configs (pair = $PAIR)"
 cp -f configs/model.gpu.yaml configs/model.yaml
 cp -f configs/training.gpu.yaml configs/training.yaml
 sed -i 's/device: cpu/device: cuda/' configs/teacher.yaml
+# set the language pair once, in model.yaml — every setu-* command reads it from here
+sed -i "s|^language_pair:.*|language_pair: $PAIR|" configs/model.yaml
 
 # hard preflight - training needs a visible GPU
 "$PY" - <<'PYCODE'
@@ -201,7 +206,7 @@ if [ ! -f "$STATE/.done_distill" ]; then
   setu-distill --limit "$LIMIT" --batch-size "$BATCH" --beams 1
   touch "$STATE/.done_distill"
 else echo "distill done - skip"; fi
-D="data/distilled/hin_Deva-eng_Latn/train.jsonl"
+D="data/distilled/$PAIR/train.jsonl"
 test -s "$D" || { echo "ERROR: distill produced no corpus"; exit 1; }
 echo "distilled rows: $(wc -l < "$D")"
 
@@ -209,10 +214,10 @@ echo "distilled rows: $(wc -l < "$D")"
 if [ ! -f "$STATE/.done_seqkd" ]; then
   log "SeqKD SFT on teacher targets (limit $LIMIT)"
   "$PY" scripts/train_full.py --train-corpus distilled --skip-dpo --limit "$LIMIT" --dev-size 500
-  cp checkpoints/hin_Deva-eng_Latn/train_report.json "$OUT/report_seqkd.json"
+  cp "checkpoints/$PAIR/train_report.json" "$OUT/report_${PAIR}.json"
   touch "$STATE/.done_seqkd"
 else echo "SeqKD done - skip"; fi
-"$PY" -c "import json;print('SeqKD eval:',json.load(open('$OUT/report_seqkd.json'))['sft_eval'])" || true
+"$PY" -c "import json;print('SeqKD eval:',json.load(open('$OUT/report_${PAIR}.json'))['sft_eval'])" || true
 
 # 4) QUANTIZE  -> INT8/INT4 ONNX, deployed under models/
 if [ ! -f "$STATE/.done_quantize" ]; then
@@ -222,24 +227,29 @@ if [ ! -f "$STATE/.done_quantize" ]; then
 else echo "quantize done - skip"; fi
 setu-report --offline-proof || true
 
-# 5) offline smoke-test
+# 5) offline smoke-test (pair-agnostic: translate a few sources from the corpus)
 log "offline translation smoke-test"
-"$PY" - <<'PYCODE'
-import sys; sys.path.insert(0, 'src')
+PAIR="$PAIR" "$PY" - <<'PYCODE'
+import os, sys, json; sys.path.insert(0, 'src')
 from setu.inference.engine import InferenceEngine
+from setu.config import resolve_language
+pair = os.environ["PAIR"]; src_f, tgt_f = pair.split("-")
+src_iso, tgt_iso = resolve_language(src_f)["iso"], resolve_language(tgt_f)["iso"]
 eng = InferenceEngine(models_root='models')
 print("using trained model:", not eng.is_stub)
-for s in ['भारत एक विशाल देश है।', 'मुझे किताबें पढ़ना पसंद है।', 'आज मौसम अच्छा है।']:
-    print("  ", s, "->", eng.translate(s, 'hi', 'en').translated_text)
+srcs = [json.loads(l)["src_text"] for l in open(f"data/processed/{pair}/train.jsonl")][:3]
+for s in srcs:
+    print("  ", s, "->", eng.translate(s, src_iso, tgt_iso).translated_text)
 PYCODE
 
 # 6) package for download
 log "package deployable model"
-rm -f "$OUT/setu_seqkd_model.zip"
-( cd models && zip -qr "$OUT/setu_seqkd_model.zip" hin_Deva-eng_Latn )
-cp -f checkpoints/hin_Deva-eng_Latn/train_report.json "$OUT/report_seqkd.json" 2>/dev/null || true
+ZIP="$OUT/setu_${PAIR}_model.zip"
+rm -f "$ZIP"
+( cd models && zip -qr "$ZIP" "$PAIR" )
+cp -f "checkpoints/$PAIR/train_report.json" "$OUT/report_${PAIR}.json" 2>/dev/null || true
 
 log "ALL DONE"
 echo "Download this file with WinSCP:"
-echo "    $OUT/setu_seqkd_model.zip"
+echo "    $ZIP"
 ls -lh "$OUT/"

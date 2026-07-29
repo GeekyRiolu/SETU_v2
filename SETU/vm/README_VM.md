@@ -113,9 +113,16 @@ You should get `models\hin_Deva-eng_Latn\...` and a real (non-stub) translation.
 
 ## Knobs (set before the run)
 ```bash
-LIMIT=250000  bash setu_vm_train.sh    # default; strongest deployable target
+LIMIT=250000  bash setu_vm_train.sh    # training sentences (strongest deployable target)
 LIMIT=100000  bash setu_vm_train.sh    # faster if GPU time is tight
 BATCH=64      bash setu_vm_train.sh    # only if nvidia-smi shows a full 48 GB A40
+
+# any language pair (default hin_Deva-eng_Latn). State markers + outputs are per-pair,
+# so you can train several pairs on the same VM without them colliding:
+PAIR=tam_Taml-eng_Latn LIMIT=250000  bash setu_vm_train.sh   # Tamil -> English
+PAIR=ben_Beng-eng_Latn               bash setu_vm_train.sh   # Bengali -> English
+PAIR=eng_Latn-hin_Deva               bash setu_vm_train.sh   # English -> Hindi (reverse)
+# -> outputs land at  ~/setu/out/setu_<PAIR>_model.zip  and  report_<PAIR>.json
 ```
 
 ## Troubleshooting

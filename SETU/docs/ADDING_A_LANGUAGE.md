@@ -4,6 +4,22 @@ Adding a language to SETU is a **config + data** change, not a rewrite — the
 whole architecture is built around that. Two paths, depending on whether you
 already have a multilingual student:
 
+## Fastest path — one command per pair (SeqKD, the winning recipe)
+
+On a GPU, adding a language is a single parameter. Every `setu-*` command reads the
+pair from `configs/model.yaml`, and the runners take a `PAIR` override:
+
+```bash
+# GPU VM (vm/setu_vm_train.sh) — per-pair state markers + outputs, resumable
+PAIR=tam_Taml-eng_Latn LIMIT=250000 bash vm/setu_vm_train.sh   # Tamil -> English
+PAIR=ben_Beng-eng_Latn               bash vm/setu_vm_train.sh   # Bengali -> English
+PAIR=eng_Latn-hin_Deva               bash vm/setu_vm_train.sh   # English -> Hindi (reverse)
+```
+Or the Colab notebook `colab/setu_seqkd_deploy.ipynb` — set `PAIR` in cell 2.
+Run by hand: `setu-data --pair <PAIR>`, `setu-distill --pair <PAIR>`,
+`train_full.py --pair <PAIR> --train-corpus distilled --skip-dpo`, `setu-quantize --pair <PAIR>`.
+The pipeline is verified pair-agnostic (`tests/test_multipair.py`).
+
 ## The identity layer (always start here)
 
 1. Confirm the language is in `configs/languages.yaml` (all 22 scheduled
