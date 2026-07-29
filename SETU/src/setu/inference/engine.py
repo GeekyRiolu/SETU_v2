@@ -41,9 +41,11 @@ def _find_onnx_artifact(pair: str, root: Path | None = None) -> tuple[Path, Path
 
 
 class InferenceEngine:
-    def __init__(self, config: ModelConfig | None = None, models_root: Path | str | None = None):
+    def __init__(self, config: ModelConfig | None = None, models_root: Path | str | None = None,
+                 num_beams: int = 1):
         self.config = config or load_model_config()
         self._backend = None  # lazy ONNXTranslator
+        self.num_beams = num_beams  # 1 = greedy (deploy default); raise for eval quality
         root = Path(models_root) if models_root is not None else None
         artifact = _find_onnx_artifact(self.config.language_pair, root)
         self._artifact = artifact
@@ -54,7 +56,7 @@ class InferenceEngine:
             from setu.inference.onnx_engine import ONNXTranslator
 
             onnx_dir, tok = self._artifact
-            self._backend = ONNXTranslator(onnx_dir, tok)
+            self._backend = ONNXTranslator(onnx_dir, tok, num_beams=self.num_beams)
         return self._backend
 
     def translate(self, text: str, src_lang: str, tgt_lang: str) -> TranslationResult:

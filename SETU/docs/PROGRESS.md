@@ -431,6 +431,12 @@ key experiment. Alternative levers: bigger student (d=640 / more layers, keep IN
   own cwd → `No module named setu` everywhere (not a distill/code bug). Fixed both
   notebooks' clone cells to `%cd /kaggle/working` before the `rm -rf`. Committed
   `7d48bf5`.
+- **2026-07-29 (build tracks A+B)** — **Track A (`--pair`)**: pipeline proven
+  pair-agnostic (`test_multipair.py`: Tamil→En + reverse); VM script + Colab
+  notebook take `PAIR` with per-pair state/outputs. **Track B (paper eval)**: new
+  `setu-eval` CLI + `setu.eval.{testsets,comet,significance}` — FLORES-200/IN22
+  loaders, COMET (`comet` extra), paired-bootstrap significance vs teacher.
+  85 tests green (+12). PAPER_PLAN engineering deltas mostly ticked.
 - **2026-07-29 (VM runner + vGPU fix)** — Committed the user's GPU-VM runner
   `vm/setu_vm_train.sh` + `vm/README_VM.md` (resumable done-markers, reuses the VM's
   CUDA torch, tmux/PuTTY/WinSCP walkthrough, thorough troubleshooting) and the 250k

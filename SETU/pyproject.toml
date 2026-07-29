@@ -28,6 +28,9 @@ quantize = [
     "onnxruntime>=1.18",
     "optimum[onnxruntime]>=1.20",
 ]
+comet = [
+    "unbabel-comet>=2.2",   # learned MT metric for setu-eval --comet (heavy; GPU recommended)
+]
 teacher = [
     # install torch from https://download.pytorch.org/whl/cpu on CPU-only boxes
     "torch>=2.6",
@@ -47,6 +50,7 @@ setu-prefs = "setu.preference.pipeline:main"
 setu-distill = "setu.distill.pipeline:main"
 setu-train = "setu.training.pipeline:main"
 setu-quantize = "setu.quantize.pipeline:main"
+setu-eval = "setu.eval.cli:main"
 setu-report = "setu.report:main"
 
 [tool.setuptools.packages.find]

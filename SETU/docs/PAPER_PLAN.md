@@ -161,15 +161,29 @@ Beyond the current single-run notebook:
 
 ### Engineering deltas
 
-- [x] **SeqKD baseline (S1)** — `setu-distill` writes teacher-1-best targets;
-      `train_full.py --train-corpus distilled` trains on them; eval stays on real
-      references. Head-to-head procedure: `docs/SEQKD_COMPARISON.md` + notebook
-      `kaggle/setu_seqkd_compare.ipynb`. **Run it to fill Table 1's S1 row.**
-- [ ] COMET into the eval harness.
-- [ ] FLORES/IN22 eval-set loaders.
-- [ ] Bootstrap significance in the eval report.
-- [ ] Multi-language training config + per-language eval loop.
+- [x] **SeqKD baseline (S1)** — `setu-distill` + `train_full.py --train-corpus
+      distilled`; done (Table 1). SeqKD wins.
+- [x] **COMET** — `setu-eval --comet` (`setu.eval.comet`, `comet` extra).
+- [x] **FLORES-200 / IN22 loaders** — `setu.eval.testsets`; `setu-eval --testset
+      flores|in22 --split devtest`.
+- [x] **Bootstrap significance** — `setu.eval.significance.paired_bootstrap`;
+      `setu-eval --teacher` reports student-vs-teacher significance.
+- [x] **Multi-language** — pipeline is `--pair`-parameterized end-to-end
+      (`tests/test_multipair.py`); runners take `PAIR` (`docs/ADDING_A_LANGUAGE.md`).
+- [ ] Per-language eval **loop/table** across several pairs (run `setu-eval` per pair).
 - [ ] ARM latency benchmark (QEMU or a Pi).
+
+### Running the paper eval
+
+```bash
+# BLEU + chrF on FLORES-200 devtest for the deployed model (beam-4 for quality)
+setu-eval --pair hin_Deva-eng_Latn --testset flores --split devtest --beams 4
+# + COMET + teacher scores + student-vs-teacher significance
+setu-eval --pair hin_Deva-eng_Latn --testset flores --beams 4 --comet --teacher
+```
+Writes `models/<pair>/eval_flores_devtest.json`. Repeat per language and per system
+(S0/S1/S2) to fill Table 1 with standard-test-set, COMET-backed, significance-tested
+numbers.
 
 ## 10. Honest go/no-go
 
