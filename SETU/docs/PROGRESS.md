@@ -153,17 +153,25 @@ Each milestone is one commit; `Claude/TASKS.md` has the per-milestone notes too.
 | Size | 104 MB (INT8/INT4) | ≤ 200 MB | **PASS** |
 | Offline | sockets disabled, still translates | no network | **PASS** |
 
-**3 / 4 pass, translates well** (`भारत एक विशाल देश है। → "India is a huge
-country."`). Deploy the **INT4** artifact (104 MB, BLEU 19.3 greedy — smallest
-*and* best here). Reference-SFT trajectory: 0.003 → 0.007 → 0.44 (120k) → 0.65
-(200k) → **0.66 (250k)** — **plateaued** at the reference-noise ceiling.
+## Best model — SeqKD @ 250k (2026-07-29, A40 GPU)
 
-**KEY FINDING (2026-07-19): SeqKD ≫ reference training.** The SeqKD comparison
-(100k, matched size) settled it: training on the **teacher's** outputs gives
-**BLEU 17.1 / ratio 0.607**, vs **10.95 / 0.389** for SFT-on-references and
-**11.10 / 0.394** for ref-SFT+DPO. SeqKD at 100k ≈ the 250k reference plateau with
-< half the data, and isn't saturated. **The best model — and the deployable one —
-should be trained with SeqKD, scaled to 200–250k** (§7, `PAPER_PLAN.md` §11).
+| Target | Value | Threshold | Status |
+|--------|-------|-----------|--------|
+| Quality | **BLEU 22.10 / ratio 0.764** (chrF 49.81; teacher 28.91) | ≥ 0.80 | **FAIL** (3.6 pts short) |
+| Latency | 198.5 ms p90 (quantised) | < 500 ms | **PASS** |
+| Size | 103.94 MB (INT4) | ≤ 200 MB | **PASS** |
+| Offline | networking disabled, still translates | no network | **PASS** |
+
+**3/4 pass; a genuinely good 22-BLEU offline translator.** Clean outputs:
+`भारत एक विशाल देश है। → "India is a huge country."`, `मुझे किताबें पढ़ना पसंद है। →
+"I love reading books."`. **SeqKD scaling curve (ratio): 100k → 0.607 · 250k →
+0.764** — vs reference-SFT stuck at **0.66** (200k=250k). SeqKD broke the
+reference-noise plateau and is **still climbing**, so ~400k should reach 0.80.
+
+**KEY FINDING (2026-07-19): SeqKD ≫ reference training** (100k, matched size):
+teacher-target SFT **17.1 / 0.607** vs SFT-refs **10.95 / 0.389** vs ref+DPO
+**11.10 / 0.394**. Confirmed at scale (250k → 0.764). The deployable model is
+SeqKD; DPO on a reference base adds ~nothing (`PAPER_PLAN.md` §11).
 
 ## 7. GPU / Kaggle path
 
@@ -423,6 +431,12 @@ key experiment. Alternative levers: bigger student (d=640 / more layers, keep IN
   own cwd → `No module named setu` everywhere (not a distill/code bug). Fixed both
   notebooks' clone cells to `%cd /kaggle/working` before the `rm -rf`. Committed
   `7d48bf5`.
+- **2026-07-29 (SeqKD @ 250k — best model, ratio 0.764)** — On an A40 GPU the
+  deploy pipeline produced the best model yet: **BLEU 22.10 / chrF 49.81 / ratio
+  0.764** (teacher 28.91), 104 MB INT4, 198 ms p90, offline — **3/4 targets**,
+  3.6 pts from the 0.80 quality target. Confirms SeqKD scales (0.607 @100k →
+  0.764 @250k) while reference-SFT is stuck at 0.66. Correct idiomatic outputs.
+  Best scorecard updated (§6); ~400k SeqKD should cross 0.80.
 - **2026-07-19 (SeqKD deploy notebook)** — Added `colab/setu_seqkd_deploy.ipynb`:
   one-click, resumable (Drive + done-markers) — trains the **best model via SeqKD**
   at `LIMIT=200000` (no prefs needed; `--train-corpus distilled --skip-dpo`),

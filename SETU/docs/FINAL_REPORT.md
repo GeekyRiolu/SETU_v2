@@ -1,42 +1,49 @@
 # SETU — final report
 
-Hindi↔English thin slice, end-to-end, built and measured on a CPU-only box
-(8 cores, 7.4 GB RAM, no GPU). Regenerate with `setu-report --offline-proof`.
+Hindi↔English thin slice, end-to-end. **Best model: SeqKD @ 250k, trained on GPU
+(NVIDIA A40), 2026-07-29.** Regenerate with `setu-report --offline-proof`.
+(An earlier CPU-only run reached only ratio 0.003 — kept in git history — before
+GPU training; this report supersedes it.)
 
-## Scorecard
+## Scorecard — SeqKD @ 250k
 
 **3 / 4 targets PASS** (`hin_Deva-eng_Latn`)
 
 | Target | Metric | Value | Threshold | Status | Evidence |
 |--------|--------|-------|-----------|--------|----------|
-| Quality | student BLEU / teacher BLEU | 0.003 | ≥ 0.80 | **FAIL** | `checkpoints/<pair>/train_report.json` |
-| Latency | p90 ms/sentence (quantised, x86 CPU) | 158.2 | < 500 ms | **PASS** | `models/<pair>/quantize_report.json` |
-| Size | quantised ONNX artifact | 21.18 MB | ≤ 200 MB | **PASS** | `models/<pair>/quantize_report.json` |
+| Quality | student BLEU / teacher BLEU | **0.764** (22.10 / 28.91; chrF 49.81) | ≥ 0.80 | **FAIL** (3.6 pts short) | `checkpoints/<pair>/train_report.json` |
+| Latency | p90 ms/sentence (quantised) | 198.5 | < 500 ms | **PASS** | `models/<pair>/quantize_report.json` |
+| Size | quantised ONNX artifact (INT4) | 103.94 MB | ≤ 200 MB | **PASS** | `models/<pair>/quantize_report.json` |
 | Offline | inference, networking disabled | yes | no network | **PASS** | `test_onnx_engine_translates_offline` |
 
 ## What passed, and how it was measured
 
-- **Latency** — the quantised INT4/INT8 ONNX student runs at p90 ≈ 156–158 ms/sentence
-  (mean ~8 ms on short inputs) on this x86 CPU, comfortably under 500 ms. Benchmarked
-  per quantisation stage by `setu-quantize`. ARM is the deployment target; these x86
-  numbers are indicative and the report labels the host.
-- **Size** — FP32 ONNX 82 MB → **INT8 21.4 MB → INT4 21.2 MB**, far under 200 MB.
-  (ORT CPU dynamic quant has no true hardware INT4, so INT4 ≈ INT8; embeddings dominate.)
-- **Offline** — `InferenceEngine` loads the local ONNX student and local SentencePiece
-  tokenizer; `assert_offline()` disables all sockets and inference still succeeds. The
-  path was audited: no HTTP, telemetry, or remote model fetch.
+- **Quality** — the **SeqKD** student (trained on the teacher's own translations, the
+  method shown to beat reference/DPO training) reaches **BLEU 22.10 / chrF 49.81 = 76.4 %
+  of teacher BLEU** on a 500-sentence held-out real-reference dev set. Correct idiomatic
+  outputs (`भारत एक विशाल देश है। → "India is a huge country."`). 3.6 points from the
+  ≥ 0.80 target; the SeqKD scaling curve (0.607 @100k → 0.764 @250k) is not saturated, so
+  ~400k should cross it.
+- **Latency** — 52 M-param student, quantised INT4/INT8 ONNX, **p90 198.5 ms/sentence**,
+  well under 500 ms. Benchmarked per quantisation stage by `setu-quantize`.
+- **Size** — **INT4 103.94 MB**, under the 200 MB target.
+- **Offline** — `InferenceEngine` loads the local ONNX student + SentencePiece tokenizer;
+  `assert_offline()` disables all sockets and inference still succeeds. Path audited: no
+  HTTP, telemetry, or remote fetch.
 
-## Why quality fails (and it's reported, not hidden)
+## The quality gap (3.6 points) and how to close it
 
-The DPO student **beats its SFT baseline** (eval BLEU 0.06 vs 0.02, ChrF 3.27 vs 3.20)
-and the full DPO objective + frozen-reference machinery is proven — but absolute quality
-is ~0.3 % of the teacher's BLEU, far below the 80 % target. This is expected and honest:
+The best model is at 0.764 vs the 0.80 target. Unlike the earlier plateau, this is *not*
+a ceiling — it's a data point on a still-rising curve:
 
-- The student is a **9.5 M-param** model trained on **1,500 sentences for 3 epochs on
-  CPU**. That is nowhere near enough data/compute to learn translation.
-- The teacher checkpoints and BPCC corpus are **gated on HF** (see `docs/TEACHER.md`);
-  this run used the ungated distilled rotary teacher and a 500-/1500-sentence Samanantar
-  slice to keep the CPU loop tractable.
+- **More SeqKD data** (the lever): 100k → 0.607, 250k → 0.764; extrapolating, ~400k
+  should reach 0.80. The teacher (BLEU 28.9) is the ceiling; SeqKD is closing on it.
+- **Secondary:** a larger student, beam-search deployment (latency has headroom),
+  or S3 = SeqKD + DPO.
+
+The headline research finding stands: **for compact on-device Indic MT, sequence-level KD
+from teacher outputs strongly beats preference/DPO distillation on noisy human references**
+(SeqKD 17.1 vs ref+DPO 11.1 BLEU at 100k, matched size; see `PAPER_PLAN.md`).
 
 **To reach ≥ 80 %** is a config + compute change, not a code change: widen the student in
 `configs/model.yaml` (d=512, 6+6 layers), raise `--limit` to the full BPCC/Samanantar

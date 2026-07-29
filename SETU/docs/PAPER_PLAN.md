@@ -202,11 +202,14 @@ lower SFT loss (2.30 vs 3.45) confirms the mechanism — teacher outputs are mor
 consistent/learnable, so the student generalises to *human references* better than
 one trained *on* them (the classic Kim & Rush effect, confirmed for Indic + on-device).
 
-**Corroborating data-scaling curve** (reference-SFT, SFT BLEU / ratio): 25k → 0.3 ·
-120k → 13.4 / 0.44 · 200k → 18.6 / 0.65 · 250k → 18.6 / 0.66 — **plateaus at ~0.66**,
-the reference-noise ceiling. SeqKD at just **100k already hits 0.607** (≈ the 250k
-reference plateau, < half the data) and is *not* saturated → scaling SeqKD is the
-path past 0.66 toward the teacher.
+**Corroborating data-scaling curves** (SFT BLEU / ratio):
+- *reference-SFT*: 25k → 0.3 · 120k → 13.4 / 0.44 · 200k → 18.6 / 0.65 · 250k →
+  18.6 / **0.66 — plateaus** (the reference-noise ceiling).
+- *SeqKD*: 100k → 17.1 / 0.607 · **250k → 22.10 / 0.764** — **no plateau; still
+  climbing.** SeqKD at 250k (BLEU 22.1, chrF 49.8, teacher 28.9) is the best model
+  (104 MB INT4 / 198 ms / offline), 3.6 pts from the 0.80 target; ~400k should
+  cross it. This divergence — SeqKD scales, reference-training saturates — is the
+  paper's central figure.
 
 ### Still to run
 - **SeqKD at scale** (200–250k) — the best deployable model; likely breaks the 0.66
