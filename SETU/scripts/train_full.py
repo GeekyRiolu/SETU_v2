@@ -18,8 +18,12 @@ import sys
 import time
 from pathlib import Path
 
-# reduce CUDA fragmentation before torch touches the GPU (must precede import)
-os.environ.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")
+# CUDA allocator config, set before torch touches the GPU. Default OFF:
+# `expandable_segments:True` reduces fragmentation on normal GPUs, but vGPU/MIG
+# profiles (e.g. A40-16Q) lack the CUDA virtual-memory APIs it needs and crash
+# with "CUDA driver error: operation not supported". Opt in on a full GPU with
+#   export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+os.environ.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:False")
 
 # repo root on path so `setu` resolves without install
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))

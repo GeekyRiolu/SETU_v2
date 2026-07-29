@@ -431,6 +431,13 @@ key experiment. Alternative levers: bigger student (d=640 / more layers, keep IN
   own cwd → `No module named setu` everywhere (not a distill/code bug). Fixed both
   notebooks' clone cells to `%cd /kaggle/working` before the `rm -rf`. Committed
   `7d48bf5`.
+- **2026-07-29 (VM runner + vGPU fix)** — Committed the user's GPU-VM runner
+  `vm/setu_vm_train.sh` + `vm/README_VM.md` (resumable done-markers, reuses the VM's
+  CUDA torch, tmux/PuTTY/WinSCP walkthrough, thorough troubleshooting) and the 250k
+  `vm/report_seqkd.json`. Real fix it surfaced: `train_full.py` forced
+  `expandable_segments:True`, which **crashes on vGPU/MIG** (A40-16Q — no CUDA VMM
+  APIs); now defaults **OFF** (opt in with the env var on a full GPU). README now
+  points to the Colab/VM/Kaggle runners.
 - **2026-07-29 (SeqKD @ 250k — best model, ratio 0.764)** — On an A40 GPU the
   deploy pipeline produced the best model yet: **BLEU 22.10 / chrF 49.81 / ratio
   0.764** (teacher 28.91), 104 MB INT4, 198 ms p90, offline — **3/4 targets**,

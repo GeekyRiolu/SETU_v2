@@ -56,6 +56,16 @@ setu-quantize  # M5  ONNX export -> INT8 -> INT4, benchmarked, deployed to model
 setu-report    # M9  score the build against the four targets
 ```
 
+The best model uses **SeqKD** (`setu-distill` → `train_full.py --train-corpus
+distilled`): training on the teacher's outputs beats reference/DPO training —
+BLEU 22.1 / **0.764 of teacher** at 250k (`docs/PAPER_PLAN.md`).
+
+**Train on a GPU** (the CPU box can't reach quality):
+- **Colab** — `colab/setu_seqkd_deploy.ipynb` (resumable, Drive-persisted, one-click)
+- **Your own GPU VM / SSH** — `vm/setu_vm_train.sh` + `vm/README_VM.md` (tmux,
+  resumable done-markers, reuses the VM's CUDA torch, zips the model for download)
+- **Kaggle** — `kaggle/setu_gpu_train.ipynb` (note: 12 h session cap)
+
 The teacher (IndicTrans2) stays behind `setu.teacher.TeacherModel`; scaling to more
 languages uses `AIOKDOrchestrator` (M7) and adding one without forgetting uses
 `EWCRegularizer` (M8) — see `docs/ADDING_A_LANGUAGE.md`.
