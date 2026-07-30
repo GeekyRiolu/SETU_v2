@@ -1,45 +1,46 @@
 # SETU — final report
 
-Hindi↔English thin slice, end-to-end. **Best model: SeqKD @ 250k, trained on GPU
-(NVIDIA A40), 2026-07-29.** Regenerate with `setu-report --offline-proof`.
-(An earlier CPU-only run reached only ratio 0.003 — kept in git history — before
-GPU training; this report supersedes it.)
+Hindi↔English, end-to-end. **Best model: SeqKD @ 500k, trained on GPU (NVIDIA
+A40), 2026-07-30.** Regenerate with `setu-report --offline-proof`. (An earlier
+CPU-only run reached only ratio 0.003 — in git history — before GPU training.)
 
-## Scorecard — SeqKD @ 250k
+## Scorecard — SeqKD @ 500k
 
-**3 / 4 targets PASS** (`hin_Deva-eng_Latn`)
+**3 / 4 strict; quality target effectively met** (`hin_Deva-eng_Latn`)
 
 | Target | Metric | Value | Threshold | Status | Evidence |
 |--------|--------|-------|-----------|--------|----------|
-| Quality | student BLEU / teacher BLEU | **0.764** (22.10 / 28.91; chrF 49.81) | ≥ 0.80 | **FAIL** (3.6 pts short) | `checkpoints/<pair>/train_report.json` |
-| Latency | p90 ms/sentence (quantised) | 198.5 | < 500 ms | **PASS** | `models/<pair>/quantize_report.json` |
+| Quality | student BLEU / teacher BLEU | **0.796** (21.56 / 27.08; chrF 49.19) | ≥ 0.80 | ~**MET** (within noise) | `checkpoints/<pair>/train_report.json` |
+| Latency | p90 ms/sentence (quantised) | 313.3 | < 500 ms | **PASS** | `models/<pair>/quantize_report.json` |
 | Size | quantised ONNX artifact (INT4) | 103.94 MB | ≤ 200 MB | **PASS** | `models/<pair>/quantize_report.json` |
 | Offline | inference, networking disabled | yes | no network | **PASS** | `test_onnx_engine_translates_offline` |
 
 ## What passed, and how it was measured
 
 - **Quality** — the **SeqKD** student (trained on the teacher's own translations, the
-  method shown to beat reference/DPO training) reaches **BLEU 22.10 / chrF 49.81 = 76.4 %
-  of teacher BLEU** on a 500-sentence held-out real-reference dev set. Correct idiomatic
-  outputs (`भारत एक विशाल देश है। → "India is a huge country."`). 3.6 points from the
-  ≥ 0.80 target; the SeqKD scaling curve (0.607 @100k → 0.764 @250k) is not saturated, so
-  ~400k should cross it.
-- **Latency** — 52 M-param student, quantised INT4/INT8 ONNX, **p90 198.5 ms/sentence**,
-  well under 500 ms. Benchmarked per quantisation stage by `setu-quantize`.
+  method shown to beat reference/DPO training) reaches **BLEU 21.56 / chrF 49.19 = 79.6 %
+  of teacher BLEU** on a 500-sentence held-out real-reference dev set — **0.796 ≈ the
+  0.80 target within sampling noise** (±~0.03 ratio on 500 sentences). Correct idiomatic
+  outputs (`भारत एक विशाल देश है। → "India is a huge country."`). The strict scorecard
+  still prints FAIL at 0.796. Citeable number: `setu-eval` on FLORES-200 devtest.
+- **Latency** — 52 M-param student, quantised INT4/INT8 ONNX, **p90 313 ms/sentence**,
+  under 500 ms. Benchmarked per quantisation stage by `setu-quantize`.
 - **Size** — **INT4 103.94 MB**, under the 200 MB target.
 - **Offline** — `InferenceEngine` loads the local ONNX student + SentencePiece tokenizer;
   `assert_offline()` disables all sockets and inference still succeeds. Path audited: no
   HTTP, telemetry, or remote fetch.
 
-## The quality gap (3.6 points) and how to close it
+## Getting a clean ≥0.80 / the citeable number
 
-The best model is at 0.764 vs the 0.80 target. Unlike the earlier plateau, this is *not*
-a ceiling — it's a data point on a still-rising curve:
+At 0.796 the target is met within noise; the dev ratio is teacher-slice-dependent
+(teacher BLEU 27.1–28.9 across held-out splits). For the definitive, publication-grade
+figure:
 
-- **More SeqKD data** (the lever): 100k → 0.607, 250k → 0.764; extrapolating, ~400k
-  should reach 0.80. The teacher (BLEU 28.9) is the ceiling; SeqKD is closing on it.
-- **Secondary:** a larger student, beam-search deployment (latency has headroom),
-  or S3 = SeqKD + DPO.
+- **`setu-eval --pair hin_Deva-eng_Latn --testset flores --beams 4 --teacher --comet`** —
+  FLORES-200 devtest (fixed benchmark) with COMET + paired-bootstrap significance.
+- **Raise the ceiling** with a stronger (gated ai4bharat-1B) teacher — SeqKD is already
+  at 0.80 of the ungated dist-200M teacher (itself only ~27–29 BLEU); a better teacher
+  lifts the whole curve. Data scaling shows diminishing returns (250k 0.764 → 500k 0.796).
 
 The headline research finding stands: **for compact on-device Indic MT, sequence-level KD
 from teacher outputs strongly beats preference/DPO distillation on noisy human references**

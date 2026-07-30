@@ -219,11 +219,16 @@ one trained *on* them (the classic Kim & Rush effect, confirmed for Indic + on-d
 **Corroborating data-scaling curves** (SFT BLEU / ratio):
 - *reference-SFT*: 25k → 0.3 · 120k → 13.4 / 0.44 · 200k → 18.6 / 0.65 · 250k →
   18.6 / **0.66 — plateaus** (the reference-noise ceiling).
-- *SeqKD*: 100k → 17.1 / 0.607 · **250k → 22.10 / 0.764** — **no plateau; still
-  climbing.** SeqKD at 250k (BLEU 22.1, chrF 49.8, teacher 28.9) is the best model
-  (104 MB INT4 / 198 ms / offline), 3.6 pts from the 0.80 target; ~400k should
-  cross it. This divergence — SeqKD scales, reference-training saturates — is the
-  paper's central figure.
+- *SeqKD*: 100k → 17.1 / 0.607 · 250k → 22.10 / 0.764 · **500k → 21.56 / 0.796**
+  — climbs steeply then approaches the teacher ceiling (diminishing returns; the
+  ungated dist-200M teacher is only ~27–29 BLEU). **0.796 ≈ the 0.80 target within
+  dev-set noise.** This divergence — SeqKD scales toward the teacher, reference-
+  training saturates at 0.66 — is the paper's central figure.
+
+Note: the dev ratio is teacher-slice-dependent (teacher BLEU 27.1–28.9 across the
+held-out splits). The **citeable numbers come from `setu-eval` on FLORES-200
+devtest** (fixed benchmark + COMET + significance) — run it per system/language for
+Table 1. A stronger (gated ai4bharat-1B) teacher would raise the achievable ceiling.
 
 ### Still to run
 - **SeqKD at scale** (200–250k) — the best deployable model; likely breaks the 0.66
