@@ -1,0 +1,18 @@
+{
+  "pair": "mar_Deva-eng_Latn",
+  "train_corpus": "distilled",
+  "student_params": 52592640,
+  "train_entries": 498422,
+  "dev_entries": 500,
+  "sft_final_loss": 1.9472782611846924,
+  "sft_eval": {
+    "bleu": 16.353163771131126,
+    "chrf": 43.831590601374174,
+    "latency_ms_mean": 130.84711325680837,
+    "latency_ms_max": 631.2673399224877,
+    "n": 500,
+    "teacher_bleu": 17.128626292897767,
+    "bleu_ratio": 0.9547271037089425,
+    "meets_quality_target": true
+  }
+}

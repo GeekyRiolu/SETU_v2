@@ -1,0 +1,18 @@
+{
+  "pair": "eng_Latn-hin_Deva",
+  "train_corpus": "distilled",
+  "student_params": 52592640,
+  "train_entries": 496701,
+  "dev_entries": 500,
+  "sft_final_loss": 1.8063538074493408,
+  "sft_eval": {
+    "bleu": 20.298773220393716,
+    "chrf": 46.5955669773395,
+    "latency_ms_mean": 202.2414504508488,
+    "latency_ms_max": 1022.8373139398172,
+    "n": 500,
+    "teacher_bleu": 23.316373343870477,
+    "bleu_ratio": 0.8705802107826498,
+    "meets_quality_target": true
+  }
+}

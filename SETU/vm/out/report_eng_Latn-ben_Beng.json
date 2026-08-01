@@ -1,0 +1,18 @@
+{
+  "pair": "eng_Latn-ben_Beng",
+  "train_corpus": "distilled",
+  "student_params": 52592640,
+  "train_entries": 496958,
+  "dev_entries": 500,
+  "sft_final_loss": 1.8689002990722656,
+  "sft_eval": {
+    "bleu": 11.111636908413592,
+    "chrf": 41.477665161617665,
+    "latency_ms_mean": 129.6179786452558,
+    "latency_ms_max": 1004.4782909099013,
+    "n": 500,
+    "teacher_bleu": 13.102413533732726,
+    "bleu_ratio": 0.8480603119269748,
+    "meets_quality_target": true
+  }
+}

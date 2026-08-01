@@ -1,0 +1,347 @@
+[
+  {
+    "pair": "hin_Deva-eng_Latn",
+    "src": "hi",
+    "tgt": "en",
+    "status": "trained",
+    "pairs": [
+      {
+        "in": "भारत एक विशाल देश है।",
+        "out": "India is a vast country."
+      },
+      {
+        "in": "आज मौसम अच्छा है।",
+        "out": "Today, the weather is good."
+      },
+      {
+        "in": "मुझे किताबें पढ़ना पसंद है।",
+        "out": "I love reading books."
+      },
+      {
+        "in": "वह स्कूल जा रही है।",
+        "out": "She is going to school."
+      },
+      {
+        "in": "जल जीवन के लिए आवश्यक है।",
+        "out": "Water is essential for life."
+      },
+      {
+        "in": "वह एक अस्पताल में काम करता है।",
+        "out": "He works in a hospital."
+      },
+      {
+        "in": "हम एक नई भाषा सीख रहे हैं।",
+        "out": "We are learning a new language."
+      },
+      {
+        "in": "ट्रेन नौ बजे आती है।",
+        "out": "The train comes at 9 pm."
+      },
+      {
+        "in": "यह एक बहुत सुंदर बगीचा है।",
+        "out": "It is a very beautiful garden."
+      },
+      {
+        "in": "आपकी मदद के लिए बहुत धन्यवाद।",
+        "out": "Thank you so much for your help."
+      }
+    ]
+  },
+  {
+    "pair": "eng_Latn-hin_Deva",
+    "src": "en",
+    "tgt": "hi",
+    "status": "trained",
+    "pairs": [
+      {
+        "in": "India is a big country.",
+        "out": "भारत एक बड़ा देश है।"
+      },
+      {
+        "in": "The weather is nice today.",
+        "out": "आज मौसम अच्छा है।"
+      },
+      {
+        "in": "I love reading books.",
+        "out": "मुझे किताबें पढ़ना बहुत पसंद है।"
+      },
+      {
+        "in": "She is going to school.",
+        "out": "वह स्कूल जा रही है।"
+      },
+      {
+        "in": "Water is essential for life.",
+        "out": "जीवन के लिए पानी आवश्यक है।"
+      },
+      {
+        "in": "He works in a hospital.",
+        "out": "वह अस्पताल में काम करता है।"
+      },
+      {
+        "in": "We are learning a new language.",
+        "out": "हम एक नई भाषा सीख रहे हैं।"
+      },
+      {
+        "in": "The train arrives at nine o'clock.",
+        "out": "यह ट्रेन नौ बजे आती है।"
+      },
+      {
+        "in": "This is a very beautiful garden.",
+        "out": "यह एक बहुत ही सुंदर उद्यान है।"
+      },
+      {
+        "in": "Thank you very much for your help.",
+        "out": "आपकी मदद के लिए बहुत-बहुत धन्यवाद।"
+      }
+    ]
+  },
+  {
+    "pair": "ben_Beng-eng_Latn",
+    "src": "bn",
+    "tgt": "en",
+    "status": "trained",
+    "pairs": [
+      {
+        "in": "ভারত একটি বড় দেশ।",
+        "out": "India is a big country."
+      },
+      {
+        "in": "আজ আবহাওয়া চমৎকার।",
+        "out": "The weather is very good today."
+      },
+      {
+        "in": "আমি বই পড়তে ভালোবাসি।",
+        "out": "I love to read books."
+      },
+      {
+        "in": "সে স্কুলে যাচ্ছে।",
+        "out": "He is going to school."
+      },
+      {
+        "in": "জল জীবনের জন্য অপরিহার্য।",
+        "out": "Water is essential for life."
+      },
+      {
+        "in": "তিনি একটি হাসপাতালে কাজ করেন।",
+        "out": "He worked at a hospital."
+      },
+      {
+        "in": "আমরা একটি নতুন ভাষা শিখছি।",
+        "out": "We are learning a new language."
+      },
+      {
+        "in": "ট্রেনটি নয়টায় আসে।",
+        "out": "The train comes to nine."
+      },
+      {
+        "in": "এটি একটি খুব সুন্দর বাগান।",
+        "out": "It is a very beautiful garden."
+      },
+      {
+        "in": "আপনার সাহায্যের জন্য অনেক ধন্যবাদ।",
+        "out": "Thank you so much for your help."
+      }
+    ]
+  },
+  {
+    "pair": "eng_Latn-ben_Beng",
+    "src": "en",
+    "tgt": "bn",
+    "status": "trained",
+    "pairs": [
+      {
+        "in": "India is a big country.",
+        "out": "ভারত একটি বড় দেশ।"
+      },
+      {
+        "in": "The weather is nice today.",
+        "out": "আজ আবহাওয়া ভালো।"
+      },
+      {
+        "in": "I love reading books.",
+        "out": "বই পড়তে আমার খুব ভালো লাগে।"
+      },
+      {
+        "in": "She is going to school.",
+        "out": "সে স্কুলে যাচ্ছে।"
+      },
+      {
+        "in": "Water is essential for life.",
+        "out": "জীবনের জন্য জল অপরিহার্য।"
+      },
+      {
+        "in": "He works in a hospital.",
+        "out": "তিনি একটি হাসপাতালে কাজ করেন।"
+      },
+      {
+        "in": "We are learning a new language.",
+        "out": "আমরা একটি নতুন ভাষা শিখছি।"
+      },
+      {
+        "in": "The train arrives at nine o'clock.",
+        "out": "ট্রেনটি নয়টায় আসে।"
+      },
+      {
+        "in": "This is a very beautiful garden.",
+        "out": "এটি একটি খুব সুন্দর বাগান।"
+      },
+      {
+        "in": "Thank you very much for your help.",
+        "out": "আপনার সাহায্যের জন্য আপনাকে অনেক ধন্যবাদ।"
+      }
+    ]
+  },
+  {
+    "pair": "mar_Deva-eng_Latn",
+    "src": "mr",
+    "tgt": "en",
+    "status": "trained",
+    "pairs": [
+      {
+        "in": "भारत हा एक मोठा देश आहे।",
+        "out": "India is a big country."
+      },
+      {
+        "in": "आज हवामान छान आहे।",
+        "out": "Today, the climate is good."
+      },
+      {
+        "in": "मला पुस्तके वाचायला आवडतात।",
+        "out": "I love reading books."
+      },
+      {
+        "in": "ती शाळेत जात आहे।",
+        "out": "She is going to school."
+      },
+      {
+        "in": "पाणी जीवनासाठी आवश्यक आहे।",
+        "out": "Water is needed for life."
+      },
+      {
+        "in": "तो एका रुग्णालयात काम करतो।",
+        "out": "He works in a hospital."
+      },
+      {
+        "in": "आम्ही एक नवीन भाषा शिकत आहोत।",
+        "out": "We are learning a new language."
+      },
+      {
+        "in": "रेल्वे नऊ वाजता येते।",
+        "out": "The train arrives at nine o'clock."
+      },
+      {
+        "in": "ही एक खूप सुंदर बाग आहे।",
+        "out": "This is a very beautiful garden."
+      },
+      {
+        "in": "तुमच्या मदतीबद्दल खूप धन्यवाद।",
+        "out": "Thank you so much for your help."
+      }
+    ]
+  },
+  {
+    "pair": "eng_Latn-mar_Deva",
+    "src": "en",
+    "tgt": "mr",
+    "status": "pending (not trained)",
+    "pairs": []
+  },
+  {
+    "pair": "tel_Telu-eng_Latn",
+    "src": "te",
+    "tgt": "en",
+    "status": "pending (not trained)",
+    "pairs": []
+  },
+  {
+    "pair": "eng_Latn-tel_Telu",
+    "src": "en",
+    "tgt": "te",
+    "status": "pending (not trained)",
+    "pairs": []
+  },
+  {
+    "pair": "tam_Taml-eng_Latn",
+    "src": "ta",
+    "tgt": "en",
+    "status": "pending (not trained)",
+    "pairs": []
+  },
+  {
+    "pair": "eng_Latn-tam_Taml",
+    "src": "en",
+    "tgt": "ta",
+    "status": "pending (not trained)",
+    "pairs": []
+  },
+  {
+    "pair": "guj_Gujr-eng_Latn",
+    "src": "gu",
+    "tgt": "en",
+    "status": "pending (not trained)",
+    "pairs": []
+  },
+  {
+    "pair": "eng_Latn-guj_Gujr",
+    "src": "en",
+    "tgt": "gu",
+    "status": "pending (not trained)",
+    "pairs": []
+  },
+  {
+    "pair": "urd_Arab-eng_Latn",
+    "src": "ur",
+    "tgt": "en",
+    "status": "pending (not trained)",
+    "pairs": []
+  },
+  {
+    "pair": "eng_Latn-urd_Arab",
+    "src": "en",
+    "tgt": "ur",
+    "status": "pending (not trained)",
+    "pairs": []
+  },
+  {
+    "pair": "kan_Knda-eng_Latn",
+    "src": "kn",
+    "tgt": "en",
+    "status": "pending (not trained)",
+    "pairs": []
+  },
+  {
+    "pair": "eng_Latn-kan_Knda",
+    "src": "en",
+    "tgt": "kn",
+    "status": "pending (not trained)",
+    "pairs": []
+  },
+  {
+    "pair": "ory_Orya-eng_Latn",
+    "src": "or",
+    "tgt": "en",
+    "status": "pending (not trained)",
+    "pairs": []
+  },
+  {
+    "pair": "eng_Latn-ory_Orya",
+    "src": "en",
+    "tgt": "or",
+    "status": "pending (not trained)",
+    "pairs": []
+  },
+  {
+    "pair": "mal_Mlym-eng_Latn",
+    "src": "ml",
+    "tgt": "en",
+    "status": "pending (not trained)",
+    "pairs": []
+  },
+  {
+    "pair": "eng_Latn-mal_Mlym",
+    "src": "en",
+    "tgt": "ml",
+    "status": "pending (not trained)",
+    "pairs": []
+  }
+]

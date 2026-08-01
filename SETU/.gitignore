@@ -11,3 +11,5 @@ checkpoints/
 models/
 *.onnx
 .DS_Store
+# VM batch outputs: keep the small reports/samples, never the model zips
+vm/out/*.zip
