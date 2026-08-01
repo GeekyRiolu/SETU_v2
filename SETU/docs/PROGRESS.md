@@ -4,7 +4,7 @@ A living record of what SETU is, everything built so far, the decisions and
 debugging behind it, the current measured status, and what's next. A dated
 **Session changelog** at the bottom is appended after every working session.
 
-Last updated: 2026-07-17.
+Last updated: 2026-08-01.
 
 ---
 
@@ -499,3 +499,25 @@ key experiment. Alternative levers: bigger student (d=640 / more layers, keep IN
   refs. Deployed INT4 19.3 BLEU / 191 ms / 104 MB. Updated §6/§7 + PAPER_PLAN §11
   (plateau is a paper-worthy result). Next run pivots to the **SeqKD comparison**
   (cleaner teacher targets = plateau-breaker + the paper's head-to-head).
+- **2026-08-01 (Next.js frontend + multilingual REST API)** — Built `SETU/frontend/`,
+  a Next.js (App Router, TypeScript) web UI in a "civic print" aesthetic (warm
+  paper + ink + a single sindoor-vermilion mark; Bricolage Grotesque + Spectral;
+  every language named in its **own script**, e.g. हिन्दी বাংলা தமிழ் اردو ᱥᱟᱱᱛᱟᱲᱤ),
+  modelled on the user's reference site freespeech.sflc.in. Sections: hero + a
+  fully-wired translator console (source⇄target, live latency, on-device/stub
+  pill, trained-model quick-picks), a marquee of all 22 endonyms, a "four
+  guarantees" spec ledger, and a teacher→SeqKD→student→INT4 method flow. Wiring:
+  pickers ← `GET /languages`, chips ← new `GET /models`, translate ←
+  `POST /translate`, status dot ← `GET /health`; bundled offline language
+  fallback + fonts self-hosted by `next/font` (no runtime CDN). **Made the REST
+  API properly multilingual** (`interfaces/rest/app.py`): each request now routes
+  to its pair's student via a per-pair engine cache (`engine_for_pair`), a new
+  `GET /models` discovers on-disk `models/<pair>/{int4,int8,onnx}+tokenizer`
+  (the deployable-zip layout) with variant + size, plus CORS for the browser and
+  a `/` metadata route. Verified end-to-end: `next build` clean (static export,
+  107 kB first load); REST + PWA tests green (9/9); live API on :8000 does real
+  hin→en INT4 inference (70 ms, `stub:false`), `/models`→1 pair, CORS preflight
+  OK; dev UI on :3000 → HTTP 200. Note: the committed local `hin_Deva-eng_Latn`
+  is the old weak DPO student (chrF≈3, garbled) — dropping a SeqKD zip from
+  `vm/out/` into `models/` gives the good translations; the UI reports
+  latency/on-device/variant honestly either way.
