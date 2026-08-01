@@ -542,4 +542,6 @@ key experiment. Alternative levers: bigger student (d=640 / more layers, keep IN
   buttons) so they read purely as a background layer. Then swapped the curvy
   lines themselves for faint, large Indic "bridge" words (सेतु / সেতু / பாலம் / …)
   drifting on scroll — more on-brand for a script-bridging tool (the line version
-  is kept commented in `ScrollFX.tsx` for an easy switch-back).
+  is kept commented in `ScrollFX.tsx` for an easy switch-back). Reworked it into a proper depth parallax: each word
+  scroll-links its own vertical rate (near layers race, far ones linger) plus
+  sideways drift, a slight tilt, and an ink/accent colour split for depth.
