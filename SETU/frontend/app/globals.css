@@ -1181,3 +1181,157 @@ a:hover {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* =====================  INTERACTIONS & FIXES  ===================== */
+
+/* Fix: clicking/selecting the decorative endonyms used to swallow them into the
+   selection highlight (the "Devanagari disappears on click" bug). Make purely
+   decorative script elements non-selectable; the translator's input & output
+   stay selectable so translations remain copyable. */
+.wordmark,
+.eyebrow,
+.wall__cell,
+.lang-card,
+.strip__count,
+.foot__bar {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Fix: a deeper selection colour keeps selected text legible everywhere —
+   including on the vermilion buttons and marks, where it previously vanished. */
+::selection {
+  background: oklch(0.47 0.15 33);
+  color: var(--paper);
+}
+
+/* Fix: anchor targets clear the sticky masthead instead of hiding beneath it. */
+section[id],
+#top {
+  scroll-margin-top: 88px;
+}
+
+/* Header — animated underline on nav links, live wordmark */
+.nav__link {
+  position: relative;
+  transition: color 0.2s var(--ease-out);
+}
+.nav__link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -5px;
+  height: 2px;
+  background: var(--vermilion);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.28s var(--ease-out);
+}
+.nav__link:hover::after {
+  transform: scaleX(1);
+}
+.wordmark .deva {
+  transition: color 0.2s var(--ease-out);
+}
+.wordmark:hover .deva {
+  color: var(--vermilion-2);
+}
+
+/* Hero script wall — lift the word, ink the label, deepen the mark cell */
+.wall__word {
+  transition: transform 0.3s var(--ease-out);
+}
+.wall__script {
+  transition: color 0.3s var(--ease-out);
+}
+.wall__cell:hover .wall__word {
+  transform: translateY(-3px);
+}
+.wall__cell:hover .wall__script {
+  color: var(--vermilion-2);
+}
+.wall__cell--mark:hover {
+  background: var(--vermilion-3);
+}
+.wall__cell--mark:hover .wall__script {
+  color: var(--paper);
+}
+
+/* Language marquee — cards lift and warm on hover */
+.lang-card {
+  transition: border-color 0.2s var(--ease-out), background 0.2s var(--ease-out),
+    transform 0.2s var(--ease-out);
+}
+.lang-card__roman {
+  transition: color 0.2s var(--ease-out);
+}
+.lang-card:hover {
+  border-color: var(--vermilion);
+  background: var(--vermilion-wash);
+  transform: translateY(-3px);
+}
+.lang-card:hover .lang-card__roman {
+  color: var(--vermilion-2);
+}
+
+/* Translator — the console lifts; the focused side lights its label */
+.console {
+  transition: box-shadow 0.3s var(--ease-out), border-color 0.3s var(--ease-out);
+}
+.console:hover {
+  border-color: var(--ink-3);
+  box-shadow: 0 2px 3px oklch(0.4 0.02 60 / 0.05),
+    0 20px 50px -18px oklch(0.35 0.03 55 / 0.28);
+}
+.panel__label {
+  transition: color 0.2s var(--ease-out);
+}
+.panel:focus-within .panel__label {
+  color: var(--vermilion-2);
+}
+
+/* Pillars — the spec ledger reacts row by row */
+.ledger__row {
+  padding-inline: var(--space-md);
+  transition: background 0.25s var(--ease-out);
+}
+.ledger__value {
+  transition: color 0.25s var(--ease-out);
+}
+.ledger__row:hover {
+  background: var(--paper-2);
+}
+.ledger__row:hover .ledger__value {
+  color: var(--vermilion-2);
+}
+
+/* Method — dark flow cells brighten and warm their tag */
+.flow__step {
+  transition: background 0.28s var(--ease-out);
+}
+.flow__step .tag {
+  transition: color 0.28s var(--ease-out);
+}
+.flow__step:hover {
+  background: oklch(0.305 0.021 58);
+}
+.flow__step:hover .tag {
+  color: color-mix(in oklab, var(--paper) 78%, transparent);
+}
+
+/* Footer — links warm to the mark */
+.foot__col a {
+  transition: color 0.18s var(--ease-out);
+}
+.foot__col a:hover {
+  color: var(--vermilion-2);
+  text-decoration: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wall__cell:hover .wall__word,
+  .lang-card:hover {
+    transform: none;
+  }
+}
