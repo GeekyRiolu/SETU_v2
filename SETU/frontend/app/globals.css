@@ -132,6 +132,7 @@ body::-webkit-scrollbar,
 
 body {
   margin: 0;
+  position: relative; /* containing block for the background scroll-FX layer */
   background-color: var(--paper);
   background-image: radial-gradient(
     120% 80% at 82% -10%,
@@ -337,11 +338,28 @@ a:hover {
 
 /* curvy line that draws on scroll + parallax drift */
 .scrollfx {
-  position: fixed;
+  position: absolute;
   inset: 0;
   z-index: -1; /* stays in the background, never over text or buttons */
   pointer-events: none;
   overflow: hidden;
+}
+
+/* faint Indic "bridge" words drifting down the page behind content */
+.scrollfx__word {
+  position: absolute;
+  font-family: var(--ff-indic);
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--ink);
+  opacity: 0.07;
+  user-select: none;
+  will-change: transform;
+}
+
+[data-theme="dark"] .scrollfx__word {
+  opacity: 0.06;
 }
 
 .scrollfx svg {

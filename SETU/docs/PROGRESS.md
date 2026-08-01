@@ -539,4 +539,7 @@ key experiment. Alternative levers: bigger student (d=640 / more layers, keep IN
   export, ~108 kB first load). Follow-ups: the dark-mode accent was switched
   from orange to red (hue-shifted the dark `--vermilion*` tokens only), and the
   scroll-FX curvy lines were moved back behind content (z-index below text and
-  buttons) so they read purely as a background layer.
+  buttons) so they read purely as a background layer. Then swapped the curvy
+  lines themselves for faint, large Indic "bridge" words (सेतु / সেতু / பாலம் / …)
+  drifting on scroll — more on-brand for a script-bridging tool (the line version
+  is kept commented in `ScrollFX.tsx` for an easy switch-back).
