@@ -88,20 +88,20 @@
   --line: oklch(0.345 0.014 62);
   --line-2: oklch(0.435 0.016 62);
 
-  --vermilion: oklch(0.685 0.17 36);
-  --vermilion-2: oklch(0.645 0.176 35);
-  --vermilion-3: oklch(0.735 0.15 37);
-  --vermilion-wash: oklch(0.685 0.17 36 / 0.16);
+  --vermilion: oklch(0.66 0.205 27); /* red in dark mode, not orange */
+  --vermilion-2: oklch(0.61 0.215 27);
+  --vermilion-3: oklch(0.72 0.185 28);
+  --vermilion-wash: oklch(0.66 0.205 27 / 0.17);
   --indigo: oklch(0.735 0.098 258);
   --moss: oklch(0.66 0.078 165);
   --moss-wash: oklch(0.66 0.078 165 / 0.17);
 
-  --on-accent: oklch(0.175 0.02 40); /* dark text on the brighter dark-mode accent */
+  --on-accent: oklch(0.17 0.02 30); /* dark text on the red accent */
   --band-bg: oklch(0.158 0.011 62); /* band sits darker than the base surface */
   --band-2: oklch(0.222 0.014 62);
   --band-line: oklch(0.3 0.014 62);
   --band-fg: oklch(0.928 0.012 82);
-  --sel-bg: oklch(0.56 0.165 35);
+  --sel-bg: oklch(0.55 0.19 27);
 
   color-scheme: dark;
 }
@@ -339,7 +339,7 @@ a:hover {
 .scrollfx {
   position: fixed;
   inset: 0;
-  z-index: 1; /* above section backgrounds so the line shows the whole way down */
+  z-index: -1; /* stays in the background, never over text or buttons */
   pointer-events: none;
   overflow: hidden;
 }

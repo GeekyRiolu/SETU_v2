@@ -536,4 +536,7 @@ key experiment. Alternative levers: bigger student (d=640 / more layers, keep IN
   that draw proportionally to scroll, over the section backgrounds, plus gentle
   per-element parallax drift on the hero wall, ledger, flow and finding; all
   disabled under `prefers-reduced-motion`. `next build` clean throughout (static
-  export, ~108 kB first load).
+  export, ~108 kB first load). Follow-ups: the dark-mode accent was switched
+  from orange to red (hue-shifted the dark `--vermilion*` tokens only), and the
+  scroll-FX curvy lines were moved back behind content (z-index below text and
+  buttons) so they read purely as a background layer.
