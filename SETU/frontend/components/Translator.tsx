@@ -211,7 +211,7 @@ export default function Translator() {
                     <span className="hint">
                       {pairModel
                         ? `A trained ${pairModel.variant.toUpperCase()} model is ready for this pair.`
-                        : "No trained model for this pair yet — output will pass through."}
+                        : "No trained model for this pair yet, so output will pass through."}
                     </span>
                   </span>
                 )}

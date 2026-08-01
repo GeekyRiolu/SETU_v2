@@ -6,7 +6,7 @@ const STEPS = [
   },
   {
     title: "Distil",
-    body: "The student learns the teacher's own 1-best translations — sequence-level KD — instead of noisy web references.",
+    body: "The student learns the teacher's own 1-best translations (sequence-level KD) instead of noisy web references.",
     tag: "Kim & Rush, 2016",
   },
   {
@@ -16,7 +16,7 @@ const STEPS = [
   },
   {
     title: "Quantise",
-    body: "Export to INT4 ONNX and it fits on the edge — same translations, a twentieth of the teacher's size.",
+    body: "Export to INT4 ONNX and it fits on the edge: same translations, a twentieth of the teacher's size.",
     tag: "→ ONNX Runtime",
   },
 ];
@@ -31,11 +31,11 @@ export default function HowItWorks() {
         </h2>
         <p className="how__lede">
           SETU is not a smaller translator trained from scratch. It is a large
-          teacher compressed — the student is taught to reproduce IndicTrans2,
+          teacher compressed. The student is taught to reproduce IndicTrans2,
           then quantised until it fits where the network doesn't reach.
         </p>
 
-        <div className="flow">
+        <div className="flow" data-parallax data-speed="26">
           {STEPS.map((s, i) => (
             <div className="flow__step" key={s.title}>
               <span className="flow__num">{String(i + 1).padStart(2, "0")}</span>
@@ -46,7 +46,7 @@ export default function HowItWorks() {
           ))}
         </div>
 
-        <blockquote className="finding">
+        <blockquote className="finding" data-parallax data-speed="18">
           The finding: <b>sequence-level distillation beats preference tuning</b>{" "}
           for compact Indic MT. Reference noise, not the method, was the
           bottleneck.

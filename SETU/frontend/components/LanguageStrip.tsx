@@ -32,7 +32,7 @@ function Row({ items, reverse }: { items: typeof LANGS; reverse?: boolean }) {
 export default function LanguageStrip() {
   return (
     <section className="strip" id="languages" aria-label="Supported languages">
-      <div className="wrap strip__head">
+      <div className="wrap strip__head" data-parallax data-speed="26">
         <div>
           <p className="eyebrow">Every scheduled language</p>
           <h2 style={{ fontSize: "var(--step-2)", marginTop: "var(--space-sm)" }}>

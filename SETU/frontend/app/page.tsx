@@ -1,3 +1,4 @@
+import ScrollFX from "@/components/ScrollFX";
 import SiteHeader from "@/components/SiteHeader";
 import Hero from "@/components/Hero";
 import Translator from "@/components/Translator";
@@ -9,6 +10,7 @@ import SiteFooter from "@/components/SiteFooter";
 export default function Home() {
   return (
     <>
+      <ScrollFX />
       <SiteHeader />
       <main>
         <Hero />

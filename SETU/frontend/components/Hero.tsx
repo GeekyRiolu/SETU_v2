@@ -14,7 +14,7 @@ export default function Hero() {
       <div className="wrap hero__grid">
         <div>
           <p className="eyebrow hero__kicker reveal reveal-1">
-            सेतु — a translation commons
+            सेतु · a translation commons
           </p>
           <h1 className="reveal reveal-2">
             One bridge.
@@ -25,7 +25,7 @@ export default function Hero() {
           </h1>
           <p className="lede hero__lede reveal reveal-3">
             SETU translates between the 22 scheduled languages of India and
-            English entirely on your device — a student distilled from
+            English entirely on your device. It is a student distilled from
             IndicTrans2, small enough to carry. No servers, no accounts, nothing
             leaves your machine.
           </p>
@@ -50,7 +50,7 @@ export default function Hero() {
           </dl>
         </div>
 
-        <div className="wall reveal reveal-3" aria-hidden="true">
+        <div className="wall" data-parallax data-speed="52" aria-hidden="true">
           {WALL.map((c) => (
             <div
               key={c.script}

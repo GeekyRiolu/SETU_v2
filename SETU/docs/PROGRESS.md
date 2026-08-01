@@ -521,3 +521,19 @@ key experiment. Alternative levers: bigger student (d=640 / more layers, keep IN
   is the old weak DPO student (chrF≈3, garbled) — dropping a SeqKD zip from
   `vm/out/` into `models/` gives the good translations; the UI reports
   latency/on-device/variant honestly either way.
+- **2026-08-01 (frontend UI pass: dark mode, parallax, polish)** — Iterated the
+  Next.js frontend on user feedback. Full-viewport-width layout; cohesive hover
+  states in every section (nav underline, hero-wall lift, language cards, ledger
+  rows, dark method cells, footer links). Fixed a "decorative script vanishes on
+  click" bug (`user-select:none` on endonyms + a safer selection colour + section
+  `scroll-margin-top`). Removed em dashes from all copy so it reads less
+  AI-generated. Added a **light/dark theme toggle**: a warm-espresso dark palette
+  driven by theme-aware OKLCH tokens plus new `--on-accent`/`--band-*` semantic
+  tokens so the vermilion buttons and the dark method band stay legible in both
+  themes; a no-flash inline init script; preference persisted to localStorage and
+  seeded from the system setting. Hid all scrollbars (scrolling still works).
+  Added a **scroll-FX layer** (`ScrollFX.tsx`): two curvy vermilion/indigo lines
+  that draw proportionally to scroll, over the section backgrounds, plus gentle
+  per-element parallax drift on the hero wall, ledger, flow and finding; all
+  disabled under `prefers-reduced-motion`. `next build` clean throughout (static
+  export, ~108 kB first load).

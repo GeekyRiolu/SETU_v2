@@ -1,11 +1,11 @@
-# SETU — frontend
+# SETU - frontend
 
 A Next.js (App Router + TypeScript) web frontend for **SETU**, the offline,
 on-device translator across the 22 scheduled languages of India. It talks to the
 SETU REST API (`SETU/interfaces/rest/app.py`) and falls back gracefully when the
 engine isn't running, so the UI never breaks.
 
-Design: warm *civic print* — paper + ink with a single sindoor-vermilion mark,
+Design: warm *civic print* - paper + ink with a single sindoor-vermilion mark,
 Bricolage Grotesque + Spectral, and every language named in its own script. See
 [`.impeccable.md`](./.impeccable.md) for the full design context.
 
@@ -44,7 +44,7 @@ echo 'NEXT_PUBLIC_SETU_API=http://localhost:8000' > .env.local
 ### Static build (host anywhere, fully offline)
 
 ```bash
-npm run build          # emits ./out — plain static files
+npm run build          # emits ./out - plain static files
 npx serve out          # or any static host
 ```
 
@@ -57,7 +57,7 @@ npx serve out          # or any static host
 | Translate button | `POST /translate {source_lang, target_lang, text}` |
 | engine-status dot | `GET /health` |
 
-`fonts` are self-hosted at build by `next/font` — no runtime CDN — and Indic
+`fonts` are self-hosted at build by `next/font` - no runtime CDN - and Indic
 scripts fall back to the system Noto family, so the page renders with the
 network pulled. All translation happens on the machine running the API.
 

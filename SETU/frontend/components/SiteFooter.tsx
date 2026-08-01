@@ -6,7 +6,7 @@ export default function SiteFooter() {
       <div className="wrap">
         <div className="foot__grid">
           <div className="foot__brand">
-            <a href="#top" className="wordmark" aria-label="SETU — home">
+            <a href="#top" className="wordmark" aria-label="SETU home">
               <span>
                 SE<b>TU</b>
               </span>
@@ -15,7 +15,7 @@ export default function SiteFooter() {
               </span>
             </a>
             <p className="foot__tag">
-              A bridge across the twenty-two languages of India — built to work
+              A bridge across the twenty-two languages of India, built to work
               where the network doesn't.
             </p>
           </div>
@@ -69,7 +69,7 @@ export default function SiteFooter() {
         <div className="foot__bar">
           <span>Built offline-first · no trackers · nothing to log</span>
           <span className="indic" lang="sa">
-            सेतु — a bridge
+            सेतु · a bridge
           </span>
         </div>
       </div>
