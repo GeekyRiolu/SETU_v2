@@ -52,9 +52,9 @@
   --space-4xl: 96px;
   --space-5xl: clamp(96px, 8vw, 148px);
 
-  --wrap: 1180px;
+  --wrap: 100%;
   --wrap-tight: 720px;
-  --pad-x: clamp(20px, 5vw, 64px);
+  --pad-x: clamp(20px, 4vw, 88px);
 
   --r-sm: 4px;
   --r-md: 9px;
