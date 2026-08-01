@@ -230,6 +230,24 @@ held-out splits). The **citeable numbers come from `setu-eval` on FLORES-200
 devtest** (fixed benchmark + COMET + significance) — run it per system/language for
 Table 1. A stronger (gated ai4bharat-1B) teacher would raise the achievable ceiling.
 
+### Table 2 — SeqKD generalises across languages (2026-08-01, dev, n=500)
+
+| Direction | student BLEU | chrF | teacher BLEU | ratio |
+|-----------|-------------:|-----:|-------------:|------:|
+| mar→eng | 16.35 | 43.83 | 17.13 | **0.955** |
+| eng→hin | 20.30 | 46.60 | 23.32 | **0.871** |
+| eng→ben | 11.11 | 41.48 | 13.10 | **0.848** |
+| hin→eng | 21.83 | 49.48 | 27.08 | **0.806** |
+| ben→eng | 19.07 | 45.24 | 25.23 | 0.756 |
+| **mean** | | | | **0.847** |
+
+**SeqKD reaches ≥ 0.80 of teacher on 4/5 directions across 3 languages, both
+ways (mean 0.847)** — the same 52M student + recipe, one `PAIR=` per run
+(`vm/setu_train_all.sh`, scales to all 22). This generalisation is a core paper
+result: the SeqKD advantage isn't a Hindi artifact. Still dev numbers → run
+`setu-eval` FLORES per pair for the citeable table (the batch runner does this
+with `EVAL_ARGS="--teacher"`).
+
 ### Still to run
 - **SeqKD at scale** (200–250k) — the best deployable model; likely breaks the 0.66
   ceiling toward 0.80.
