@@ -545,3 +545,22 @@ key experiment. Alternative levers: bigger student (d=640 / more layers, keep IN
   is kept commented in `ScrollFX.tsx` for an easy switch-back). Reworked it into a proper depth parallax: each word
   scroll-links its own vertical rate (near layers race, far ones linger) plus
   sideways drift, a slight tilt, and an ink/accent colour split for depth.
+- **2026-08-07 (A40 training-campaign log reconstructed)** — Went through an
+  offline transcript of the 2026-07-29..08-07 GPU-VM training session and wrote
+  [`docs/TRAINING_LOG.md`](TRAINING_LOG.md), the canonical record of it: the
+  A40-16Q environment and the four setup fixes (torch>=2.6 for the CVE-2025-32434
+  `.bin` guard, matching torchvision 0.21, `expandable_segments:False` for the
+  vGPU allocator, and the resume re-clone fix), the pipeline/model config, every
+  run, and the findings. Headline: SeqKD scaled 0.607 -> 0.764 -> 0.806 for
+  Hindi->En (100k/250k/500k; the >=0.80 quality target crossed at 500k), then
+  bidirectional across 9 languages (18 directions). Two Indic->En students
+  collapsed at `sft.lr` 5e-4 (Telugu->En, Malayalam->En: loss 3-4, degenerate
+  "stock news" output) and both recovered cleanly at **3e-4** (Telugu
+  0.036 -> 0.817, Malayalam 0.013 -> 0.898, en->ml 0.570 -> 0.863). **Final 12/18
+  directions pass >=0.80** (6 near-miss 0.75-0.79, none collapsed); every model
+  103.9 MB INT4, mean 96-202 ms, offline. Learnings banked: LR 3e-4 as the safe
+  default, SFT loss (1.5-2.3 healthy vs 3-4 collapsed) as the collapse tell, and
+  COMET for agglutinative languages (Malayalam/Tamil) where BLEU understates.
+  Remaining: the other 12 scheduled languages + FLORES/COMET rescoring. (The
+  richer per-direction reports, ANALYSIS.md/SCORES.md and translate.py from that
+  session live on the training machine, not this repo.)
