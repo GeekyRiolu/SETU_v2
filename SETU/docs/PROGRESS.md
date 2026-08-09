@@ -587,3 +587,10 @@ key experiment. Alternative levers: bigger student (d=640 / more layers, keep IN
   console hint says "routes through English" for pivot pairs and the telemetry
   reads "via English"; `TranslateResult` gained an optional `pivot` field.
   REST + PWA tests still 9/9.
+- **2026-08-09 (size copy fix)** — Corrected a stale frontend claim: the deployed
+  INT4 students are **≈104 MB / direction** (103.94 MB in every `quantize_report`,
+  from 410.9 MB FP32), not the ≈21 MB the hero and size pillar showed (that number
+  came from an earlier, smaller model read when the copy was first written). Still
+  under the 200 MB target. Also dropped the "billion-parameter teacher" line from
+  the size pillar, since the students were distilled from the ungated 200M
+  IndicTrans2 dist checkpoint, not the 1B flagship.

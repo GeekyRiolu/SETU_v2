@@ -39,7 +39,7 @@ export default function Hero() {
           </div>
           <dl className="hero__meta reveal reveal-4">
             <div>
-              <b>≈21 MB</b> per direction, on disk
+              <b>≈104 MB</b> per direction, on disk
             </div>
             <div>
               <b>&lt;500 ms</b> a sentence, on CPU

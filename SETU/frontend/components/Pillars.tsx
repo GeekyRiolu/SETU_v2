@@ -12,10 +12,10 @@ const ROWS = [
     body: "ONNX Runtime executes locally and the tokenizer is a file on disk. A socket guard in the engine proves no bytes ever leave.",
   },
   {
-    value: "≈21",
+    value: "≈104",
     unit: "MB / direction",
     title: "Small enough for the edge",
-    body: "An INT4-quantised student, a fraction of the billion-parameter teacher, light enough to ship inside an app or run on a phone.",
+    body: "An INT4-quantised student, about a quarter of its full-precision size and well under the 200 MB budget, light enough to ship inside an app or run on a phone.",
   },
   {
     value: "<500",
