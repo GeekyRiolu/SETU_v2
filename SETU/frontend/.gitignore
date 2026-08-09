@@ -21,3 +21,8 @@ yarn-error.log*
 
 # local env
 .env*.local
+
+# The repo-root .gitignore has `lib/` (Python build dir); it also matches this
+# frontend's source lib/. Re-include it here so app code is actually tracked.
+!/lib/
+!/lib/**
