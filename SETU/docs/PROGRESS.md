@@ -564,3 +564,15 @@ key experiment. Alternative levers: bigger student (d=640 / more layers, keep IN
   Remaining: the other 12 scheduled languages + FLORES/COMET rescoring. (The
   richer per-direction reports, ANALYSIS.md/SCORES.md and translate.py from that
   session live on the training machine, not this repo.)
+- **2026-08-09 (18 models verified + wired to the frontend)** — The user dropped
+  all **18 model zips** (9 languages, both directions) into `vm/out/`. Extracted
+  each pair's int4 + tokenizer into `models/<pair>/`, added
+  `scripts/translation_suite.py` (loads one ONNX student at a time and translates
+  a real source sentence in the pair's own direction, flagging empty / passthrough
+  / collapse output), and ran it: **18/18 produce healthy output** — including the
+  once-collapsed Telugu->En and Malayalam->En, now correct ("India is a big
+  country."). Wired into the UI: `GET /models` reports all 18 (int4, 103.9 MB
+  each) and `POST /translate` routes per pair (live: ta->en and en->kn both real,
+  ~40-60 ms, stub=false); the translator console now lists every trained pair as
+  a quick-pick (was capped at 7). Models stay gitignored; the suite script and the
+  console tweak are committed.

@@ -272,7 +272,7 @@ export default function Translator() {
         {models.length > 0 && (
           <div className="quickpicks">
             <span className="quickpicks__label">Trained models:</span>
-            {models.slice(0, 7).map((m) => (
+            {models.map((m) => (
               <button
                 type="button"
                 key={m.pair}
