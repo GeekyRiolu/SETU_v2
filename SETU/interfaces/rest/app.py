@@ -78,6 +78,7 @@ class TranslateResponse(BaseModel):
     chrf: float | None = None
     latency_ms: float | None = None
     stub: bool = False
+    pivot: str | None = None  # set to "en" when routed src -> English -> tgt
 
 
 def _variant_size_mb(pair_dir: Path, variant: str) -> float | None:
@@ -161,6 +162,11 @@ def models() -> dict:
     return {"count": len(found), "models": found}
 
 
+def _available(pair: str) -> bool:
+    """True if a trained student exists for this exact pair (not a stub)."""
+    return not engine_for_pair(pair).is_stub
+
+
 @app.post("/translate", response_model=TranslateResponse)
 def translate(req: TranslateRequest) -> TranslateResponse:
     # resolve + reject same-language up front so we never spin up an engine for it
@@ -172,12 +178,34 @@ def translate(req: TranslateRequest) -> TranslateResponse:
     if src["iso"] == tgt["iso"]:
         raise HTTPException(status_code=400, detail=f"Source and target language are both {src['iso']!r}")
 
-    engine = engine_for_pair(f"{src['flores']}-{tgt['flores']}")
+    direct = f"{src['flores']}-{tgt['flores']}"
     try:
-        result = engine.translate(req.text, req.source_lang, req.target_lang)
+        # 1) a directly-trained model for this pair
+        if _available(direct):
+            result = engine_for_pair(direct).translate(req.text, src["iso"], tgt["iso"])
+            return TranslateResponse(**dataclasses.asdict(result), stub=False)
+
+        # 2) English pivot for Indic<->Indic: src -> English -> tgt, when both
+        #    hops have trained models. SETU is English-pivot, so no direct
+        #    Indic-Indic student exists, but the two halves usually do.
+        eng = load_languages()["en"]["flores"]  # eng_Latn
+        if src["iso"] != "en" and tgt["iso"] != "en":
+            hop1, hop2 = f"{src['flores']}-{eng}", f"{eng}-{tgt['flores']}"
+            if _available(hop1) and _available(hop2):
+                r1 = engine_for_pair(hop1).translate(req.text, src["iso"], "en")
+                r2 = engine_for_pair(hop2).translate(r1.translated_text, "en", tgt["iso"])
+                latency = (r1.latency_ms or 0.0) + (r2.latency_ms or 0.0)
+                return TranslateResponse(
+                    translated_text=r2.translated_text,
+                    src_lang=src["iso"], tgt_lang=tgt["iso"],
+                    latency_ms=latency, stub=False, pivot="en",
+                )
+
+        # 3) nothing trained for this pair (or its pivot) -> passthrough stub
+        result = engine_for_pair(direct).translate(req.text, src["iso"], tgt["iso"])
+        return TranslateResponse(**dataclasses.asdict(result), stub=True)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
-    return TranslateResponse(**dataclasses.asdict(result), stub=engine.is_stub)
 
 
 # Serve the offline PWA from the same origin so its fetch(/translate) hits this

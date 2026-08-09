@@ -576,3 +576,14 @@ key experiment. Alternative levers: bigger student (d=640 / more layers, keep IN
   ~40-60 ms, stub=false); the translator console now lists every trained pair as
   a quick-pick (was capped at 7). Models stay gitignored; the suite script and the
   console tweak are committed.
+- **2026-08-09 (English-pivot for Indic<->Indic pairs)** — SETU is English-pivot,
+  so there is no direct Hindi->Bengali (etc.) student; those pairs were returning
+  a passthrough stub. Added English-pivot chaining to `POST /translate`: when a
+  pair has no direct model but both `src->en` and `en->tgt` do, it routes
+  src -> English -> tgt through the two existing models and returns `pivot:"en"`.
+  Now every direction among the 9 trained languages + English works: **18 direct
+  + 72 English-pivoted = 90 directions.** Verified hi->bn ("ভারত একটি বিশাল দেশ।"),
+  ta->te, mr->kn: all real, ~50-65 ms (two hops). Frontend surfaces it: the
+  console hint says "routes through English" for pivot pairs and the telemetry
+  reads "via English"; `TranslateResult` gained an optional `pivot` field.
+  REST + PWA tests still 9/9.

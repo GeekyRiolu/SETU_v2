@@ -52,6 +52,13 @@ export default function Translator() {
     [models, src, tgt],
   );
 
+  // No direct model, but both src->English and English->tgt exist: pivot works.
+  const canPivot = useMemo(() => {
+    if (src === "en" || tgt === "en") return false;
+    const has = (a: string, b: string) => models.some((m) => m.src_iso === a && m.tgt_iso === b);
+    return has(src, "en") && has("en", tgt);
+  }, [models, src, tgt]);
+
   const runTranslate = useCallback(async () => {
     const text = input.trim();
     if (!text || src === tgt || busy) return;
@@ -211,7 +218,9 @@ export default function Translator() {
                     <span className="hint">
                       {pairModel
                         ? `A trained ${pairModel.variant.toUpperCase()} model is ready for this pair.`
-                        : "No trained model for this pair yet, so output will pass through."}
+                        : canPivot
+                          ? "No direct model, so this routes through English (two hops)."
+                          : "No trained model for this pair yet, so output will pass through."}
                     </span>
                   </span>
                 )}
@@ -222,7 +231,9 @@ export default function Translator() {
                   <>
                     <span className="tele">
                       <strong>{Math.round(result.latency_ms ?? 0)}</strong>&nbsp;ms
-                      {pairModel?.size_mb ? (
+                      {result.pivot ? (
+                        <>{" · via English"}</>
+                      ) : pairModel?.size_mb ? (
                         <>
                           {" · "}
                           {pairModel.variant.toUpperCase()} · {pairModel.size_mb} MB
