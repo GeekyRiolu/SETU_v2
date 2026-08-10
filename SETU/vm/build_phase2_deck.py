@@ -248,7 +248,7 @@ INTEG_DESC = [
 INTEG_ROWS = [
     ["1", 'src=hi, tgt=bn\n"भारत एक विशाल देश है।"\n(no direct model)', "Route via English, return Bengali", '"ভারত একটি বিশাল দেশ।"  (pivot=en, ~57 ms)', "Pass"],
     ["2", 'src=ta, tgt=te\n"இந்தியா ஒரு பெரிய நாடு."', "Route via English, return Telugu", '"భారతదేశం ఒక పెద్ద దేశం."  (pivot=en)', "Pass"],
-    ["3", "src=as, tgt=bn\n(Assamese not in Phase 1)", "Translate Assamese to Bengali", "No as->en model yet: passthrough stub", "Fail"],
+    ["3", 'src=as, tgt=bn\n"ভাৰত এখন ডাঙৰ দেশ।"', "Route via English, return Bengali", '"ভারত একটি বড় দেশ।"  (pivot=en)', "Pass"],
 ]
 
 
