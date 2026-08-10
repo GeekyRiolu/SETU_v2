@@ -618,3 +618,13 @@ key experiment. Alternative levers: bigger student (d=640 / more layers, keep IN
   Conclusion (Unit Testing, Integration Testing) with real test-case tables: the
   same-language/unknown-code guards (unit) and English-pivot chaining (integration,
   with an honest Fail on not-yet-trained Assamese). Deck is now 33 slides.
+- **2026-08-11 (Assamese + Punjabi wired into API, CLI, frontend)** — Extracted the
+  4 new zips (asm_Beng/pan_Guru, both ways); `/models` now serves **22 pairs** (11
+  languages, Phase 1 complete). Added `setu.inference.router` (per-pair engine
+  cache + English pivot) and pointed both the REST API and the CLI at it, so every
+  interface routes identically. This fixed a real CLI bug: it built
+  `InferenceEngine()` with the default pair, so `--src as` etc. ran through the
+  Hindi model; now it loads the right student (or pivots). Verified as->en,
+  en->pa direct and as->bn / pa->hi via English pivot on both API and CLI; the
+  frontend auto-discovers them (picker + quick-picks). Full suite 85 passed, 1
+  skipped.
