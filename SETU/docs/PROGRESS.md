@@ -594,3 +594,17 @@ key experiment. Alternative levers: bigger student (d=640 / more layers, keep IN
   under the 200 MB target. Also dropped the "billion-parameter teacher" line from
   the size pillar, since the students were distilled from the ungated 200M
   IndicTrans2 dist checkpoint, not the 1B flagship.
+- **2026-08-10 (Phase-II interim deck updated to the real system)** — Rebuilt the
+  presentation (Drawbacks -> Conclusion) to match what we actually built, via
+  `vm/build_phase2_deck.py` (python-pptx; preserves theme, tables and images;
+  writes `vm/SETU_updated.pptx`). Replaced the old DPO/AIO-KD/EWC/kNN narrative
+  with the real SeqKD + English-pivot system: rewrote Proposed System,
+  Conceptual/Analysis (OO + structured), Module Decomposition, Algorithm Design
+  and Conclusion; updated the Requirement/SRS/Interface tables (A40 vGPU,
+  IndicTrans2 dist-200M, optimum/ONNX, /translate|/languages|/models|/health,
+  Next.js/PWA/CLI); added an "Implementation & Results (Phase 1)" slide (11/22
+  langs, 12/18 >=0.80, ~104 MB INT4, English pivot, LR-3e-4 collapse fix).
+  Followed the docx rules (Times New Roman, 24pt body, 1.5 spacing, justified,
+  bulletised, shrink-to-fit). The three diagram images (Use-Case/Sequence/DFD,
+  Gantt, System-Design) still show the old DPO pipeline and need regeneration;
+  detailed image prompts handed to the user.
