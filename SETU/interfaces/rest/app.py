@@ -31,7 +31,7 @@ from pydantic import BaseModel, Field
 
 from setu.config import load_languages, resolve_language
 from setu.inference.engine import InferenceEngine, models_root
-from setu.types import ModelConfig
+from setu.inference.router import translate as route_translate
 
 app = FastAPI(title="SETU", description="Offline Indian-language translation", version="0.1.0")
 
@@ -55,13 +55,6 @@ _VARIANT_SIZE_KEY = {"int4": "int4", "int8": "int8", "onnx": "onnx_fp32"}
 def get_engine() -> InferenceEngine:
     # the default-pair engine (from model.yaml); also the shared-engine handle
     return InferenceEngine()
-
-
-@lru_cache(maxsize=None)
-def engine_for_pair(pair: str) -> InferenceEngine:
-    """One cached engine per language pair. Loads that pair's quantised ONNX
-    student lazily on first translate; a pair with no model stays a stub."""
-    return InferenceEngine(ModelConfig(language_pair=pair))
 
 
 class TranslateRequest(BaseModel):
@@ -162,50 +155,15 @@ def models() -> dict:
     return {"count": len(found), "models": found}
 
 
-def _available(pair: str) -> bool:
-    """True if a trained student exists for this exact pair (not a stub)."""
-    return not engine_for_pair(pair).is_stub
-
-
 @app.post("/translate", response_model=TranslateResponse)
 def translate(req: TranslateRequest) -> TranslateResponse:
-    # resolve + reject same-language up front so we never spin up an engine for it
+    # routing (direct model or English pivot) lives in setu.inference.router,
+    # shared with the CLI so every interface behaves identically.
     try:
-        src = resolve_language(req.source_lang)
-        tgt = resolve_language(req.target_lang)
+        result, pivot, stub = route_translate(req.text, req.source_lang, req.target_lang)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
-    if src["iso"] == tgt["iso"]:
-        raise HTTPException(status_code=400, detail=f"Source and target language are both {src['iso']!r}")
-
-    direct = f"{src['flores']}-{tgt['flores']}"
-    try:
-        # 1) a directly-trained model for this pair
-        if _available(direct):
-            result = engine_for_pair(direct).translate(req.text, src["iso"], tgt["iso"])
-            return TranslateResponse(**dataclasses.asdict(result), stub=False)
-
-        # 2) English pivot for Indic<->Indic: src -> English -> tgt, when both
-        #    hops have trained models. SETU is English-pivot, so no direct
-        #    Indic-Indic student exists, but the two halves usually do.
-        eng = load_languages()["en"]["flores"]  # eng_Latn
-        if src["iso"] != "en" and tgt["iso"] != "en":
-            hop1, hop2 = f"{src['flores']}-{eng}", f"{eng}-{tgt['flores']}"
-            if _available(hop1) and _available(hop2):
-                r1 = engine_for_pair(hop1).translate(req.text, src["iso"], "en")
-                r2 = engine_for_pair(hop2).translate(r1.translated_text, "en", tgt["iso"])
-                latency = (r1.latency_ms or 0.0) + (r2.latency_ms or 0.0)
-                return TranslateResponse(
-                    translated_text=r2.translated_text,
-                    src_lang=src["iso"], tgt_lang=tgt["iso"],
-                    latency_ms=latency, stub=False, pivot="en",
-                )
-
-        # 3) nothing trained for this pair (or its pivot) -> passthrough stub
-        result = engine_for_pair(direct).translate(req.text, src["iso"], tgt["iso"])
-        return TranslateResponse(**dataclasses.asdict(result), stub=True)
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc))
+    return TranslateResponse(**dataclasses.asdict(result), stub=stub, pivot=pivot)
 
 
 # Serve the offline PWA from the same origin so its fetch(/translate) hits this

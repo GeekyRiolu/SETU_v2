@@ -9,7 +9,7 @@ import dataclasses
 import json
 import sys
 
-from setu.inference.engine import InferenceEngine
+from setu.inference.router import translate as route_translate
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -39,27 +39,33 @@ def _read_inputs(args) -> list[str]:
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    engine = InferenceEngine()
     inputs = _read_inputs(args)
     if not inputs:
         print("error: no input text (pass --text, --file, or pipe stdin)", file=sys.stderr)
         return 2
 
-    if engine.is_stub:
-        print("[setu] stub engine: output is a passthrough (no trained model for this pair yet)", file=sys.stderr)
-
+    # route each line to its pair's model (or English pivot for Indic<->Indic)
     try:
-        results = [engine.translate(t, args.src, args.tgt) for t in inputs]
+        routed = [route_translate(t, args.src, args.tgt) for t in inputs]
     except ValueError as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2
 
+    if any(stub for _, _, stub in routed):
+        print("[setu] no trained model for this pair — output is a passthrough", file=sys.stderr)
+    elif any(pivot for _, pivot, _ in routed):
+        print("[setu] no direct model — translated via English pivot", file=sys.stderr)
+
     if args.json:
-        payload = [dataclasses.asdict(r) for r in results]
+        payload = []
+        for res, pivot, stub in routed:
+            d = dataclasses.asdict(res)
+            d["pivot"], d["stub"] = pivot, stub
+            payload.append(d)
         print(json.dumps(payload if len(payload) > 1 else payload[0], ensure_ascii=False, indent=2))
     else:
-        for r in results:
-            print(r.translated_text)
+        for res, _, _ in routed:
+            print(res.translated_text)
     return 0
 
 
