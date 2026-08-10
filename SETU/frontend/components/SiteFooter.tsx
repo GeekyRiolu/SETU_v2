@@ -1,3 +1,5 @@
+import BridgeWord from "@/components/BridgeWord";
+
 const REPO = "https://github.com/GeekyRiolu/SETU_v2";
 
 export default function SiteFooter() {
@@ -10,9 +12,7 @@ export default function SiteFooter() {
               <span>
                 SE<b>TU</b>
               </span>
-              <span className="deva" aria-hidden="true">
-                सेतु
-              </span>
+              <BridgeWord className="deva" start={2} />
             </a>
             <p className="foot__tag">
               A bridge across the twenty-two languages of India, built to work
@@ -68,8 +68,8 @@ export default function SiteFooter() {
 
         <div className="foot__bar">
           <span>Built offline-first · no trackers · nothing to log</span>
-          <span className="indic" lang="sa">
-            सेतु · a bridge
+          <span className="indic">
+            <BridgeWord start={3} /> · a bridge
           </span>
         </div>
       </div>

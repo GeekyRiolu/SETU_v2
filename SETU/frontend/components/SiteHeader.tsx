@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import ThemeToggle from "@/components/ThemeToggle";
+import BridgeWord from "@/components/BridgeWord";
 
 const LINKS = [
   { href: "#translate", label: "Translate" },
@@ -20,9 +21,7 @@ export default function SiteHeader() {
           <span>
             SE<b>TU</b>
           </span>
-          <span className="deva" aria-hidden="true">
-            सेतु
-          </span>
+          <BridgeWord className="deva" start={0} />
         </a>
 
         <div className="masthead__right">

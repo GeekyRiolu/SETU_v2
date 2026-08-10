@@ -1,3 +1,5 @@
+import BridgeWord from "@/components/BridgeWord";
+
 // "setu" means bridge. The word for bridge across writing systems is the motif.
 const WALL = [
   { word: "सेतु", script: "Devanagari", mark: true },
@@ -14,7 +16,9 @@ export default function Hero() {
       <div className="wrap hero__grid">
         <div>
           <p className="eyebrow hero__kicker reveal reveal-1">
-            सेतु · a translation commons
+            <span>
+              <BridgeWord start={1} /> · a translation commons
+            </span>
           </p>
           <h1 className="reveal reveal-2">
             One bridge.

@@ -403,6 +403,29 @@ a:hover {
   }
 }
 
+/* cycling "bridge" wordmark (सेतु / সেতু / பாலம் / …) */
+.bridgeword {
+  display: inline-block;
+}
+
+.bridgeword__in {
+  display: inline-block;
+  animation: bridge-in 0.55s var(--ease-out);
+}
+
+@keyframes bridge-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.5em);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bridgeword__in {
+    animation: none;
+  }
+}
+
 /* =====================  BUTTONS  ===================== */
 .btn {
   --_bg: transparent;

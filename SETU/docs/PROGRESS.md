@@ -645,3 +645,10 @@ key experiment. Alternative levers: bigger student (d=640 / more layers, keep IN
   the language picker keeps all 23 languages but groups the 12 working ones (11
   languages + English) under "Available now" and disables the 11 untrained under
   "Not yet trained (Phase 2)".
+- **2026-08-11 (cont.)** — Frontend: the standalone Devanagari "सेतु" (which read as
+  Hindi-biased) now cycles the word for *bridge* across 11 scripts
+  (सेतु/সেতু/பாலம்/వంతెన/…) via a new `BridgeWord` component with a soft
+  fade+rise animation. Applied in the header wordmark, hero eyebrow, and footer
+  (×2); each starts on a different script and drifts, so several show at once.
+  Deterministic initial index (SSR-safe); respects prefers-reduced-motion.
+  Also added a suspension-bridge favicon (app/icon.svg + apple-icon.svg).
