@@ -640,3 +640,8 @@ key experiment. Alternative levers: bigger student (d=640 / more layers, keep IN
   0.855 (Punjabi passes both ways; Assamese near-miss ~0.76). Frontend: replaced
   the /models-driven "Trained models" chips (all X→English, which read as
   English-only) with curated Indic↔Indic "Try:" examples that showcase the pivot.
+- **2026-08-11 (cont.)** — `phase1-models` release **published** (public, no login;
+  2 × ~897 MB, HTTP 200) so `scripts/fetch_models.sh` works on any machine. Also:
+  the language picker keeps all 23 languages but groups the 12 working ones (11
+  languages + English) under "Available now" and disables the 11 untrained under
+  "Not yet trained (Phase 2)".
