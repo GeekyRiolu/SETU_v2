@@ -628,3 +628,15 @@ key experiment. Alternative levers: bigger student (d=640 / more layers, keep IN
   en->pa direct and as->bn / pa->hi via English pivot on both API and CLI; the
   frontend auto-discovers them (picker + quick-picks). Full suite 85 passed, 1
   skipped.
+- **2026-08-11 (models on GitHub Releases + scorecard + friend quickstart)** —
+  Shipped the Phase-1 models so a fresh machine can run the demo without this
+  laptop: two ~897 MB archives (indic-en, en-indic) uploaded to the
+  **`phase1-models`** GitHub Release (2.3 GB of INT4 models don't belong in git,
+  and the .zip/fp32 files exceed GitHub's 100 MB file limit), plus
+  `scripts/fetch_models.sh` (downloads + extracts into `models/`) and
+  `docs/QUICKSTART.md` (clone → deps → fetch → API → translate → web UI).
+  Generated `docs/SCORES.md` from the 22 `report_*.json` via
+  `scripts/build_scores.py`: **14/22 directions ≥ 0.80**, mean 0.838, median
+  0.855 (Punjabi passes both ways; Assamese near-miss ~0.76). Frontend: replaced
+  the /models-driven "Trained models" chips (all X→English, which read as
+  English-only) with curated Indic↔Indic "Try:" examples that showcase the pivot.

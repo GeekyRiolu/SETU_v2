@@ -17,7 +17,8 @@ You need two processes: the **API** (Python) and the **frontend** (Node).
 
 ```bash
 cd SETU
-# one-time: pip install -e ".[serve]"   (fastapi, uvicorn, optimum, onnxruntime)
+# one-time deps: pip install -e ".[quantize]" && pip install torch transformers sentencepiece fastapi uvicorn
+# (full fresh-machine setup incl. fetching models: docs/QUICKSTART.md)
 uvicorn interfaces.rest.app:app --host 0.0.0.0 --port 8000
 ```
 

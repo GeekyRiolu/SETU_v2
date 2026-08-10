@@ -7,6 +7,18 @@ import type { ApiStatus, Language, ModelInfo, TranslateResult } from "@/lib/type
 
 const SAMPLE = "भारत एक विशाल देश है, जहाँ अनेक भाषाएँ बोली जाती हैं।";
 
+// Showcase the real bridge: Indic<->Indic (via English pivot) as well as
+// Indic<->English, so it never reads as "English only".
+const EXAMPLES: [string, string][] = [
+  ["hi", "bn"],
+  ["ta", "hi"],
+  ["mr", "kn"],
+  ["bn", "gu"],
+  ["te", "ta"],
+  ["en", "pa"],
+  ["ml", "en"],
+];
+
 const STATUS_LABEL: Record<ApiStatus, string> = {
   checking: "Connecting…",
   online: "On-device engine",
@@ -280,32 +292,30 @@ export default function Translator() {
           </div>
         </div>
 
-        {models.length > 0 && (
-          <div className="quickpicks">
-            <span className="quickpicks__label">Trained models:</span>
-            {models.map((m) => (
-              <button
-                type="button"
-                key={m.pair}
-                className="chip"
-                onClick={() => {
-                  setSrc(m.src_iso);
-                  setTgt(m.tgt_iso);
-                  setResult(null);
-                  setError(null);
-                }}
-              >
-                <span className="indic" lang={m.src_iso}>
-                  {byIso.get(m.src_iso)?.endonym ?? m.src_name}
-                </span>
-                <span className="arrow">→</span>
-                <span className="indic" lang={m.tgt_iso}>
-                  {byIso.get(m.tgt_iso)?.endonym ?? m.tgt_name}
-                </span>
-              </button>
-            ))}
-          </div>
-        )}
+        <div className="quickpicks">
+          <span className="quickpicks__label">Try:</span>
+          {EXAMPLES.map(([s, t]) => (
+            <button
+              type="button"
+              key={`${s}-${t}`}
+              className="chip"
+              onClick={() => {
+                setSrc(s);
+                setTgt(t);
+                setResult(null);
+                setError(null);
+              }}
+            >
+              <span className="indic" lang={s}>
+                {byIso.get(s)?.endonym ?? s}
+              </span>
+              <span className="arrow">→</span>
+              <span className="indic" lang={t}>
+                {byIso.get(t)?.endonym ?? t}
+              </span>
+            </button>
+          ))}
+        </div>
       </div>
     </section>
   );
