@@ -108,28 +108,26 @@ Phase 1 is complete (where we are today, mid-Aug 2026); Phase 2 runs to the
 
 ```mermaid
 gantt
-  title SETU - Project Timeline (Phase 1 done · Final ~end Oct 2026)
+  title SETU Project Timeline - Phase 1 done, Final end Oct 2026
   dateFormat YYYY-MM-DD
   axisFormat %b
-
   section Phase 1 (done)
-  Literature survey & requirements        :done,   a1, 2026-01-15, 2026-02-28
-  System design & pipeline build (M0-M9)  :done,   a2, 2026-03-01, 2026-04-30
-  Data & corpus prep (Samanantar)         :done,   a3, 2026-04-15, 2026-05-31
-  Teacher distillation (dist-200M 1-best) :done,   a4, 2026-05-15, 2026-06-30
-  SeqKD student training (52M)            :done,   a5, 2026-06-15, 2026-08-05
-  Quantisation & ONNX export (INT8/INT4)  :done,   a6, 2026-07-10, 2026-08-05
-  Interfaces API/Next.js/PWA/CLI + pivot  :done,   a7, 2026-07-15, 2026-08-08
-  Phase-1 languages: 11 of 22 (both ways) :active, a8, 2026-06-15, 2026-08-20
-  Interim presentation                    :milestone, m1, 2026-08-12, 0d
-
+  Literature survey and requirements   :done, a1, 2026-01-15, 2026-02-28
+  System design and pipeline build     :done, a2, 2026-03-01, 2026-04-30
+  Data and corpus prep (Samanantar)    :done, a3, 2026-04-15, 2026-05-31
+  Teacher distillation 1-best          :done, a4, 2026-05-15, 2026-06-30
+  SeqKD student training 52M           :done, a5, 2026-06-15, 2026-08-05
+  Quantisation and ONNX export         :done, a6, 2026-07-10, 2026-08-05
+  Interfaces API Web PWA CLI and pivot :done, a7, 2026-07-15, 2026-08-08
+  Phase 1 languages 11 of 22           :active, a8, 2026-06-15, 2026-08-20
+  Interim presentation                 :milestone, m1, 2026-08-12, 0d
   section Phase 2 (upcoming)
-  Assamese & Punjabi (finish training)    :active, b1, 2026-08-10, 2026-08-31
-  Remaining 11 languages (bidirectional)  :        b2, 2026-09-01, 2026-10-15
-  FLORES / COMET benchmarking             :        b3, 2026-09-15, 2026-10-20
-  Mobile / edge packaging + PWA hardening :        b4, 2026-09-20, 2026-10-22
-  Final report & paper writeup            :        b5, 2026-10-01, 2026-10-25
-  Final presentation                      :milestone, m2, 2026-10-28, 0d
+  Assamese and Punjabi finish          :active, b1, 2026-08-10, 2026-08-31
+  Remaining 11 languages               :b2, 2026-09-01, 2026-10-15
+  FLORES and COMET benchmarking        :b3, 2026-09-15, 2026-10-20
+  Mobile and edge packaging            :b4, 2026-09-20, 2026-10-22
+  Final report and paper writeup       :b5, 2026-10-01, 2026-10-25
+  Final presentation                   :milestone, m2, 2026-10-28, 0d
 ```
 
 > Old deck's phases were Data Prep -> Teacher -> **Preference Gen (kNN)** -> **DPO**

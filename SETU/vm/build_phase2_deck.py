@@ -6,9 +6,12 @@ file so an open copy is never clobbered.
 
     .venv/bin/python vm/build_phase2_deck.py
 """
+import os
 from pptx import Presentation
-from pptx.util import Pt
+from pptx.util import Pt, Inches
 from pptx.enum.text import PP_ALIGN, MSO_AUTO_SIZE
+
+DIAG = "vm/diagrams"  # rendered Mermaid PNGs (see docs/DIAGRAMS.md)
 
 SRC = "vm/SETU.pptx"
 DST = "vm/SETU_updated.pptx"
@@ -174,6 +177,51 @@ new_entry = entries[-1]
 xml_slides.remove(new_entry)
 xml_slides.insert(concl_idx, new_entry)  # results before Conclusion
 print(f"inserted Results slide at index {concl_idx} (before Conclusion)")
+
+
+# ---- swap the three diagram images for the corrected Mermaid renders ----
+def _box(slide):
+    for sh in slide.shapes:
+        if sh.shape_type == 13:
+            return sh.left, sh.top, sh.width, sh.height
+    return (Inches(0), Inches(1), Inches(10), Inches(6.5))
+
+
+def _clear_pics(slide):
+    for sh in list(slide.shapes):
+        if sh.shape_type == 13:
+            sh._element.getparent().remove(sh._element)
+
+
+def _place(slide, png, l, t, w, h):
+    pic = slide.shapes.add_picture(png, l, t)
+    sc = min(w / pic.width, h / pic.height)
+    pic.width, pic.height = int(pic.width * sc), int(pic.height * sc)
+    pic.left = int(l + (w - pic.width) / 2)  # centre horizontally, top-align vertically
+    pic.top = int(t)
+
+
+def _caption(slide, text, y):
+    tf = slide.shapes.add_textbox(Inches(0.2), Inches(y), Inches(9.6), Inches(0.28)).text_frame
+    tf.paragraphs[0].text = text
+    r = tf.paragraphs[0].runs[0]
+    r.font.name = FONT
+    r.font.size = Pt(13)
+    r.font.bold = True
+
+
+if os.path.exists(f"{DIAG}/system_design.png"):
+    b = _box(prs.slides[18]); _clear_pics(prs.slides[18]); _place(prs.slides[18], f"{DIAG}/system_design.png", *b)
+    b = _box(prs.slides[17]); _clear_pics(prs.slides[17]); _place(prs.slides[17], f"{DIAG}/gantt.png", *b)
+    s15 = prs.slides[15]; _clear_pics(s15)
+    for cap, png, cy, iy in [("Use Case Diagram", "use_case.png", 0.15, 0.45),
+                             ("Sequence Diagram", "sequence.png", 2.55, 2.85),
+                             ("Data Flow Diagram", "data_flow.png", 4.95, 5.25)]:
+        _caption(s15, cap, cy)
+        _place(s15, f"{DIAG}/{png}", Inches(0.2), Inches(iy), Inches(9.6), Inches(2.05))
+    print("embedded corrected diagrams (slides 15, 17, 18)")
+else:
+    print("no vm/diagrams/*.png yet - deck built with the old diagram images")
 
 prs.save(DST)
 print(f"\nSaved -> {DST}  ({len(prs.slides.__iter__.__self__._sldIdLst)} slide entries)")

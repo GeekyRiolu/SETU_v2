@@ -610,4 +610,8 @@ key experiment. Alternative levers: bigger student (d=640 / more layers, keep IN
   detailed image prompts handed to the user, plus Mermaid versions of all five
   diagrams in [`docs/DIAGRAMS.md`](DIAGRAMS.md) (System Design, Use Case, Sequence,
   DFD, and an updated Gantt: Phase 1 marked done, Phase 2 running to the final
-  presentation at end of October 2026).
+  presentation at end of October 2026). Then rendered those Mermaid diagrams to
+  PNG (mermaid-cli, headless Chromium) into `vm/diagrams/` and embedded them into
+  slides 18 (pipeline), 17 (Gantt) and 15 (use-case + sequence + DFD) of
+  `vm/SETU_updated.pptx` -- the whole deck now regenerates from
+  `vm/build_phase2_deck.py` + `vm/diagrams/`.
