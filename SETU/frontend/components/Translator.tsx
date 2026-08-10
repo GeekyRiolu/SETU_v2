@@ -123,6 +123,34 @@ export default function Translator() {
 
   const label = (l: Language) => (l.iso === "en" ? l.name : `${l.endonym} · ${l.name}`);
 
+  // All languages stay in the picker; the working ones (any trained model, or
+  // English, the pivot hub) are grouped on top, the rest are shown but disabled.
+  const renderLangOptions = () => {
+    const opt = (l: Language, disabled = false) => (
+      <option key={l.iso} value={l.iso} disabled={disabled}>
+        {label(l)}
+      </option>
+    );
+    if (models.length === 0) return langs.map((l) => opt(l)); // API offline: enable all
+    const avail = new Set<string>(["en"]);
+    for (const m of models) {
+      avail.add(m.src_iso);
+      avail.add(m.tgt_iso);
+    }
+    const working = langs.filter((l) => avail.has(l.iso));
+    const pending = langs.filter((l) => !avail.has(l.iso));
+    return (
+      <>
+        <optgroup label="Available now">{working.map((l) => opt(l))}</optgroup>
+        {pending.length > 0 && (
+          <optgroup label="Not yet trained (Phase 2)">
+            {pending.map((l) => opt(l, true))}
+          </optgroup>
+        )}
+      </>
+    );
+  };
+
   return (
     <section className="console-section section" id="translate">
       <div className="wrap">
@@ -155,11 +183,7 @@ export default function Translator() {
                       setResult(null);
                     }}
                   >
-                    {langs.map((l) => (
-                      <option key={l.iso} value={l.iso}>
-                        {label(l)}
-                      </option>
-                    ))}
+                    {renderLangOptions()}
                   </select>
                 </div>
               </div>
@@ -210,11 +234,7 @@ export default function Translator() {
                       setResult(null);
                     }}
                   >
-                    {langs.map((l) => (
-                      <option key={l.iso} value={l.iso}>
-                        {label(l)}
-                      </option>
-                    ))}
+                    {renderLangOptions()}
                   </select>
                 </div>
               </div>
