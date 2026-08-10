@@ -614,4 +614,7 @@ key experiment. Alternative levers: bigger student (d=640 / more layers, keep IN
   PNG (mermaid-cli, headless Chromium) into `vm/diagrams/` and embedded them into
   slides 18 (pipeline), 17 (Gantt) and 15 (use-case + sequence + DFD) of
   `vm/SETU_updated.pptx` -- the whole deck now regenerates from
-  `vm/build_phase2_deck.py` + `vm/diagrams/`.
+  `vm/build_phase2_deck.py` + `vm/diagrams/`. Added two testing slides before the
+  Conclusion (Unit Testing, Integration Testing) with real test-case tables: the
+  same-language/unknown-code guards (unit) and English-pivot chaining (integration,
+  with an honest Fail on not-yet-trained Assamese). Deck is now 33 slides.

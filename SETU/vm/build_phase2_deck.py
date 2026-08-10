@@ -10,6 +10,7 @@ import os
 from pptx import Presentation
 from pptx.util import Pt, Inches
 from pptx.enum.text import PP_ALIGN, MSO_AUTO_SIZE
+from pptx.dml.color import RGBColor
 
 DIAG = "vm/diagrams"  # rendered Mermaid PNGs (see docs/DIAGRAMS.md)
 
@@ -222,6 +223,93 @@ if os.path.exists(f"{DIAG}/system_design.png"):
     print("embedded corrected diagrams (slides 15, 17, 18)")
 else:
     print("no vm/diagrams/*.png yet - deck built with the old diagram images")
+
+
+# ---- Unit + Integration testing slides (test-case tables), before Conclusion ----
+HEADERS = ["Test #", "Test Data (input)", "Expected Result", "Actual Result", "Pass/Fail"]
+
+UNIT_DESC = [
+    ("Component: Translation Engine - Hindi to English student (INT4 ONNX)", True, 17),
+    ("Test case 1: translate() - translate a Hindi sentence to English.", False, 15),
+    ("Minimum 3 test data included (1 valid, 2 invalid).", False, 15),
+]
+UNIT_ROWS = [
+    ["1", 'src=hi, tgt=en\n"भारत एक विशाल देश है।"', "Fluent English translation of the input", '"India is a vast country."', "Pass"],
+    ["2", "src=hi, tgt=hi\n(same language)", "Rejected with HTTP 400 / ValueError", "HTTP 400: source and target are both 'hi'", "Pass"],
+    ["3", "src=xx, tgt=en\n(unknown language code)", 'Rejected: "Unknown language code"', "ValueError raised, request refused", "Pass"],
+]
+
+INTEG_DESC = [
+    ("Integrate the components and test (Component and Component)", True, 17),
+    ("Inference Engine + English-Pivot Router - Indic to Indic translation.", True, 15),
+    ("Test case 1: pivot translate() - chain two students, source to English to target.", False, 15),
+    ("Minimum 3 test data included.", False, 15),
+]
+INTEG_ROWS = [
+    ["1", 'src=hi, tgt=bn\n"भारत एक विशाल देश है।"\n(no direct model)', "Route via English, return Bengali", '"ভারত একটি বিশাল দেশ।"  (pivot=en, ~57 ms)', "Pass"],
+    ["2", 'src=ta, tgt=te\n"இந்தியா ஒரு பெரிய நாடு."', "Route via English, return Telugu", '"భారతదేశం ఒక పెద్ద దేశం."  (pivot=en)', "Pass"],
+    ["3", "src=as, tgt=bn\n(Assamese not in Phase 1)", "Translate Assamese to Bengali", "No as->en model yet: passthrough stub", "Fail"],
+]
+
+
+def _add_test_slide(title, desc, rows):
+    layout = next(l for l in prs.slide_layouts if l.name == "OBJECT")
+    s = prs.slides.add_slide(layout)
+    s.shapes.title.text = title
+    for r in s.shapes.title.text_frame.paragraphs[0].runs:
+        r.font.name = FONT
+    for ph in list(s.placeholders):
+        if ph.placeholder_format.idx != 0:
+            ph._element.getparent().remove(ph._element)
+    tf = s.shapes.add_textbox(Inches(0.4), Inches(1.05), Inches(9.2), Inches(1.45)).text_frame
+    tf.word_wrap = True
+    for i, (txt, bold, size) in enumerate(desc):
+        p = tf.paragraphs[0] if i == 0 else tf.add_paragraph()
+        p.text = txt
+        p.line_spacing = 1.1
+        for r in p.runs:
+            r.font.name, r.font.size, r.font.bold = FONT, Pt(size), bold
+    tbl = s.shapes.add_table(len(rows) + 1, len(HEADERS), Inches(0.3), Inches(2.65),
+                             Inches(9.4), Inches(3.9)).table
+    for c, w in enumerate([Inches(0.7), Inches(2.35), Inches(2.75), Inches(2.8), Inches(0.8)]):
+        tbl.columns[c].width = w
+    for c, h in enumerate(HEADERS):
+        cell = tbl.cell(0, c)
+        cell.text = h
+        for r in cell.text_frame.paragraphs[0].runs:
+            r.font.name, r.font.size, r.font.bold = FONT, Pt(13), True
+    for ri, row in enumerate(rows, start=1):
+        for c, val in enumerate(row):
+            cell = tbl.cell(ri, c)
+            cell.text = val
+            for para in cell.text_frame.paragraphs:
+                for r in para.runs:
+                    r.font.name, r.font.size = FONT, Pt(12)
+                    if c == len(HEADERS) - 1:
+                        r.font.bold = True
+                        r.font.color.rgb = RGBColor(0x2E, 0x7D, 0x32) if val == "Pass" else RGBColor(0xC6, 0x28, 0x28)
+    return s
+
+
+def _concl_idx():
+    for i, sl in enumerate(prs.slides):
+        if sl.shapes.title and sl.shapes.title.text.strip().lower() == "conclusion":
+            return i
+    return len(prs.slides) - 1
+
+
+def _move_last_before(idx):
+    xml = prs.slides._sldIdLst
+    node = list(xml)[-1]
+    xml.remove(node)
+    xml.insert(idx, node)
+
+
+for ttl, desc, rows in [("Unit Testing", UNIT_DESC, UNIT_ROWS),
+                        ("Integration Testing", INTEG_DESC, INTEG_ROWS)]:
+    _add_test_slide(ttl, desc, rows)
+    _move_last_before(_concl_idx())
+    print(f"inserted {ttl} slide before Conclusion")
 
 prs.save(DST)
 print(f"\nSaved -> {DST}  ({len(prs.slides.__iter__.__self__._sldIdLst)} slide entries)")
