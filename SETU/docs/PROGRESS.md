@@ -607,4 +607,7 @@ key experiment. Alternative levers: bigger student (d=640 / more layers, keep IN
   Followed the docx rules (Times New Roman, 24pt body, 1.5 spacing, justified,
   bulletised, shrink-to-fit). The three diagram images (Use-Case/Sequence/DFD,
   Gantt, System-Design) still show the old DPO pipeline and need regeneration;
-  detailed image prompts handed to the user.
+  detailed image prompts handed to the user, plus Mermaid versions of all five
+  diagrams in [`docs/DIAGRAMS.md`](DIAGRAMS.md) (System Design, Use Case, Sequence,
+  DFD, and an updated Gantt: Phase 1 marked done, Phase 2 running to the final
+  presentation at end of October 2026).
