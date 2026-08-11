@@ -1,0 +1,18 @@
+{
+  "pair": "eng_Latn-tam_Taml",
+  "train_corpus": "distilled",
+  "student_params": 52592640,
+  "train_entries": 490204,
+  "dev_entries": 500,
+  "sft_final_loss": 2.2005600929260254,
+  "sft_eval": {
+    "bleu": 8.035561682353864,
+    "chrf": 42.99970517762121,
+    "latency_ms_mean": 134.72752179857343,
+    "latency_ms_max": 776.0703810490668,
+    "n": 500,
+    "teacher_bleu": 10.6372092524606,
+    "bleu_ratio": 0.7554201004831297,
+    "meets_quality_target": false
+  }
+}

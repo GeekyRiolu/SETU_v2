@@ -1,0 +1,18 @@
+{
+  "pair": "guj_Gujr-eng_Latn",
+  "train_corpus": "distilled",
+  "student_params": 52592640,
+  "train_entries": 495000,
+  "dev_entries": 500,
+  "sft_final_loss": 1.996354579925537,
+  "sft_eval": {
+    "bleu": 18.83710460194574,
+    "chrf": 46.22829121639584,
+    "latency_ms_mean": 129.52826490765437,
+    "latency_ms_max": 676.7859810497612,
+    "n": 500,
+    "teacher_bleu": 23.929663382533164,
+    "bleu_ratio": 0.7871863594911825,
+    "meets_quality_target": false
+  }
+}

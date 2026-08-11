@@ -1,0 +1,18 @@
+{
+  "pair": "asm_Beng-eng_Latn",
+  "train_corpus": "distilled",
+  "student_params": 52592640,
+  "train_entries": 135344,
+  "dev_entries": 500,
+  "sft_final_loss": 1.823169231414795,
+  "sft_eval": {
+    "bleu": 13.094508303919186,
+    "chrf": 33.54141868193459,
+    "latency_ms_mean": 154.18797890190035,
+    "latency_ms_max": 1126.226763939485,
+    "n": 500,
+    "teacher_bleu": 17.30561671464536,
+    "bleu_ratio": 0.7566623322263687,
+    "meets_quality_target": false
+  }
+}

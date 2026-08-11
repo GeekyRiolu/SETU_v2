@@ -243,105 +243,624 @@
     "pair": "eng_Latn-mar_Deva",
     "src": "en",
     "tgt": "mr",
-    "status": "pending (not trained)",
-    "pairs": []
+    "status": "trained",
+    "pairs": [
+      {
+        "in": "India is a big country.",
+        "out": "भारत हा एक मोठा देश आहे."
+      },
+      {
+        "in": "The weather is nice today.",
+        "out": "आज हवामान छान आहे."
+      },
+      {
+        "in": "I love reading books.",
+        "out": "मला पुस्तके वाचायला खूप आवडतात."
+      },
+      {
+        "in": "She is going to school.",
+        "out": "ती शाळेत जात आहे."
+      },
+      {
+        "in": "Water is essential for life.",
+        "out": "जीवनासाठी पाणी आवश्यक आहे."
+      },
+      {
+        "in": "He works in a hospital.",
+        "out": "तो एका रुग्णालयात काम करतो."
+      },
+      {
+        "in": "We are learning a new language.",
+        "out": "आपण एक नवीन भाषा शिकत आहोत."
+      },
+      {
+        "in": "The train arrives at nine o'clock.",
+        "out": "ही ट्रेन नऊ वाजता येते."
+      },
+      {
+        "in": "This is a very beautiful garden.",
+        "out": "ही एक अतिशय सुंदर बाग आहे."
+      },
+      {
+        "in": "Thank you very much for your help.",
+        "out": "तुमच्या मदतीबद्दल खूप धन्यवाद."
+      }
+    ]
   },
   {
     "pair": "tel_Telu-eng_Latn",
     "src": "te",
     "tgt": "en",
-    "status": "pending (not trained)",
-    "pairs": []
+    "status": "trained",
+    "pairs": [
+      {
+        "in": "భారతదేశం ఒక పెద్ద దేశం.",
+        "out": "India is a big country."
+      },
+      {
+        "in": "ఈ రోజు వాతావరణం బాగుంది.",
+        "out": "The weather is good today."
+      },
+      {
+        "in": "నాకు పుస్తకాలు చదవడం ఇష్టం.",
+        "out": "I like to read the books."
+      },
+      {
+        "in": "ఆమె పాఠశాలకు వెళుతోంది.",
+        "out": "She is going to go to school."
+      },
+      {
+        "in": "నీరు జీవితానికి అవసరం.",
+        "out": "Water is needed for the life."
+      },
+      {
+        "in": "అతను ఒక ఆసుపత్రిలో పని చేస్తాడు.",
+        "out": "He works in a hospital."
+      },
+      {
+        "in": "మేము ఒక కొత్త భాషను నేర్చుకుంటున్నాము.",
+        "out": "We are learning a new language."
+      },
+      {
+        "in": "రైలు తొమ్మిది గంటలకు వస్తుంది.",
+        "out": "The train comes at nine hours."
+      },
+      {
+        "in": "ఇది చాలా అందమైన తోట.",
+        "out": "It is a very beautiful garden."
+      },
+      {
+        "in": "మీ సహాయానికి చాలా ధన్యవాదాలు.",
+        "out": "Thank you so much for your help."
+      }
+    ]
   },
   {
     "pair": "eng_Latn-tel_Telu",
     "src": "en",
     "tgt": "te",
-    "status": "pending (not trained)",
-    "pairs": []
+    "status": "trained",
+    "pairs": [
+      {
+        "in": "India is a big country.",
+        "out": "భారతదేశం ఒక పెద్ద దేశం."
+      },
+      {
+        "in": "The weather is nice today.",
+        "out": "వాతావరణం నేడు బాగుంది."
+      },
+      {
+        "in": "I love reading books.",
+        "out": "నాకు పుస్తకాలు చదవడం అంటే చాలా ఇష్టం."
+      },
+      {
+        "in": "She is going to school.",
+        "out": "ఆమె పాఠశాలకు వెళ్తోంది."
+      },
+      {
+        "in": "Water is essential for life.",
+        "out": "ప్రాణాలకు నీరు చాలా అవసరం."
+      },
+      {
+        "in": "He works in a hospital.",
+        "out": "అతను ఒక ఆసుపత్రిలో పనిచేస్తున్నాడు."
+      },
+      {
+        "in": "We are learning a new language.",
+        "out": "మనం కొత్త భాష నేర్చుకుంటున్నాం."
+      },
+      {
+        "in": "The train arrives at nine o'clock.",
+        "out": "ఈ రైలు తొమ్మిది గంటలకు వస్తుంది."
+      },
+      {
+        "in": "This is a very beautiful garden.",
+        "out": "ఇది చాలా అందమైన తోట."
+      },
+      {
+        "in": "Thank you very much for your help.",
+        "out": "మీ సహాయం చేసినందుకు చాలా ధన్యవాదాలు."
+      }
+    ]
   },
   {
     "pair": "tam_Taml-eng_Latn",
     "src": "ta",
     "tgt": "en",
-    "status": "pending (not trained)",
-    "pairs": []
+    "status": "trained",
+    "pairs": [
+      {
+        "in": "இந்தியா ஒரு பெரிய நாடு.",
+        "out": "India is a big country."
+      },
+      {
+        "in": "இன்று வானிலை நன்றாக உள்ளது.",
+        "out": "The weather is good today."
+      },
+      {
+        "in": "எனக்கு புத்தகங்கள் படிக்க பிடிக்கும்.",
+        "out": "I love reading books and I love to read books."
+      },
+      {
+        "in": "அவள் பள்ளிக்குச் செல்கிறாள்.",
+        "out": "She goes to the school."
+      },
+      {
+        "in": "நீர் வாழ்க்கைக்கு அவசியம்.",
+        "out": "Water is a must for life."
+      },
+      {
+        "in": "அவர் ஒரு மருத்துவமனையில் வேலை செய்கிறார்.",
+        "out": "He works in a hospital."
+      },
+      {
+        "in": "நாங்கள் ஒரு புதிய மொழியைக் கற்றுக்கொண்டிருக்கிறோம்.",
+        "out": "We have learnt a new language."
+      },
+      {
+        "in": "ரயில் ஒன்பது மணிக்கு வருகிறது.",
+        "out": "The train is coming at nine pm."
+      },
+      {
+        "in": "இது மிகவும் அழகான தோட்டம்.",
+        "out": "It is a very beautiful garden."
+      },
+      {
+        "in": "உங்கள் உதவிக்கு மிக்க நன்றி.",
+        "out": "Thank you so much for your help."
+      }
+    ]
   },
   {
     "pair": "eng_Latn-tam_Taml",
     "src": "en",
     "tgt": "ta",
-    "status": "pending (not trained)",
-    "pairs": []
+    "status": "trained",
+    "pairs": [
+      {
+        "in": "India is a big country.",
+        "out": "இந்தியா ஒரு பெரிய நாடு."
+      },
+      {
+        "in": "The weather is nice today.",
+        "out": "இன்று வானிலை நன்றாக இருக்கிறது."
+      },
+      {
+        "in": "I love reading books.",
+        "out": "எனக்கு புத்தகங்கள் படிப்பது ரொம்ப பிடிக்கும்."
+      },
+      {
+        "in": "She is going to school.",
+        "out": "அவள் பள்ளிக்குச் செல்கிறாள்."
+      },
+      {
+        "in": "Water is essential for life.",
+        "out": "வாழ்க்கைக்கு தண்ணீர் அவசியம்."
+      },
+      {
+        "in": "He works in a hospital.",
+        "out": "அவர் ஒரு மருத்துவமனையில் பணிபுரிகிறார்."
+      },
+      {
+        "in": "We are learning a new language.",
+        "out": "நாம் ஒரு புதிய மொழியைக் கற்றுக்கொள்கிறோம்."
+      },
+      {
+        "in": "The train arrives at nine o'clock.",
+        "out": "இந்த ரயில் ஒன்பது மணிக்கு வருகிறது."
+      },
+      {
+        "in": "This is a very beautiful garden.",
+        "out": "இது மிகவும் அழகான தோட்டம்."
+      },
+      {
+        "in": "Thank you very much for your help.",
+        "out": "உங்கள் உதவிக்கு மிக்க நன்றி."
+      }
+    ]
   },
   {
     "pair": "guj_Gujr-eng_Latn",
     "src": "gu",
     "tgt": "en",
-    "status": "pending (not trained)",
-    "pairs": []
+    "status": "trained",
+    "pairs": [
+      {
+        "in": "ભારત એક મોટો દેશ છે.",
+        "out": "India is a country that is a big country."
+      },
+      {
+        "in": "આજે હવામાન સરસ છે.",
+        "out": "Today, the weather is very good."
+      },
+      {
+        "in": "મને પુસ્તકો વાંચવાં ગમે છે.",
+        "out": "I like to read the books."
+      },
+      {
+        "in": "તે શાળાએ જઈ રહી છે.",
+        "out": "She is going to school."
+      },
+      {
+        "in": "પાણી જીવન માટે આવશ્યક છે.",
+        "out": "Water is essential for the life of life."
+      },
+      {
+        "in": "તે એક હોસ્પિટલમાં કામ કરે છે.",
+        "out": "He works at a hospital."
+      },
+      {
+        "in": "અમે એક નવી ભાષા શીખી રહ્યા છીએ.",
+        "out": "We are learning a new language."
+      },
+      {
+        "in": "ટ્રેન નવ વાગ્યે આવે છે.",
+        "out": "The train comes at nine pm."
+      },
+      {
+        "in": "આ એક ખૂબ સુંદર બગીચો છે.",
+        "out": "This is a very beautiful garden."
+      },
+      {
+        "in": "તમારી મદદ બદલ ખૂબ ખૂબ આભાર.",
+        "out": "Thank you so much for your help."
+      }
+    ]
   },
   {
     "pair": "eng_Latn-guj_Gujr",
     "src": "en",
     "tgt": "gu",
-    "status": "pending (not trained)",
-    "pairs": []
-  },
-  {
-    "pair": "urd_Arab-eng_Latn",
-    "src": "ur",
-    "tgt": "en",
-    "status": "pending (not trained)",
-    "pairs": []
-  },
-  {
-    "pair": "eng_Latn-urd_Arab",
-    "src": "en",
-    "tgt": "ur",
-    "status": "pending (not trained)",
-    "pairs": []
+    "status": "trained",
+    "pairs": [
+      {
+        "in": "India is a big country.",
+        "out": "ભારત એક મોટો દેશ છે."
+      },
+      {
+        "in": "The weather is nice today.",
+        "out": "આજે હવામાન સારું છે."
+      },
+      {
+        "in": "I love reading books.",
+        "out": "મને પુસ્તકો વાંચવાનું ગમે છે."
+      },
+      {
+        "in": "She is going to school.",
+        "out": "તે શાળાએ જાય છે."
+      },
+      {
+        "in": "Water is essential for life.",
+        "out": "જીવન માટે પાણી જરૂરી છે."
+      },
+      {
+        "in": "He works in a hospital.",
+        "out": "તે હોસ્પિટલમાં કામ કરે છે."
+      },
+      {
+        "in": "We are learning a new language.",
+        "out": "આપણે નવી ભાષા શીખી રહ્યા છીએ."
+      },
+      {
+        "in": "The train arrives at nine o'clock.",
+        "out": "આ ટ્રેન નવ વાગ્યે પહોંચી છે."
+      },
+      {
+        "in": "This is a very beautiful garden.",
+        "out": "આ એક ખૂબ જ સુંદર બગીચો છે."
+      },
+      {
+        "in": "Thank you very much for your help.",
+        "out": "તમારી મદદ માટે ખૂબ ખૂબ આભાર."
+      }
+    ]
   },
   {
     "pair": "kan_Knda-eng_Latn",
     "src": "kn",
     "tgt": "en",
-    "status": "pending (not trained)",
-    "pairs": []
+    "status": "trained",
+    "pairs": [
+      {
+        "in": "ಭಾರತ ಒಂದು ದೊಡ್ಡ ದೇಶ.",
+        "out": "India is a big country."
+      },
+      {
+        "in": "ಇಂದು ಹವಾಮಾನ ಚೆನ್ನಾಗಿದೆ.",
+        "out": "Today the weather is good."
+      },
+      {
+        "in": "ನನಗೆ ಪುಸ್ತಕಗಳನ್ನು ಓದುವುದು ಇಷ್ಟ.",
+        "out": "I love to read books."
+      },
+      {
+        "in": "ಅವಳು ಶಾಲೆಗೆ ಹೋಗುತ್ತಿದ್ದಾಳೆ.",
+        "out": "She is going to school."
+      },
+      {
+        "in": "ನೀರು ಜೀವನಕ್ಕೆ ಅತ್ಯಾವಶ್ಯಕ.",
+        "out": "Water is essential for life."
+      },
+      {
+        "in": "ಅವನು ಒಂದು ಆಸ್ಪತ್ರೆಯಲ್ಲಿ ಕೆಲಸ ಮಾಡುತ್ತಾನೆ.",
+        "out": "He works in a hospital."
+      },
+      {
+        "in": "ನಾವು ಒಂದು ಹೊಸ ಭಾಷೆಯನ್ನು ಕಲಿಯುತ್ತಿದ್ದೇವೆ.",
+        "out": "We are learning a new language."
+      },
+      {
+        "in": "ರೈಲು ಒಂಬತ್ತು ಗಂಟೆಗೆ ಬರುತ್ತದೆ.",
+        "out": "The train comes at nine o'clock."
+      },
+      {
+        "in": "ಇದು ಒಂದು ತುಂಬಾ ಸುಂದರವಾದ ಉದ್ಯಾನ.",
+        "out": "It is a very beautiful park."
+      },
+      {
+        "in": "ನಿಮ್ಮ ಸಹಾಯಕ್ಕಾಗಿ ತುಂಬಾ ಧನ್ಯವಾದಗಳು.",
+        "out": "Thank you so much for your help."
+      }
+    ]
   },
   {
     "pair": "eng_Latn-kan_Knda",
     "src": "en",
     "tgt": "kn",
-    "status": "pending (not trained)",
-    "pairs": []
+    "status": "trained",
+    "pairs": [
+      {
+        "in": "India is a big country.",
+        "out": "ಭಾರತವು ಒಂದು ದೊಡ್ಡ ದೇಶವಾಗಿದೆ."
+      },
+      {
+        "in": "The weather is nice today.",
+        "out": "ಇಂದು ಹವಾಮಾನ ಚೆನ್ನಾಗಿದೆ."
+      },
+      {
+        "in": "I love reading books.",
+        "out": "ನಂಗೆ ಪುಸ್ತಕ ಓದೋದು ತುಂಬಾ ಇಷ್ಟ."
+      },
+      {
+        "in": "She is going to school.",
+        "out": "ಆಕೆ ಶಾಲೆಗೆ ಹೋಗುತ್ತಿದ್ದಾಳೆ."
+      },
+      {
+        "in": "Water is essential for life.",
+        "out": "ಜೀವಕ್ಕೆ ನೀರು ಅತ್ಯಗತ್ಯ."
+      },
+      {
+        "in": "He works in a hospital.",
+        "out": "ಆತ ಆಸ್ಪತ್ರೆಯಲ್ಲಿ ಕೆಲಸ ಮಾಡುತ್ತಾರೆ."
+      },
+      {
+        "in": "We are learning a new language.",
+        "out": "ನಾವು ಹೊಸ ಭಾಷೆಯನ್ನು ಕಲಿಯುತ್ತಿದ್ದೇವೆ."
+      },
+      {
+        "in": "The train arrives at nine o'clock.",
+        "out": "ರೈಲು ಒಂಬತ್ತು ಓಕ್ಲಾಕ್ಗೆ ಬರುತ್ತದೆ."
+      },
+      {
+        "in": "This is a very beautiful garden.",
+        "out": "ಇದು ಬಹಳ ಸುಂದರವಾದ ಉದ್ಯಾನವಾಗಿದೆ."
+      },
+      {
+        "in": "Thank you very much for your help.",
+        "out": "ನಿಮ್ಮ ಸಹಾಯಕ್ಕಾಗಿ ತುಂಬಾ ಧನ್ಯವಾದಗಳು."
+      }
+    ]
   },
   {
     "pair": "ory_Orya-eng_Latn",
     "src": "or",
     "tgt": "en",
-    "status": "pending (not trained)",
-    "pairs": []
+    "status": "trained",
+    "pairs": [
+      {
+        "in": "ଭାରତ ଏକ ବଡ଼ ଦେଶ।",
+        "out": "India is a country that is a big country."
+      },
+      {
+        "in": "ଆଜି ପାଗ ଭଲ ଅଛି।",
+        "out": "The weather is good today."
+      },
+      {
+        "in": "ମୁଁ ବହି ପଢ଼ିବାକୁ ଭଲ ପାଏ।",
+        "out": "I love to read the book."
+      },
+      {
+        "in": "ସେ ବିଦ୍ୟାଳୟକୁ ଯାଉଛି।",
+        "out": "He is going to go to school."
+      },
+      {
+        "in": "ଜୀବନ ପାଇଁ ଜଳ ଅତ୍ୟାବଶ୍ୟକ।",
+        "out": "Water is essential for the lives."
+      },
+      {
+        "in": "ସେ ଏକ ଡାକ୍ତରଖାନାରେ କାମ କରନ୍ତି।",
+        "out": "He works in a hospital."
+      },
+      {
+        "in": "ଆମେ ଏକ ନୂଆ ଭାଷା ଶିଖୁଛୁ।",
+        "out": "We are learning a new language."
+      },
+      {
+        "in": "ଟ୍ରେନ୍ ନଅଟାରେ ଆସେ।",
+        "out": "The train comes in no way."
+      },
+      {
+        "in": "ଏହା ଏକ ବହୁତ ସୁନ୍ଦର ବଗିଚା।",
+        "out": "It is a very beautiful garden."
+      },
+      {
+        "in": "ଆପଣଙ୍କ ସାହାଯ୍ୟ ପାଇଁ ବହୁତ ଧନ୍ୟବାଦ।",
+        "out": "Thank you so much for your help."
+      }
+    ]
   },
   {
     "pair": "eng_Latn-ory_Orya",
     "src": "en",
     "tgt": "or",
-    "status": "pending (not trained)",
-    "pairs": []
+    "status": "trained",
+    "pairs": [
+      {
+        "in": "India is a big country.",
+        "out": "ଭାରତ ଏକ ବଡ଼ ଦେଶ।"
+      },
+      {
+        "in": "The weather is nice today.",
+        "out": "ଆଜି ପାଗ ଭଲ ରହିଛି।"
+      },
+      {
+        "in": "I love reading books.",
+        "out": "ମୁଁ ବହି ପଢ଼ିବାକୁ ଭଲ ପାଏ।"
+      },
+      {
+        "in": "She is going to school.",
+        "out": "ସେ ସ୍କୁଲ ଯାଉଛନ୍ତି।"
+      },
+      {
+        "in": "Water is essential for life.",
+        "out": "ଜୀବନ ପାଇଁ ପାଣି ନିହାତି ଆବଶ୍ଯ଼କ।"
+      },
+      {
+        "in": "He works in a hospital.",
+        "out": "ସେ ଏକ ହସ୍ପିଟାଲରେ କାମ କରନ୍ତି।"
+      },
+      {
+        "in": "We are learning a new language.",
+        "out": "ଆମେ ଏକ ନୂଆ ଭାଷା ଶିଖୁଛୁ।"
+      },
+      {
+        "in": "The train arrives at nine o'clock.",
+        "out": "ଟ୍ରେନଟି ନଅ ଓକ୍ଲାରେ ପହଞ୍ଚିଲା।"
+      },
+      {
+        "in": "This is a very beautiful garden.",
+        "out": "ଏହା ଏକ ବହୁତ ସୁନ୍ଦର ବଗିଚା।"
+      },
+      {
+        "in": "Thank you very much for your help.",
+        "out": "ଆପଣଙ୍କ ସାହାଯ୍ଯ଼ ପାଇଁ ଆପଣଙ୍କୁ ବହୁତ ବହୁତ ଧନ୍ଯ଼ବାଦ।"
+      }
+    ]
   },
   {
     "pair": "mal_Mlym-eng_Latn",
     "src": "ml",
     "tgt": "en",
-    "status": "pending (not trained)",
-    "pairs": []
+    "status": "trained",
+    "pairs": [
+      {
+        "in": "ഇന്ത്യ ഒരു വലിയ രാജ്യമാണ്.",
+        "out": "India is a big country."
+      },
+      {
+        "in": "ഇന്ന് കാലാവസ്ഥ നല്ലതാണ്.",
+        "out": "Today, the weather is good."
+      },
+      {
+        "in": "എനിക്ക് പുസ്തകങ്ങൾ വായിക്കാൻ ഇഷ്ടമാണ്.",
+        "out": "I love to read books."
+      },
+      {
+        "in": "അവൾ സ്കൂളിൽ പോകുന്നു.",
+        "out": "She goes to school."
+      },
+      {
+        "in": "ജീവിതത്തിന് വെള്ളം അത്യാവശ്യമാണ്.",
+        "out": "Water is essential for life."
+      },
+      {
+        "in": "അവൻ ഒരു ആശുപത്രിയിൽ ജോലി ചെയ്യുന്നു.",
+        "out": "He works in a hospital and is in a state of shock."
+      },
+      {
+        "in": "ഞങ്ങൾ ഒരു പുതിയ ഭാഷ പഠിക്കുന്നു.",
+        "out": "We are learning a new language."
+      },
+      {
+        "in": "ട്രെയിൻ ഒൻപത് മണിക്ക് എത്തുന്നു.",
+        "out": "The train is scheduled to arrive at 9 pm."
+      },
+      {
+        "in": "ഇത് വളരെ മനോഹരമായ ഒരു പൂന്തോട്ടമാണ്.",
+        "out": "It is a very beautiful garden."
+      },
+      {
+        "in": "നിങ്ങളുടെ സഹായത്തിന് വളരെ നന്ദി.",
+        "out": "Thank you so much for your help."
+      }
+    ]
   },
   {
     "pair": "eng_Latn-mal_Mlym",
     "src": "en",
     "tgt": "ml",
-    "status": "pending (not trained)",
-    "pairs": []
+    "status": "trained",
+    "pairs": [
+      {
+        "in": "India is a big country.",
+        "out": "ഇന്ത്യ ഒരു വലിയ രാജ്യമാണ്."
+      },
+      {
+        "in": "The weather is nice today.",
+        "out": "കാലാവസ്ഥ ഇന്ന് നല്ലതായിരിക്കും."
+      },
+      {
+        "in": "I love reading books.",
+        "out": "പുസ്തകങ്ങൾ വായിക്കാൻ എനിക്ക് ഇഷ്ടമാണ്."
+      },
+      {
+        "in": "She is going to school.",
+        "out": "അവൾ സ്കൂളിൽ പോകുന്നു."
+      },
+      {
+        "in": "Water is essential for life.",
+        "out": "ജീവൻ അത്യന്താപേക്ഷിതമാണ് വെള്ളം."
+      },
+      {
+        "in": "He works in a hospital.",
+        "out": "അദ്ദേഹം ഒരു ആശുപത്രിയിൽ ജോലി ചെയ്യുന്നു."
+      },
+      {
+        "in": "We are learning a new language.",
+        "out": "ഞങ്ങൾ ഒരു പുതിയ ഭാഷ പഠിക്കുകയാണ്."
+      },
+      {
+        "in": "The train arrives at nine o'clock.",
+        "out": "ഒൻപത് മണിയോടെയാണ് ട്രെയിൻ എത്തുന്നത്."
+      },
+      {
+        "in": "This is a very beautiful garden.",
+        "out": "ഇത് വളരെ മനോഹരമായ ഒരു തോട്ടമാണ്."
+      },
+      {
+        "in": "Thank you very much for your help.",
+        "out": "നിങ്ങളുടെ സഹായത്തിന് വളരെ നന്ദി."
+      }
+    ]
   }
 ]

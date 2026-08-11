@@ -1,0 +1,18 @@
+{
+  "pair": "eng_Latn-ory_Orya",
+  "train_corpus": "distilled",
+  "student_params": 52592640,
+  "train_entries": 499058,
+  "dev_entries": 500,
+  "sft_final_loss": 1.6166166067123413,
+  "sft_eval": {
+    "bleu": 6.901864780222311,
+    "chrf": 40.75496070733237,
+    "latency_ms_mean": 128.0392066910863,
+    "latency_ms_max": 906.0809870716184,
+    "n": 500,
+    "teacher_bleu": 7.711267191168059,
+    "bleu_ratio": 0.8950363940348508,
+    "meets_quality_target": true
+  }
+}

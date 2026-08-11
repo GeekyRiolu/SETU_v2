@@ -1,0 +1,18 @@
+{
+  "pair": "eng_Latn-tel_Telu",
+  "train_corpus": "distilled",
+  "student_params": 52592640,
+  "train_entries": 496514,
+  "dev_entries": 500,
+  "sft_final_loss": 1.460341453552246,
+  "sft_eval": {
+    "bleu": 10.954630485058779,
+    "chrf": 42.81266507947463,
+    "latency_ms_mean": 112.6575433621183,
+    "latency_ms_max": 526.4347919728607,
+    "n": 500,
+    "teacher_bleu": 14.044649749384236,
+    "bleu_ratio": 0.779986021761708,
+    "meets_quality_target": false
+  }
+}

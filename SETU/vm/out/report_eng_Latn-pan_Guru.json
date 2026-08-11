@@ -1,0 +1,18 @@
+{
+  "pair": "eng_Latn-pan_Guru",
+  "train_corpus": "distilled",
+  "student_params": 52592640,
+  "train_entries": 500000,
+  "dev_entries": 500,
+  "sft_final_loss": 1.5828838348388672,
+  "sft_eval": {
+    "bleu": 15.821443836704416,
+    "chrf": 42.29484298497692,
+    "latency_ms_mean": 175.26937269279733,
+    "latency_ms_max": 689.5899979863316,
+    "n": 500,
+    "teacher_bleu": 17.493829508543634,
+    "bleu_ratio": 0.9044013964453891,
+    "meets_quality_target": true
+  }
+}

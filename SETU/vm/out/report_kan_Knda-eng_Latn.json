@@ -1,0 +1,18 @@
+{
+  "pair": "kan_Knda-eng_Latn",
+  "train_corpus": "distilled",
+  "student_params": 52592640,
+  "train_entries": 496746,
+  "dev_entries": 500,
+  "sft_final_loss": 2.017188549041748,
+  "sft_eval": {
+    "bleu": 16.32108304907909,
+    "chrf": 45.59004669583209,
+    "latency_ms_mean": 132.2130178976804,
+    "latency_ms_max": 811.2179639283568,
+    "n": 500,
+    "teacher_bleu": 21.390175522707068,
+    "bleu_ratio": 0.7630177242703405,
+    "meets_quality_target": false
+  }
+}

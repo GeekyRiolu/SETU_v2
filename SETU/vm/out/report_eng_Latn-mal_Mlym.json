@@ -1,0 +1,18 @@
+{
+  "pair": "eng_Latn-mal_Mlym",
+  "train_corpus": "distilled",
+  "student_params": 52592640,
+  "train_entries": 496570,
+  "dev_entries": 500,
+  "sft_final_loss": 1.7217316627502441,
+  "sft_eval": {
+    "bleu": 5.230144636314548,
+    "chrf": 38.824013723427804,
+    "latency_ms_mean": 113.1931503857486,
+    "latency_ms_max": 702.3073430173099,
+    "n": 500,
+    "teacher_bleu": 6.060796726567907,
+    "bleu_ratio": 0.862946716788547,
+    "meets_quality_target": true
+  }
+}
