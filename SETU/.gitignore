@@ -23,3 +23,6 @@ docs/Report/latex/*.out
 docs/Report/latex/main.pdf
 # The 4.2 MB deck already lives in vm/; don't duplicate it under docs/Report/
 docs/Report/SETU.pptx
+
+# The shareable zip is a build artifact of docs/Report/latex/
+docs/Report/SETU_Phase-II_Report_LaTeX.zip
