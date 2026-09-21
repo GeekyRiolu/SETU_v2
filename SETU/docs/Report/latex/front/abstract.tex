@@ -1,0 +1,64 @@
+% --------------------------------- Abstract ---------------------------------
+\thispagestyle{plain}
+\frontheading{Abstract}
+\addcontentsline{toc}{chapter}{Abstract}
+
+{\fontsize{12}{20}\selectfont
+\setlength{\parindent}{0.5in}
+
+India recognises twenty-two scheduled languages, yet nearly every machine
+translation service that serves them well is a cloud service. That design
+excludes precisely the users who need translation most: a health worker in a
+village with no signal, a soldier on a border patrol, a citizen at a gram
+panchayat counter. Cloud translation also means every sentence a user types
+leaves their device. The obvious alternative, running a large translation model
+locally, fails on arithmetic: state-of-the-art Indic systems such as IndicTrans2
+need GPU-class memory and hold billions of parameters, which no commodity phone
+or ARM board can host.
+
+\setu{} (Sanskrit \dev{सेतु}, ``bridge'') closes that gap by distilling a strong
+teacher into compact students that run entirely on the device. The project began
+from the hypothesis that \emph{preference distillation} --- ranking teacher
+hypotheses by chrF and training the student with Direct Preference Optimization
+(DPO) --- would beat standard sequence-level knowledge distillation for tiny
+translation models. A controlled head-to-head at matched student size refuted
+that hypothesis and produced the project's central empirical finding: at 100{,}000
+training sentences, sequence-level knowledge distillation (\seqkd{}) on the
+teacher's own one-best output reached \textbf{17.09 BLEU} against
+\textbf{11.10 BLEU} for reference-trained DPO, an improvement of 6.0 BLEU
+(roughly 54\,\%). The bottleneck was never the optimisation objective; it was
+noise in the mined human references. That result redirected the entire system
+towards \seqkd{}, and the DPO machinery was retained as a measured, reported
+negative result rather than quietly discarded.
+
+The delivered system trains one 52.6-million-parameter Marian student per
+translation direction on approximately 497{,}000 teacher-distilled sentence
+pairs, then quantises it to INT4 ONNX at \textbf{103.9\,MB} --- a fourfold
+compression from 411\,MB FP32. Twenty-two directions covering eleven scheduled
+languages in both directions were trained on an NVIDIA A40 vGPU. Measured
+against the teacher on a held-out Samanantar development slice,
+\textbf{14 of 22 directions meet the $\geq 0.80$ student/teacher BLEU ratio
+target}, with a mean ratio of \textbf{0.838} and a median of \textbf{0.855};
+the strongest direction, Marathi\arrowto{}English, reaches \textbf{0.955}. All
+three non-quality targets pass without exception: every artifact is 103.9\,MB
+(target $\leq 200$\,MB), mean latency is 105--202\,ms per sentence on commodity
+CPU (target $<500$\,ms), and inference completes with all network sockets
+disabled. Because no Indic-to-Indic student exists, an English-pivot router
+chains two students, so all 11 languages translate in every direction ---
+22 direct models serve 132 usable directions. Two training collapses
+(Telugu\arrowto{}English and Malayalam\arrowto{}English, both degenerating to a
+fixed output string) were diagnosed as learning-rate instability at
+$5\times10^{-4}$ and fully recovered at $3\times10^{-4}$, lifting ratios from
+0.036 to 0.817 and from 0.013 to 0.898 respectively. The system ships as a
+FastAPI service, an offline progressive web application, a Next.js web client
+and a command-line tool, all sharing a single inference engine, and is validated
+by an automated suite of 85 tests.
+
+\vspace{10pt}
+
+\noindent\textbf{Keywords:} Neural Machine Translation; Sequence-Level Knowledge
+Distillation; Direct Preference Optimization; Small Language Models; Indic
+Languages; On-Device Inference; Model Quantisation; ONNX; English Pivot.
+
+}
+\clearpage

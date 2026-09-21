@@ -13,3 +13,13 @@ models/
 .DS_Store
 # VM batch outputs: keep the small reports/samples, never the model zips
 vm/out/*.zip
+# LaTeX build artifacts (the report PDF itself is committed)
+docs/Report/latex/*.aux
+docs/Report/latex/*.log
+docs/Report/latex/*.toc
+docs/Report/latex/*.lot
+docs/Report/latex/*.lof
+docs/Report/latex/*.out
+docs/Report/latex/main.pdf
+# The 4.2 MB deck already lives in vm/; don't duplicate it under docs/Report/
+docs/Report/SETU.pptx

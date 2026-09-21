@@ -1,0 +1,249 @@
+% ============================== CHAPTER 9 ===================================
+\chapter{Conclusion, Applications and Future Work}
+\label{ch:conclusion}
+
+\section{Conclusion}
+\label{sec:conclusion}
+
+\setu{} set out to put high-quality Indic machine translation on a device that
+has no network connection, and it does. Twenty-two translation directions
+covering eleven scheduled languages run from a 103.9\,MB artifact each, complete
+a sentence in 105 to 202 milliseconds of commodity CPU time, and produce correct,
+idiomatic output with every network socket closed. Fourteen of those directions
+reach at least 80\,\% of their teacher's BLEU; the remaining eight fall between
+0.755 and 0.787, and none is broken.
+
+\subsection{Outcome Against Each Objective}
+\label{subsec:outcomes}
+
+\begin{table}[H]
+\centering
+\caption{Outcome against each stated objective}
+\label{tab:objoutcome}
+\begin{tabular}{@{}L{1.0cm} L{3.3cm} L{5.8cm} L{3.3cm}@{}}
+\toprule
+\rowcolor{headblue}
+\textbf{Obj.} & \textbf{Target} & \textbf{Outcome} & \textbf{Verdict} \\
+\midrule
+O1 & Ratio $\geq 0.80$ & 14 of 22 directions; mean 0.838, median 0.855, best 0.955 & Partially met \\
+\rowcolor{rowgrey}
+O2 & Latency $<500$\,ms & Mean 105--202\,ms; only one p90 outlier & Met \\
+O3 & Size $\leq 200$\,MB & 103.9\,MB for every direction, 48\,\% under budget & Met \\
+\rowcolor{rowgrey}
+O4 & Fully offline & Verified with all sockets disabled, for every direction & Met \\
+O5 & Test the distillation hypothesis & Hypothesis refuted under controlled conditions: \seqkd{} 17.09 BLEU against 11.10 for DPO & Met \\
+\rowcolor{rowgrey}
+O6 & Coverage and extensibility & 11 languages both ways; 22 models serve 132 directions via English pivot; adding a language is a configuration change & Met for 11 of 22 languages \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Principal Contributions}
+\label{subsec:contributions}
+
+\textbf{An empirical finding, obtained by refuting the project's own
+hypothesis.} For compact on-device Indic machine translation, sequence-level
+knowledge distillation from teacher output decisively outperforms
+preference-based distillation on human references --- 17.09 against 11.10 BLEU at
+matched student size on identical data, an improvement of 54\,\%. The
+explanation is that reference noise rather than the training objective is the
+binding constraint. The evidence for that explanation is that reference-trained
+students plateau near a ratio of 0.66 regardless of data volume, whereas
+distilled students continue improving through 0.607, 0.764 and 0.806 as data
+scales. The result is strengthened, not weakened, by the fact that the DPO
+implementation works correctly: its margin accuracy reaches 1.0 and it improves
+chrF exactly as its chrF-based ranking predicts. The preference signal is
+learned faithfully; it is simply not the signal a 52-million-parameter student
+most needs.
+
+\textbf{A working offline system, not a prototype.} Twenty-two quantised models
+are published on a public release, fetchable without a login, and served through
+a REST API, an offline progressive web application, a browser client and a
+command-line tool that all share one routing layer. A fresh machine can be
+running translations in five commands.
+
+\textbf{Quadratic coverage from linear storage.} The English-pivot router turns
+22 trained models into 132 usable directions at a measured two-hop cost of about
+50 to 65 milliseconds. At 104\,MB per model, training direct models for every
+pair would have required more than 11\,GB of device storage for the same
+coverage.
+
+\textbf{A reproducible engineering record.} The project documents three distinct
+training failure modes --- empty output from a label-encoding mismatch,
+source-agnostic output from unmasked padding in the loss, and mid-training
+collapse from missing gradient clipping --- each with its diagnosis and fix. It
+further documents two learning-rate collapses and their complete recovery, and
+establishes that supervised training loss (1.5 to 2.3 healthy, 3 to 4 collapsed)
+is a cheap early indicator available long before evaluation. These failures are
+routinely encountered and rarely published.
+
+\subsection{Limitations}
+\label{sec:limits}
+
+The project states its limitations plainly, because several of them bound how
+the results should be read.
+
+\textbf{Eight directions fall short of the quality target}, at ratios between
+0.755 and 0.787. Their supervised losses cluster at 2.00 to 2.32, the upper end
+of the healthy band, which indicates under-convergence rather than instability.
+
+\textbf{The teacher caps the ceiling.} The ungated distilled-200M teacher scores
+only 27 to 29 BLEU on these slices. A student at 0.806 of that is a student at
+roughly 80\,\% of a model that is itself well below the gated one-billion-parameter
+flagship. Raising the ceiling requires teacher access, not more student
+training.
+
+\textbf{The reported ratios are not benchmark numbers.} They come from an
+internal 500-sentence Samanantar development slice, and the teacher's own score
+varies between slices (27.08 to 28.91 for Hindi\arrowto{}English alone). The
+figures are internally comparable but should not be set beside published
+IndicTrans2 results. FLORES-200 rescoring is required for that and is the first
+item of future work.
+
+\textbf{BLEU is the wrong metric for several covered languages.}
+English\arrowto{}Malayalam passes at a ratio of 0.863 on 5.2 BLEU, because
+Malayalam's agglutinative morphology defeats n-gram overlap. Some of the
+near-misses --- particularly the Tamil and Malayalam directions --- may already
+pass under COMET.
+
+\textbf{Eleven scheduled languages are not delivered.} Bodo, Dogri, Konkani,
+Kashmiri, Maithili, Manipuri, Nepali, Sanskrit, Santali, Sindhi and Urdu are
+absent. The constraint is corpus availability, not architecture: only Assamese
+and Punjabi among the lower-resource set had ungated parallel data.
+
+\textbf{ARM latency is projected, not measured.} All timings were taken on x86
+CPUs. The target is ARM Cortex-A55 class hardware, and although the margin is
+large --- roughly 150\,ms against a 500\,ms budget --- the figure remains
+unverified on the intended silicon.
+
+\textbf{INT4 is INT4 in name only.} The ONNX Runtime CPU execution provider has
+no true 4-bit kernel, so INT4 and INT8 land within 0.7\,MB of each other. Real
+4-bit storage would require a different runtime.
+
+\textbf{Pivot error is unquantified.} Indic-to-Indic translations pass through
+two models and may accumulate error from both. The pivot was verified to
+function correctly and produce sensible output, but no systematic BLEU
+evaluation of pivoted pairs against direct references was performed.
+
+\section{Applications}
+\label{sec:applications}
+
+\textbf{Rural healthcare.} A doctor or ASHA worker can converse with a patient
+across a language boundary on a handset with no connectivity. The privacy
+property matters as much as the offline one: a patient's described symptoms
+never leave the device.
+
+\textbf{Defence and border operations.} Patrol units operating beyond cellular
+coverage can translate locally. Because there is no transmission, there is no
+signal to intercept and no dependency on infrastructure that may be unavailable
+or compromised.
+
+\textbf{Education.} Multilingual tutoring tools can serve students in their own
+language at zero marginal cost per query, which is what makes deployment across
+many schools economically feasible.
+
+\textbf{Government service delivery.} Forms, notices and entitlement documents
+can be translated at a gram panchayat counter without the counter needing a
+working internet connection or a commercial API subscription.
+
+\textbf{Disaster relief.} Field workers can communicate with affected
+communities precisely during the window when networks are down --- the moment
+when a cloud translator is guaranteed to be unavailable.
+
+\textbf{Privacy-sensitive documents.} Legal, medical and financial text can be
+translated without disclosure to a third party, which is a structural guarantee
+here rather than a contractual one.
+
+\textbf{As a research artifact.} The distillation pipeline is not
+Indic-specific. Any language family with a strong teacher and a noisy parallel
+corpus can use the same configuration-driven process, and the reported
+comparison gives practitioners a concrete data point on which training signal to
+choose.
+
+\section{Future Scope}
+\label{sec:future}
+
+\subsection{Completing the Current Work}
+\label{subsec:completing}
+
+\textbf{Rescore every direction on FLORES-200 with COMET.} This is the highest
+priority, because it converts the internal ratios into publishable, comparable
+numbers, and because COMET may reclassify several agglutinative-language
+near-misses as passes. The infrastructure exists: \texttt{setu-eval} already
+implements FLORES-200 and IN22 loaders, COMET scoring and paired-bootstrap
+significance testing.
+
+\textbf{Close the eight near-misses.} Three levers are available, in increasing
+order of cost: beam search at evaluation time, additional supervised epochs, and
+more distilled data. The under-convergence signature in the losses suggests all
+three would help.
+
+\textbf{Measure latency on real ARM hardware.} A Raspberry Pi 4 or a Cortex-A55
+board would convert a projected figure into a measured one.
+
+\textbf{Quantify pivot degradation.} Evaluate pivoted Indic-to-Indic pairs
+against real references to establish how much quality the second hop costs.
+
+\subsection{Extending the System}
+\label{subsec:extending}
+
+\textbf{Train the remaining eleven scheduled languages.} This requires access to
+the gated BPCC corpus, or an alternative source of parallel data for the
+lower-resource tail. The architecture needs no change; the pipeline is already
+verified pair-agnostic and the tokenizer already reserves tags for all 22
+languages.
+
+\textbf{Distil from a stronger teacher.} The single most effective remaining
+lever on quality. At a ratio of 0.806 against a 27-BLEU teacher, the student is
+near its current ceiling; the gated one-billion-parameter IndicTrans2 flagship
+would raise the entire curve.
+
+\textbf{Consolidate directions with All-in-One KD.} Both the All-in-One KD and
+Elastic Weight Consolidation mechanisms are implemented and tested but have not
+been exercised on full multilingual data. A single multilingual student would
+reduce device storage from $n \times 104$\,MB to one artifact, at the risk of
+cross-lingual interference that per-direction training currently avoids.
+
+\textbf{Add a true 4-bit runtime.} A backend with genuine INT4 kernels would
+roughly halve the artifact again, bringing a direction under 60\,MB and making
+several languages resident on a phone simultaneously.
+
+\subsection{Longer-Term Directions}
+\label{subsec:longterm}
+
+\textbf{Speech input and output.} The literature surveyed in
+Chapter~\ref{ch:literature} shows cascaded ASR-then-MT still outperforming
+end-to-end speech translation in low-resource settings \cite{ref:iwslt}. An
+offline speech front-end over \setu{}'s existing text engine would extend the
+system to users who cannot type in their own script --- which, for several of
+the target populations, is the majority.
+
+\textbf{Revisit preference learning on clean targets.} The refuted hypothesis
+tested DPO on noisy human references. The S3 configuration --- sequence-level
+distillation followed by DPO on \emph{teacher-derived} preferences --- was
+designed but not run at scale. Whether preference learning helps on top of a
+strong distilled base remains genuinely open, and the existing DPO
+implementation makes it a training run rather than an engineering project.
+
+\textbf{Publish the finding.} The \seqkd{}-versus-DPO comparison, the data
+scaling curve, the collapse analysis and the systems contribution together
+constitute a paper. The plan, with result tables already filled from the runs
+reported in Chapter~\ref{ch:results}, is maintained in the repository.
+
+\section{Closing Remarks}
+\label{sec:closing}
+
+The project's most valuable outcome was not the one it set out to obtain. \setu{}
+was proposed as a demonstration that preference distillation would produce better
+compact translators, and the controlled experiment showed the opposite. The
+correct response to that was neither to discard the DPO work nor to present the
+system as though the hypothesis had held, but to report what was measured,
+rebuild the system around the method that won, and treat the refutation as the
+contribution.
+
+What remains is a translator that fits in 104 megabytes, answers in a sixth of a
+second, works with the network switched off, covers eleven of India's scheduled
+languages in every direction between them, and never sends a user's words
+anywhere. The eight directions that fall short of target are documented as
+falling short. That, rather than a uniformly successful scorecard, is what the
+work actually produced.

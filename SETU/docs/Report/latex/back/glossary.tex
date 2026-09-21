@@ -1,0 +1,93 @@
+% -------------------------------- Glossary ----------------------------------
+\clearpage
+\thispagestyle{plain}
+\frontheading{Glossary}
+\addcontentsline{toc}{chapter}{Glossary}
+
+{\setstretch{1.2}
+\begin{longtable}{@{}L{3.3cm} L{10.6cm}@{}}
+\toprule
+\rowcolor{headblue}
+\textbf{Term} & \textbf{Meaning} \\
+\midrule
+\endfirsthead
+\toprule
+\rowcolor{headblue}
+\textbf{Term} & \textbf{Meaning} \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+
+AIO-KD & All-in-One Knowledge Distillation. Distilling into several student models, or across several translation directions, within a single training framework \\
+\rowcolor{rowgrey}
+ARM Cortex-A55 & A low-power 64-bit ARM CPU core widely used in mid-range smartphones and single-board computers; \setu{}'s reference deployment target \\
+ASHA worker & Accredited Social Health Activist --- a community health worker in India's public health system; a primary intended user of an offline translator \\
+\rowcolor{rowgrey}
+BLEU & Bilingual Evaluation Understudy. An n-gram overlap metric between a candidate translation and one or more references. Structurally low for agglutinative languages \\
+BPCC & Bharat Parallel Corpus Collection. The large Indic parallel corpus released with IndicTrans2; access-gated on Hugging Face \\
+\rowcolor{rowgrey}
+chrF & Character n-gram F-score. A translation metric operating on characters rather than words, more robust than BLEU for morphologically rich languages \\
+COMET & A neural, learned translation-quality metric that correlates better with human judgement than overlap metrics \\
+\rowcolor{rowgrey}
+Catastrophic forgetting & The loss of previously learned capability when a neural network is trained on a new task \\
+Distillation & Training a small student model to reproduce the behaviour of a large teacher model \\
+\rowcolor{rowgrey}
+DPO & Direct Preference Optimization. Preference-based training expressed as a classification loss over preferred and dispreferred pairs, requiring neither a reward model nor reinforcement learning \\
+Endonym & A language's name in its own language and script, e.g.\ \dev{हिन्दी} for Hindi, \kan{ಕನ್ನಡ} for Kannada \\
+\rowcolor{rowgrey}
+English pivot & Translating between two Indic languages by chaining source\arrowto{}English and English\arrowto{}target models, used where no direct model exists \\
+EWC & Elastic Weight Consolidation. A continual-learning method that penalises changes to parameters important for previously learned tasks, weighted by the Fisher information \\
+\rowcolor{rowgrey}
+FLORES-200 & A standard multilingual translation benchmark covering 200 languages; the source of the script-qualified language codes used throughout \setu{} \\
+Fisher information & A measure of how sensitive a model's output distribution is to each parameter; used by EWC to decide which parameters to protect \\
+\rowcolor{rowgrey}
+Gated (Hugging Face) & A model or dataset requiring an authenticated account that has accepted its terms; returns HTTP 401 otherwise \\
+Gradient clipping & Bounding the norm of the gradient before an optimiser step, preventing a single large update from destabilising training \\
+\rowcolor{rowgrey}
+IN22 & An Indic translation benchmark released alongside IndicTrans2 \\
+IndicTrans2 & AI4Bharat's open translation model family covering all 22 scheduled Indian languages; \setu{}'s teacher \\
+\rowcolor{rowgrey}
+INT4 / INT8 & 4-bit and 8-bit integer quantisation. ONNX Runtime's CPU provider lacks a true 4-bit kernel, so the two sizes are nearly identical in practice \\
+Label smoothing & Replacing hard one-hot targets with a softened distribution, reducing overconfidence \\
+\rowcolor{rowgrey}
+Marian & A fast neural machine translation architecture and toolkit; \setu{}'s student uses the Marian encoder--decoder \\
+Margin accuracy & In DPO, the fraction of preference pairs on which the trained policy ranks the preferred candidate above the dispreferred one \\
+\rowcolor{rowgrey}
+NFC & Unicode Normalization Form C (canonical composition), applied to corpus text so that equivalent sequences are represented identically \\
+NMT & Neural Machine Translation \\
+\rowcolor{rowgrey}
+ONNX & Open Neural Network Exchange. A portable model format; ONNX Runtime is its cross-platform execution engine \\
+p50 / p90 & The 50th and 90th percentile of a latency distribution \\
+\rowcolor{rowgrey}
+PAD masking & Setting label positions for padding tokens to $-100$ so the loss function ignores them; omitting this produces a misleadingly low loss \\
+PERT & Programme Evaluation and Review Technique. A scheduling method using optimistic, most-likely and pessimistic duration estimates \\
+\rowcolor{rowgrey}
+Preference pair & A training example consisting of a source, a preferred translation, a dispreferred translation and the quality gap between them \\
+PWA & Progressive Web Application. A browser application that installs and continues to function offline via a service worker \\
+\rowcolor{rowgrey}
+Quantisation & Reducing the numeric precision of model weights to shrink the artifact and speed up inference \\
+Ratio (student/teacher) & Student BLEU divided by teacher BLEU on the same evaluation set. \setu{}'s primary quality metric, because it is comparable across languages where absolute BLEU is not \\
+\rowcolor{rowgrey}
+sacreBLEU & A BLEU implementation producing reproducible, comparable scores with an explicit signature \\
+Samanantar & A large, ungated parallel corpus for 11 Indic languages, mined from the web; \setu{}'s training data \\
+\rowcolor{rowgrey}
+Scheduled languages & The 22 languages listed in the Eighth Schedule of the Constitution of India \\
+SentencePiece & A language-independent subword tokenizer that operates on raw text without pre-tokenisation \\
+\rowcolor{rowgrey}
+\seqkd{} & Sequence-Level Knowledge Distillation. Training a student on the teacher's decoded output rather than on human reference translations \\
+SFT & Supervised Fine-Tuning. Standard cross-entropy training on target sequences \\
+\rowcolor{rowgrey}
+SLM & Small Language Model. A compact model intended for on-device execution \\
+Stub engine & \setu{}'s passthrough engine, returned when no model exists for a pair; always flagged \texttt{stub: true} so it is never mistaken for a translation \\
+\rowcolor{rowgrey}
+Teacher wall & The design rule, enforced by an automated test, that only one module may import the teacher's dependencies \\
+Temperature sampling & Flattening a sampling distribution so that low-resource directions are not swamped by high-resource ones \\
+\rowcolor{rowgrey}
+vGPU & A software-partitioned slice of a physical GPU. \setu{} trained on an A40-16Q slice, whose allocator lacks the CUDA virtual-memory APIs \\
+Warmup & Increasing the learning rate linearly from zero at the start of training, stabilising an unpretrained model \\
+\rowcolor{rowgrey}
+ZWJ / ZWNJ & Zero-Width Joiner and Zero-Width Non-Joiner. Invisible characters that control conjunct formation in Indic scripts and must survive normalisation \\
+
+\end{longtable}
+}

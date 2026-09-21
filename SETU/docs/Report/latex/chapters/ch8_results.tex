@@ -1,0 +1,709 @@
+% ============================== CHAPTER 8 ===================================
+\chapter{Results, Discussion and Performance Analysis}
+\label{ch:results}
+
+This chapter reports what \setu{} achieves, measured rather than asserted. It
+opens with the head-to-head experiment that refuted the project's founding
+hypothesis, since that result determined everything built afterwards. It then
+gives the full 22-direction scorecard against each of the four targets, the
+data-scaling behaviour of sequence-level distillation, the training-run history
+including three distinct failure modes and their diagnoses, the two collapses
+and their recovery, a qualitative assessment of translation quality across
+sentence complexity, and the user documentation.
+
+Numbers reported here are the internal evaluation: a 500-sentence held-out
+Samanantar development slice, scored with sacreBLEU against real human
+references, with the teacher scored on the identical slice. They are therefore
+internally comparable across directions but are not directly comparable to
+published IndicTrans2 figures, which use FLORES-200 devtest. Section~\ref{sec:limits}
+states this limitation explicitly and Chapter~\ref{ch:conclusion} lists the
+rescoring as outstanding work.
+
+\section{The Deciding Experiment: \seqkd{} versus Preference Distillation}
+\label{sec:headtohead}
+
+\subsection{Experimental Design}
+\label{subsec:h2hdesign}
+
+The project's founding hypothesis was that ranking teacher hypotheses by chrF
+and training the student with DPO would outperform standard sequence-level
+knowledge distillation. Four systems were built and compared under matched
+conditions: identical 52.6-million-parameter student, identical 100{,}000
+training sentences, identical Hindi\arrowto{}English direction, and ---
+critically --- evaluation on \emph{real human references} held out from
+training, which makes the comparison fair no matter what each system trained on.
+
+\begin{table}[H]
+\centering
+\caption{The four systems compared}
+\label{tab:systems}
+\begin{tabular}{@{}l L{4.6cm} c L{5.0cm}@{}}
+\toprule
+\rowcolor{headblue}
+\textbf{System} & \textbf{SFT targets} & \textbf{DPO?} & \textbf{Rationale} \\
+\midrule
+S0 & Human references & No  & Naive baseline: train on the data as given \\
+\rowcolor{rowgrey}
+S1 & Teacher one-best  & No  & The standard strong baseline \cite{ref:seqkd} \\
+S2 & Human references  & Yes & The project's original proposal \\
+\rowcolor{rowgrey}
+S3 & Teacher one-best  & Yes & Does preference learning help on top of strong distillation? \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Result}
+\label{subsec:h2hresult}
+
+\begin{table}[H]
+\centering
+\caption{Head-to-head at 100{,}000 sentences, Hindi\arrowto{}English, matched student size, evaluated on human references (teacher BLEU 28.16)}
+\label{tab:h2h}
+\begin{tabular}{@{}l l r r r@{}}
+\toprule
+\rowcolor{headblue}
+\textbf{System} & \textbf{Training signal} & \textbf{BLEU} & \textbf{Ratio} & \textbf{$\Delta$ vs S0} \\
+\midrule
+S0: SFT on references & Human references (Samanantar) & 10.95 & 0.389 & --- \\
+\rowcolor{rowgrey}
+\textbf{S1: \seqkd{}}  & \textbf{Teacher one-best}      & \textbf{17.09} & \textbf{0.607} & \textbf{$+6.14$} \\
+S2: DPO-distill       & References, then DPO          & 11.10 & 0.394 & $+0.15$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The hypothesis is refuted, and not marginally. Sequence-level distillation beats
+preference distillation by \textbf{5.99 BLEU}, an improvement of roughly
+\textbf{54\,\%}, at identical model size on identical data. Applying DPO on top
+of a reference-trained base adds 0.15 BLEU over that base --- within the noise of
+a 500-sentence evaluation set.
+
+\subsection{Why the Hypothesis Failed}
+\label{subsec:whyfailed}
+
+The most important thing about this result is that the DPO implementation is not
+defective. Three pieces of evidence establish that.
+
+First, the \textbf{preference data is abundant and well separated}. A single run
+turned 8{,}000 corpus entries into 55{,}910 teacher candidates and 33{,}535
+validated preference pairs, with a median chrF quality delta of 29.5 and a mean
+of 32.7. Every emitted pair passes a validation gate requiring the preferred
+candidate to score strictly above the dispreferred one.
+
+Second, \textbf{DPO learns what it is asked to learn}. The margin accuracy ---
+the fraction of pairs on which the trained policy ranks preferred above
+dispreferred --- reaches 0.923 and later 1.0. The optimisation is succeeding
+completely at its stated objective.
+
+Third, \textbf{DPO produces the effect its ranking metric predicts}. Because the
+preferences were ranked by chrF, DPO consistently improves chrF --- from 37.85
+to 40.33 in one run, and from 45.40 to 45.94 in another --- while costing
+approximately one BLEU point. The preference signal is being transferred
+faithfully; it simply is not the signal that most improves translation quality.
+
+The explanation, and the project's replacement hypothesis H1$'$, is that
+\textbf{reference noise rather than the training objective is what caps a
+compact Indic student}. Samanantar is web-mined. Its sentence pairs vary in
+register, in alignment quality and in fidelity; roughly one pair in a hundred is
+discarded outright by the cleaning filters, and many more that survive are
+imperfect. A model with billions of parameters can average over that
+inconsistency. A model with 52 million cannot --- it spends its limited capacity
+modelling the noise. The teacher's one-best output, by contrast, is internally
+consistent: it is drawn from a single distribution, in a single register, with
+alignment guaranteed by construction. Training on it is a denoising operation.
+
+Two subsequent observations support H1$'$ directly. Reference-trained students
+plateau near a ratio of 0.66 and do not improve when data is increased from
+200{,}000 to 250{,}000 sentences --- the data lever saturates while the noise
+remains. Distilled students do not plateau; they continue improving to 0.806 at
+500{,}000 sentences. If data volume were the binding constraint both curves would
+rise; if noise is the binding constraint only the denoised curve rises, which is
+what was observed.
+
+\section{Data Scaling of Sequence-Level Distillation}
+\label{sec:scaling}
+
+\begin{table}[H]
+\centering
+\caption{\seqkd{} data-scaling curve, Hindi\arrowto{}English}
+\label{tab:scaling}
+\begin{tabular}{@{}r r r r L{5.4cm}@{}}
+\toprule
+\rowcolor{headblue}
+\textbf{Training sentences} & \textbf{BLEU} & \textbf{Teacher} & \textbf{Ratio} & \textbf{Observation} \\
+\midrule
+100{,}000 & 17.09 & 28.16 & 0.607 & Already beats every reference-trained system \\
+\rowcolor{rowgrey}
+250{,}000 & 22.10 & 28.91 & 0.764 & Large gain; reference-SFT is stuck at 0.66 \\
+500{,}000 & 21.56 & 27.08 & 0.796 & Effectively at target within evaluation noise \\
+\rowcolor{rowgrey}
+500{,}000 (final run) & 21.83 & 27.08 & \textbf{0.806} & \textbf{Target met} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The curve rises steeply from 100{,}000 to 250{,}000 sentences and then flattens,
+which is the expected shape as the student approaches its teacher's ceiling. The
+ungated distilled-200M teacher itself scores only 27--29 BLEU on these slices, so
+a ratio of 0.806 means the student is producing about four fifths of the quality
+of a teacher that is itself substantially weaker than the gated flagship. The
+practical consequence, discussed in Chapter~\ref{ch:conclusion}, is that the
+most effective remaining lever is not more data but a stronger teacher.
+
+The absolute BLEU values at 250{,}000 and 500{,}000 sentences (22.10 and 21.56)
+appear to move in the wrong direction. They do not: the teacher's own score
+differs between the two evaluation slices (28.91 against 27.08), which is why
+the ratio, not the raw BLEU, is the metric the project gates on. This
+slice-dependence is precisely why FLORES-200 rescoring is listed as outstanding
+work.
+
+\section{Training Run History and Failure Analysis}
+\label{sec:runlog}
+
+Three distinct failure modes were encountered before the first successful
+training run. Each is reported because each was diagnosed to a root cause and
+fixed, and because all three produce output that looks superficially reasonable.
+
+\begin{longtable}{@{}p{1.1cm} L{3.4cm} L{4.3cm} L{4.6cm}@{}}
+\caption{Training run history: failures, diagnoses and fixes}
+\label{tab:runhistory}\\
+\toprule
+\rowcolor{headblue}
+\textbf{Run} & \textbf{Outcome} & \textbf{Symptom} & \textbf{Root cause and fix} \\
+\midrule
+\endfirsthead
+\toprule
+\rowcolor{headblue}
+\textbf{Run} & \textbf{Outcome} & \textbf{Symptom} & \textbf{Root cause and fix} \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+
+\#1 & Out of memory & Training died on the first CUDA allocation & Teacher remained resident on the GPU from the BLEU step while the student allocated. Fix: free the teacher first; reduce batch size from 64 to 32 \\
+\rowcolor{rowgrey}
+\#1b & Empty output & BLEU and chrF exactly 0.0; every translation the empty string & Three causes: a leading BOS in the labels created a train/generate mismatch; a 32{,}000-token vocabulary left most tokens undertrained; warmup was silently ignored. All three fixed, plus generation safeguards that make empty output impossible \\
+\#2 & Source-agnostic output & Fluent English, but \textit{``The police are investigating the case.''} for every input; loss an implausible 0.274 & Padding was not masked in the loss, so the model earned free credit for predicting PAD. Fix: $-100$ at pad positions, plus label smoothing, dropout and more data \\
+\rowcolor{rowgrey}
+\#3 & \textbf{First success} & BLEU 13.42, chrF 37.85, ratio 0.438; correct idiomatic output & The pad-loss fix plus scaling to 120{,}000 sentences. Loss an honest 3.39 \\
+\#4 & Collapse & BLEU 0.03; \textit{``What is the''} for every input, at 200{,}000 sentences on the same code that worked at 120{,}000 & No gradient clipping. More data means more steps and more chances to hit a gradient spike; run \#3 was lucky. Fix: clip gradient norm at 1.0 \\
+\rowcolor{rowgrey}
+\#5 & Stable & BLEU 18.60, chrF 45.40, ratio 0.654 & Clipping resolved the collapse --- the last major training bug \\
+\#6 & Plateau & BLEU 18.64, ratio 0.657 at 250{,}000 sentences: flat against \#5 & Data volume had saturated for reference targets. This is what motivated the \seqkd{} comparison, and it is a reportable result in its own right \\
+
+\end{longtable}
+
+Run \#2 is the most instructive failure in the project. A training loss of 0.274
+corresponds to a perplexity of about 1.3, which for a from-scratch translation
+model on 25{,}000 sentences is not merely good but impossible. The number was
+the evidence; the model was being rewarded for predicting padding tokens, which
+diluted the translation signal while making the loss look excellent. No test of
+output types or exception behaviour would have caught it. What caught it was
+asking whether the reported number was physically plausible.
+
+\section{Training Collapse and Recovery}
+\label{sec:collapse}
+
+During the 22-direction training campaign, two students collapsed. Both produced
+the same characteristic pathology: fluent, grammatical, entirely
+source-independent output --- a ``stock news sentence'' returned regardless of
+input.
+
+\begin{table}[H]
+\centering
+\caption{The two training collapses and their recovery}
+\label{tab:collapse}
+\begin{tabular}{@{}L{3.5cm} c c c c c@{}}
+\toprule
+\rowcolor{headblue}
+\textbf{Direction} & \textbf{LR} & \textbf{SFT loss} & \textbf{Ratio} & \textbf{LR (retry)} & \textbf{Ratio (retry)} \\
+\midrule
+Telugu\arrowto{}English   & $5\times10^{-4}$ & 3.13 & 0.036 & $3\times10^{-4}$ & \textbf{0.817} \\
+\rowcolor{rowgrey}
+Malayalam\arrowto{}English & $5\times10^{-4}$ & 3.96 & 0.013 & $3\times10^{-4}$ & \textbf{0.898} \\
+English\arrowto{}Malayalam & $5\times10^{-4}$ & --- & 0.570 & $3\times10^{-4}$ & \textbf{0.863} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The diagnosis rests on a controlled observation: Tamil\arrowto{}English
+and Kannada\arrowto{}English trained at the same learning rate, on the same amount
+of data, through the same code, and did \emph{not} collapse. The failure was
+therefore training instability rather than a data problem specific to Telugu or
+Malayalam. The recovery confirmed it --- each collapsed direction was retrained
+using its \emph{existing, good} distilled corpus, changing only the
+supervised-fine-tuning learning rate from $5\times10^{-4}$ to $3\times10^{-4}$,
+and both recovered completely. The Malayalam retrain also lifted the reverse
+direction from 0.570 to 0.863.
+
+Two operational lessons follow, and both are now defaults.
+
+\textbf{Use $3\times10^{-4}$.} The higher rate offers no measured benefit and
+carries a real risk of total loss of a multi-hour run.
+
+\textbf{Training loss is a reliable collapse indicator.} Healthy runs settle at
+a final supervised loss of 1.5 to 2.3; collapsed runs sit at 3 to 4. This is a
+cheap, early signal --- available long before evaluation --- and it is now
+checked before a run is allowed to proceed to quantisation.
+
+\section{Test Reports}
+\label{sec:testreports}
+
+\subsection{Full Scorecard: 22 Directions}
+\label{subsec:scorecard}
+
+Table~\ref{tab:fullscorecard} gives every trained direction, ordered by
+student/teacher BLEU ratio. Eleven languages are covered, each in both
+directions.
+
+\begin{longtable}{@{}r L{3.9cm} r r r r c r@{}}
+\caption{Full scorecard: 22 directions, 500-sentence Samanantar development slice, INT4 ONNX students}
+\label{tab:fullscorecard}\\
+\toprule
+\rowcolor{headblue}
+\textbf{\#} & \textbf{Direction} & \textbf{BLEU} & \textbf{chrF} & \textbf{Teacher} & \textbf{Ratio} & \textbf{$\geq$0.80} & \textbf{Latency} \\
+\midrule
+\endfirsthead
+\multicolumn{8}{c}{\textit{Table \thetable{} --- continued from previous page}}\\
+\toprule
+\rowcolor{headblue}
+\textbf{\#} & \textbf{Direction} & \textbf{BLEU} & \textbf{chrF} & \textbf{Teacher} & \textbf{Ratio} & \textbf{$\geq$0.80} & \textbf{Latency} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{8}{r}{\textit{continued on next page}}\\
+\endfoot
+\bottomrule
+\endlastfoot
+
+1  & Marathi \arrowto{} English   & 16.4 & 43.8 & 17.1 & \textbf{0.955} & \pass & 131\,ms \\
+\rowcolor{rowgrey}
+2  & English \arrowto{} Kannada   & 10.0 & 43.0 & 11.0 & \textbf{0.915} & \pass & 105\,ms \\
+3  & English \arrowto{} Punjabi   & 15.8 & 42.3 & 17.5 & \textbf{0.904} & \pass & 175\,ms \\
+\rowcolor{rowgrey}
+4  & English \arrowto{} Marathi   & 12.5 & 40.9 & 13.8 & \textbf{0.901} & \pass & 111\,ms \\
+5  & Odia \arrowto{} English      & 18.9 & 46.5 & 21.0 & \textbf{0.898} & \pass & 133\,ms \\
+\rowcolor{rowgrey}
+6  & Malayalam \arrowto{} English & 17.1 & 44.6 & 19.1 & \textbf{0.898} & \pass & 128\,ms \\
+7  & English \arrowto{} Odia      & 6.9  & 40.8 & 7.7  & \textbf{0.895} & \pass & 128\,ms \\
+\rowcolor{rowgrey}
+8  & Punjabi \arrowto{} English   & 21.1 & 47.6 & 24.0 & \textbf{0.877} & \pass & 158\,ms \\
+9  & English \arrowto{} Hindi     & 20.3 & 46.6 & 23.3 & \textbf{0.871} & \pass & 202\,ms \\
+\rowcolor{rowgrey}
+10 & English \arrowto{} Malayalam & 5.2  & 38.8 & 6.1  & \textbf{0.863} & \pass & 113\,ms \\
+11 & English \arrowto{} Gujarati  & 12.5 & 41.1 & 14.6 & \textbf{0.855} & \pass & 114\,ms \\
+\rowcolor{rowgrey}
+12 & English \arrowto{} Bengali   & 11.1 & 41.5 & 13.1 & \textbf{0.848} & \pass & 130\,ms \\
+13 & Telugu \arrowto{} English    & 18.9 & 46.5 & 23.1 & \textbf{0.817} & \pass & 129\,ms \\
+\rowcolor{rowgrey}
+14 & Hindi \arrowto{} English     & 21.8 & 49.5 & 27.1 & \textbf{0.806} & \pass & 199\,ms \\
+\midrule
+15 & Gujarati \arrowto{} English  & 18.8 & 46.2 & 23.9 & 0.787 & \near & 130\,ms \\
+\rowcolor{rowgrey}
+16 & English \arrowto{} Telugu    & 11.0 & 42.8 & 14.0 & 0.780 & \near & 113\,ms \\
+17 & English \arrowto{} Assamese  & 6.7  & 33.7 & 8.7  & 0.764 & \near & 155\,ms \\
+\rowcolor{rowgrey}
+18 & Kannada \arrowto{} English   & 16.3 & 45.6 & 21.4 & 0.763 & \near & 132\,ms \\
+19 & Tamil \arrowto{} English     & 16.1 & 41.0 & 21.1 & 0.761 & \near & 155\,ms \\
+\rowcolor{rowgrey}
+20 & Assamese \arrowto{} English  & 13.1 & 33.5 & 17.3 & 0.757 & \near & 154\,ms \\
+21 & Bengali \arrowto{} English   & 19.1 & 45.2 & 25.2 & 0.756 & \near & 150\,ms \\
+\rowcolor{rowgrey}
+22 & English \arrowto{} Tamil     & 8.0  & 43.0 & 10.6 & 0.755 & \near & 135\,ms \\
+
+\end{longtable}
+
+\begin{table}[H]
+\centering
+\caption{Aggregate statistics across all 22 directions}
+\label{tab:aggregates}
+\begin{tabular}{@{}L{7.0cm} L{6.6cm}@{}}
+\toprule
+\rowcolor{headblue}
+\textbf{Metric} & \textbf{Value} \\
+\midrule
+Directions trained                     & 22 (11 languages, both ways) \\
+\rowcolor{rowgrey}
+Meeting the $\geq 0.80$ target         & \textbf{14 of 22 (64\,\%)} \\
+Mean ratio                             & \textbf{0.838} \\
+\rowcolor{rowgrey}
+Median ratio                           & \textbf{0.855} \\
+Best direction                         & Marathi \arrowto{} English, 0.955 \\
+\rowcolor{rowgrey}
+Weakest direction                      & English \arrowto{} Tamil, 0.755 \\
+Collapsed directions remaining         & \textbf{0} (both recovered) \\
+\rowcolor{rowgrey}
+Artifact size                          & 103.9\,MB, every direction \\
+Mean latency range                     & 105--202\,ms \\
+\rowcolor{rowgrey}
+Offline operation                      & Verified for every direction \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Per-Language Rollup and Quality Tiers}
+\label{subsec:rollup}
+
+\begin{table}[H]
+\centering
+\caption{Per-language rollup for the nine languages with full bidirectional evaluation}
+\label{tab:rollup}
+\begin{tabular}{@{}L{2.8cm} r r r L{5.6cm}@{}}
+\toprule
+\rowcolor{headblue}
+\textbf{Language} & \textbf{\arrowto{}En} & \textbf{En\arrowto{}} & \textbf{Mean} & \textbf{Assessment} \\
+\midrule
+Marathi   & 0.955 & 0.901 & \textbf{0.928} & Both directions pass; strongest language \\
+\rowcolor{rowgrey}
+Odia      & 0.898 & 0.895 & \textbf{0.897} & Both directions pass, closely matched \\
+Malayalam & 0.898 & 0.863 & \textbf{0.881} & Both pass after recovery from collapse \\
+\rowcolor{rowgrey}
+Hindi     & 0.806 & 0.871 & \textbf{0.839} & Both pass; the primary development pair \\
+Kannada   & 0.763 & 0.915 & 0.839 & Strong into Kannada; near-miss out of it \\
+\rowcolor{rowgrey}
+Gujarati  & 0.787 & 0.855 & 0.821 & One pass, one near-miss \\
+Bengali   & 0.756 & 0.848 & 0.802 & One pass, one near-miss \\
+\rowcolor{rowgrey}
+Telugu    & 0.817 & 0.780 & 0.799 & Passes after recovery; reverse is a near-miss \\
+Tamil     & 0.761 & 0.755 & 0.758 & Both near-miss; BLEU likely understates quality \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Three observations follow.
+
+\textbf{Direction symmetry holds.} Once the collapses are excluded,
+English\arrowto{}Indic averages 0.854 and Indic\arrowto{}English averages 0.827.
+The two directions are close, which suggests the method is not biased towards
+translating into English --- a common asymmetry in multilingual systems.
+
+\textbf{The near-misses are under-converged, not unstable.} All six near-miss
+directions have supervised losses of 2.00 to 2.32, at the upper end of the
+healthy band of 1.5 to 2.3, whereas the passing directions cluster between 1.46
+and 1.95. The pattern points to insufficient training rather than instability,
+which means the cheap remedies --- beam search at evaluation, more epochs, more
+distilled data --- are the appropriate ones.
+
+\textbf{BLEU understates agglutinative languages.} English\arrowto{}Malayalam
+\emph{passes} the target at 0.863 while scoring only 5.2 BLEU, because its
+teacher scores just 6.1. Malayalam's agglutinative morphology packs into single
+orthographic words what English expresses in several, so n-gram overlap is
+structurally low even when the translation is correct. This is exactly why the
+project gates on the \emph{ratio} rather than absolute BLEU, and why COMET
+scoring is recommended for Malayalam and Tamil: several near-misses may already
+pass under a metric that is not overlap-based.
+
+\subsection{Deployment Metrics: Size and Latency}
+\label{subsec:deploymetrics}
+
+\begin{longtable}{@{}L{3.6cm} r r r c r r c@{}}
+\caption{Deployment metrics per direction (INT4 ONNX, VM host CPU)}
+\label{tab:deploy}\\
+\toprule
+\rowcolor{headblue}
+\textbf{Direction} & \textbf{FP32} & \textbf{INT8} & \textbf{INT4} & \textbf{$\leq$200} & \textbf{p50} & \textbf{p90} & \textbf{$<$500} \\
+\midrule
+\endfirsthead
+\toprule
+\rowcolor{headblue}
+\textbf{Direction} & \textbf{FP32} & \textbf{INT8} & \textbf{INT4} & \textbf{$\leq$200} & \textbf{p50} & \textbf{p90} & \textbf{$<$500} \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+
+Marathi \arrowto{} English   & 411 & 104.6 & 103.9 & \yes & 95\,ms  & 147\,ms & \yes \\
+\rowcolor{rowgrey}
+English \arrowto{} Kannada   & 411 & 104.6 & 103.9 & \yes & 62\,ms  & 141\,ms & \yes \\
+English \arrowto{} Marathi   & 411 & 104.6 & 103.9 & \yes & 78\,ms  & 156\,ms & \yes \\
+\rowcolor{rowgrey}
+Odia \arrowto{} English      & 411 & 104.6 & 103.9 & \yes & 78\,ms  & 147\,ms & \yes \\
+Malayalam \arrowto{} English & 411 & 104.6 & 103.9 & \yes & 86\,ms  & 213\,ms & \yes \\
+\rowcolor{rowgrey}
+English \arrowto{} Odia      & 411 & 104.6 & 103.9 & \yes & 201\,ms & 350\,ms & \yes \\
+English \arrowto{} Hindi     & 411 & 104.6 & 103.9 & \yes & 124\,ms & 300\,ms & \yes \\
+\rowcolor{rowgrey}
+English \arrowto{} Malayalam & 411 & 104.6 & 103.9 & \yes & 85\,ms  & 173\,ms & \yes \\
+English \arrowto{} Gujarati  & 411 & 104.6 & 103.9 & \yes & 74\,ms  & 148\,ms & \yes \\
+\rowcolor{rowgrey}
+English \arrowto{} Bengali   & 411 & 104.6 & 103.9 & \yes & 179\,ms & 336\,ms & \yes \\
+Telugu \arrowto{} English    & 411 & 104.6 & 103.9 & \yes & 86\,ms  & 204\,ms & \yes \\
+\rowcolor{rowgrey}
+Hindi \arrowto{} English     & 411 & 104.6 & 103.9 & \yes & 134\,ms & 335\,ms & \yes \\
+Gujarati \arrowto{} English  & 411 & 104.6 & 103.9 & \yes & 82\,ms  & 165\,ms & \yes \\
+\rowcolor{rowgrey}
+English \arrowto{} Telugu    & 411 & 104.6 & 103.9 & \yes & 72\,ms  & 200\,ms & \yes \\
+Kannada \arrowto{} English   & 411 & 104.6 & 103.9 & \yes & 136\,ms & 281\,ms & \yes \\
+\rowcolor{rowgrey}
+Tamil \arrowto{} English     & 411 & 104.6 & 103.9 & \yes & 93\,ms  & 185\,ms & \yes \\
+Bengali \arrowto{} English   & 411 & 104.6 & 103.9 & \yes & 88\,ms  & 190\,ms & \yes \\
+\rowcolor{rowgrey}
+English \arrowto{} Tamil     & 411 & 104.6 & 103.9 & \yes & 214\,ms & 541\,ms & \near \\
+
+\end{longtable}
+
+Every model compresses by a factor of 4.0, from 410.9\,MB to 103.9\,MB, which is
+48\,\% below the 200\,MB budget. Median latency is comfortably inside the 500\,ms
+budget for every direction. The single exception is English\arrowto{}Tamil,
+whose p90 of 541\,ms exceeds the budget; its median of 214\,ms does not. This
+was measured on a shared VM host under contention, and Tamil's longer output
+sequences make it the most sensitive direction to host load. It is recorded as a
+near-miss rather than discounted.
+
+\subsection{Definition-of-Done Scorecard}
+\label{subsec:dod}
+
+\begin{table}[H]
+\centering
+\caption{Final scorecard against the four project targets}
+\label{tab:dod}
+\begin{tabular}{@{}L{2.3cm} L{3.2cm} L{3.4cm} L{2.3cm} c@{}}
+\toprule
+\rowcolor{headblue}
+\textbf{Target} & \textbf{Metric} & \textbf{Result} & \textbf{Threshold} & \textbf{Status} \\
+\midrule
+Quality  & Student / teacher BLEU ratio & 14 of 22 directions; mean 0.838, median 0.855, best 0.955 & $\geq 0.80$ & Partial \\
+\rowcolor{rowgrey}
+Latency  & Milliseconds per sentence, quantised & Mean 105--202\,ms; p90 141--541\,ms & $<500$\,ms & \pass \\
+Size     & Quantised artifact, INT4 & 103.9\,MB, every direction & $\leq 200$\,MB & \pass \\
+\rowcolor{rowgrey}
+Offline  & Inference with networking disabled & Succeeds for every direction & Zero network calls & \pass \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Three of the four targets pass without exception across all 22 directions.
+Quality is met on 14 of 22. On the primary development pair,
+Hindi\arrowto{}English, all four targets are met and the definition of done is
+complete.
+
+\section{Qualitative Analysis of Translation Quality}
+\label{sec:qualitative}
+
+Metrics measure aggregate overlap; they do not show whether output is usable.
+This section examines what the models actually produce.
+
+\subsection{Simple Sentences}
+\label{subsec:simplesentences}
+
+\begin{table}[H]
+\centering
+\caption{Representative simple-sentence translations across directions}
+\label{tab:simple}
+\begin{tabular}{@{}L{1.7cm} L{5.8cm} L{5.8cm}@{}}
+\toprule
+\rowcolor{headblue}
+\textbf{Direction} & \textbf{Input} & \textbf{Output} \\
+\midrule
+hi \arrowto{} en & \dev{भारत एक विशाल देश है।} & India is a vast country. \\
+\rowcolor{rowgrey}
+hi \arrowto{} en & \dev{मुझे किताबें पढ़ना पसंद है।} & I love reading books. \\
+hi \arrowto{} en & \dev{आपकी मदद के लिए बहुत धन्यवाद।} & Thank you so much for your help. \\
+\rowcolor{rowgrey}
+en \arrowto{} hi & Water is essential for life. & \dev{जीवन के लिए पानी आवश्यक है।} \\
+en \arrowto{} hi & This is a very beautiful garden. & \dev{यह एक बहुत ही सुंदर उद्यान है।} \\
+\rowcolor{rowgrey}
+bn \arrowto{} en & \ben{ভারত একটি বড় দেশ।} & India is a big country. \\
+mr \arrowto{} en & \dev{मला पुस्तके वाचायला आवडतात।} & I love reading books. \\
+\rowcolor{rowgrey}
+ml \arrowto{} en & \mal{ഇന്ത്യ ഒരു വലിയ രാജ്യമാണ്.} & India is a big country. \\
+te \arrowto{} en & \tel{భారతదేశం ఒక పెద్ద దేశం.} & India is a big country. \\
+\rowcolor{rowgrey}
+en \arrowto{} ml & Water is essential for life. & \mal{ജീവിതത്തിന് വെള്ളം അത്യന്താപേക്ഷിതമാണ്.} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Output on simple sentences is idiomatic rather than merely literal. The Hindi
+model renders \dev{विशाल} as ``vast'' and \dev{पसंद है} as ``love reading''
+rather than the word-by-word ``liking exists'' --- a 52-million-parameter
+student is producing natural English. The two recovered models, Malayalam and
+Telugu into English, are correct, which is the qualitative confirmation that the
+recovery was genuine and not merely a better score.
+
+\subsection{Complex Sentences}
+\label{subsec:complexsentences}
+
+The harder probe used subordinate clauses, reported speech, counterfactual
+conditionals, percentages and named entities.
+
+\begin{table}[H]
+\centering
+\caption{Complex-sentence probe: \textit{``Although the weather was terrible, the farmers kept working in the fields until sunset.''}}
+\label{tab:complex1}
+\begin{tabular}{@{}L{1.5cm} L{12.3cm}@{}}
+\toprule
+\rowcolor{headblue}
+\textbf{Lang} & \textbf{Translation} \\
+\midrule
+hi & \dev{हालांकि मौसम भयानक था, लेकिन किसान सूर्यास्त तक खेतों में काम करते रहे।} \\
+\rowcolor{rowgrey}
+mr & \dev{हवामान भयंकर असले तरी शेतकरी सूर्यास्तापर्यंत शेतात काम करत राहिले.} \\
+gu & \guj{હવામાન ભયાનક હોવા છતાં, ખેડૂતો સૂર્યાસ્ત સુધી ખેતરોમાં કામ કરતા રહ્યા.} \\
+\rowcolor{rowgrey}
+kn & \kan{ಹವಾಮಾನ ಭಯಾನಕವಾಗಿದ್ದರೂ, ರೈತರು ಹೊಲಗಳಲ್ಲಿ ಸೂರ್ಯಾಸ್ತದವರೆಗೂ ಕೆಲಸ ಮಾಡುತ್ತಲೇ ಇದ್ದರು.} \\
+te & \tel{వాతావరణం భయంకరంగా ఉన్నప్పటికీ సూర్యాస్తమయం వరకు పొలాల్లో రైతులు పని చేస్తూనే ఉన్నారు.} \\
+\rowcolor{rowgrey}
+ml & \mal{കാലാവസ്ഥ ഭയാനകമായിരുന്നെങ്കിലും സൂര്യാസ്തമയുന്നതുവരെ കർഷകർ വയലുകളിൽ ജോലി തുടർന്നു.} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The concessive clause survives in every language, each using its own idiomatic
+construction --- \dev{हालांकि}, \guj{હોવા છતાં}, \kan{ಆಗಿದ್ದರೂ},
+\tel{ఉన్నప్పటికీ}. The models are not transliterating an English structure;
+they are producing target-language syntax.
+
+\begin{table}[H]
+\centering
+\caption{Counterfactual conditional probe: \textit{``If you had told me earlier, I would have booked the tickets for the evening train.''}}
+\label{tab:complex2}
+\begin{tabular}{@{}L{1.5cm} L{12.3cm}@{}}
+\toprule
+\rowcolor{headblue}
+\textbf{Lang} & \textbf{Translation} \\
+\midrule
+hi & \dev{अगर आपने पहले मुझे बताया होता तो मैं शाम की ट्रेन के लिए टिकट बुक कर लेता।} \\
+\rowcolor{rowgrey}
+mr & \dev{तुम्ही मला आधी सांगितले असते तर मी संध्याकाळच्या ट्रेनसाठी तिकिटे बुक केली असती.} \\
+gu & \guj{જો તમે મને અગાઉ કહ્યું હોત, તો મેં સાંજની ટ્રેન માટે ટિકિટ બુક કરી હોત.} \\
+\rowcolor{rowgrey}
+ta & \tam{நீங்கள் என்னை முன்பே சொன்னிருந்தால், மாலை ரயிலில் டிக்கெட்டுகளை முன்பதிவு செய்திருப்பேன்.} \\
+ml & \mal{നിങ്ങൾ എന്നോട് നേരത്തെ പറഞ്ഞിരുന്നെങ്കിൽ വൈകുന്നേരത്തെ ട്രെയിനിനായി ടിക്കറ്റ് ബുക്ക് ചെയ്യുമായിരുന്നു.} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Counterfactual conditionals are a demanding test because they require the
+correct irrealis mood in the main clause. Hindi, Marathi and Gujarati all
+produce it correctly. Telugu, by contrast, renders the protasis as a simple
+conditional and the apodosis in the past indicative --- \tel{బుక్ చేసుకున్నాను}
+(``I booked'') rather than ``I would have booked'' --- losing the counterfactual
+sense. This is a genuine error and matches Telugu's position in the scorecard.
+
+\subsection{Recurring Error Patterns}
+\label{subsec:errors}
+
+\begin{table}[H]
+\centering
+\caption{Recurring error patterns, observed in near-miss directions}
+\label{tab:errors}
+\begin{tabular}{@{}L{3.1cm} L{5.4cm} L{5.4cm}@{}}
+\toprule
+\rowcolor{headblue}
+\textbf{Pattern} & \textbf{Example} & \textbf{Interpretation} \\
+\midrule
+Repetition & \textit{``India is a country that is a big country''} (or\arrowto{}en); \textit{``life of life''} (gu\arrowto{}en) & The decoder re-enters a high-probability phrase. The 3-gram repetition block catches the worst cases but not all \\
+\rowcolor{rowgrey}
+Untranslated idiom & \textit{o'clock} transliterated as \ory{ନଅ ଓକ୍ଲାରେ} (or), \kan{ಒಂಬತ್ತು ಓಕ್ಲಾಕ್ಗೆ} (kn) & The token is rare in the distilled corpus, so the student falls back to transliteration \\
+Lexical slip & hi\arrowto{}en renders \dev{ढलना} as ``collapsed'' instead of ``set''; a Marathi round trip turns \textit{sunset} into \textit{sunrise} & Polysemy resolved incorrectly; a 52\,M student has limited lexical disambiguation capacity \\
+\rowcolor{rowgrey}
+Dropped modifier & Kannada omits ``fifteen percent'' in a reported-speech sentence & Information loss under a long dependency; the weakest Kannada behaviour, matching its 0.763 ratio \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+A round-trip test --- English to the target language and back --- was also run.
+Hindi and Marathi round-trip almost perfectly. Kannada drifts noticeably, again
+matching its scorecard position. The qualitative and quantitative assessments
+agree throughout, which is itself a useful validation of the metric.
+
+\section{User Documentation}
+\label{sec:userdoc}
+
+This section documents the system as delivered, sufficient for a user to install
+and operate it.
+
+\subsection{Installation}
+\label{subsec:install}
+
+Python 3.11 or 3.12 is required, plus Node 18 or newer for the browser client.
+Once the models are fetched, everything runs offline.
+
+\begin{lstlisting}[language=bash, caption={Installation on a fresh machine}, label={lst:install}]
+# 1. Clone
+git clone https://github.com/GeekyRiolu/SETU_v2.git
+cd SETU_v2/SETU
+
+# 2. Environment and inference dependencies
+python -m venv .venv
+source .venv/bin/activate              # Windows: .venv\Scripts\activate
+pip install -e ".[quantize]"           # onnxruntime + optimum
+pip install torch --index-url https://download.pytorch.org/whl/cpu
+pip install transformers sentencepiece fastapi uvicorn
+
+# 3. Fetch the trained models (~1.8 GB, from the public GitHub release)
+bash scripts/fetch_models.sh           # extracts 22 pairs into models/
+\end{lstlisting}
+
+The models are published as two archives on a public GitHub release, requiring
+no login. They are distributed this way rather than committed to the repository
+because 2.3\,GB of binary artifacts do not belong in version control and
+individual files exceed GitHub's 100\,MB per-file limit.
+
+\subsection{Running the System}
+\label{subsec:running}
+
+\begin{lstlisting}[language=bash, caption={Starting the API and translating}, label={lst:run}]
+# Start the REST service
+PYTHONPATH=src:. uvicorn interfaces.rest.app:app --host 0.0.0.0 --port 8000
+curl localhost:8000/models             # -> {"count": 22, ...}
+
+# Command line, direct pair
+PYTHONPATH=src:. python setu_cli.py --src hi --tgt en --text "<Hindi text>"
+
+# Command line, Indic-to-Indic via the English pivot
+PYTHONPATH=src:. python setu_cli.py --src hi --tgt bn --text "<Hindi text>"
+
+# Browser client (separate terminal)
+cd frontend && npm install && npm run dev      # http://localhost:3000
+\end{lstlisting}
+
+\subsection{Interface Reference}
+\label{subsec:apiref}
+
+\begin{table}[H]
+\centering
+\caption{REST API reference}
+\label{tab:apiref}
+\begin{tabular}{@{}L{3.6cm} L{4.0cm} L{6.2cm}@{}}
+\toprule
+\rowcolor{headblue}
+\textbf{Endpoint} & \textbf{Request} & \textbf{Response} \\
+\midrule
+\texttt{POST /translate} & \texttt{\{source\_lang, target\_lang, text\}} & \texttt{\{translated\_text, latency\_ms, pivot, stub\}}. \texttt{pivot} is \texttt{"en"} for a chained translation; \texttt{stub} true means passthrough \\
+\rowcolor{rowgrey}
+\texttt{GET /languages} & --- & 23 entries: ISO code, FLORES code, script, endonym \\
+\texttt{GET /models} & --- & \texttt{\{count, models: [\{pair, variant, size\_mb\}]\}} \\
+\rowcolor{rowgrey}
+\texttt{GET /health} & --- & \texttt{\{status, stub\}} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Supported Languages}
+\label{subsec:supportedlangs}
+
+Eleven scheduled languages are delivered in Phase 1, each paired both ways with
+English: Hindi (\dev{हिन्दी}), Bengali (\ben{বাংলা}), Marathi (\dev{मराठी}),
+Telugu (\tel{తెలుగు}), Tamil (\tam{தமிழ்}), Gujarati (\guj{ગુજરાતી}), Kannada
+(\kan{ಕನ್ನಡ}), Odia (\ory{ଓଡ଼ିଆ}), Malayalam (\mal{മലയാളം}), Assamese
+(\ben{অসমীয়া}) and Punjabi (\gur{ਪੰਜਾਬੀ}). Any pair among these eleven
+translates through the English pivot, so a user may translate Hindi to Bengali
+or Tamil to Telugu without a direct model existing.
+
+The remaining eleven scheduled languages appear in the interface but are
+disabled and labelled as Phase 2. They are blocked by corpus availability: only
+Assamese and Punjabi among the lower-resource set had ungated Samanantar data,
+and the rest require access to the gated BPCC corpus.
+
+\subsection{Interpreting the Output}
+\label{subsec:interpreting}
+
+Two fields in every response deserve attention. The \texttt{stub} field is
+\texttt{true} when no model could serve the request and the input was returned
+unchanged; a client must treat that as a failure, not a translation. The
+\texttt{pivot} field is \texttt{"en"} when the translation passed through
+English; such translations involve two model hops and may accumulate error from
+both, so a user comparing quality across pairs should know which they are
+looking at.

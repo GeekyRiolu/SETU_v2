@@ -1,0 +1,22 @@
+% ------------------- Table of Contents / Tables / Figures --------------------
+\cleardoublepage
+\pagestyle{plain}
+
+\renewcommand{\contentsname}{\normalfont\fontsize{18}{22}\selectfont\bfseries\hfill TABLE OF CONTENTS\hfill}
+\renewcommand{\listtablename}{\normalfont\fontsize{18}{22}\selectfont\bfseries\hfill LIST OF TABLES\hfill}
+\renewcommand{\listfigurename}{\normalfont\fontsize{18}{22}\selectfont\bfseries\hfill LIST OF FIGURES\hfill}
+
+{\setstretch{1.15}
+\tableofcontents
+\clearpage
+
+\addcontentsline{toc}{chapter}{List of Tables}
+\listoftables
+\clearpage
+
+\addcontentsline{toc}{chapter}{List of Figures}
+\listoffigures
+\clearpage
+}
+
+\pagestyle{setumain}

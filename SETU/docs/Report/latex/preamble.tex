@@ -1,0 +1,252 @@
+% ============================================================================
+%  SETU -- Project Phase-II Report : preamble
+%  Formatting follows R.1.Guidelines.docx:
+%    A4, 1.5 spacing, Times New Roman
+%    Margins  : Left 1.25in, Right 1in, Top/Bottom 0.75in
+%    Chapter  : number left justified 16pt ; title CAPS centered 18pt bold
+%    Section  : 16pt bold, left justified ; Subsection : 14pt bold, left
+%    Body     : 12pt
+%    Header   : project title (right), suppressed on chapter-opening pages
+%    Footer   : Department (left) | 2025-2026 (centre) | page no. (right)
+% ============================================================================
+
+% ---------- page geometry --------------------------------------------------
+\usepackage[a4paper,
+            left=1.25in, right=1.0in, top=0.75in, bottom=0.75in,
+            includehead, includefoot, headsep=10pt, footskip=22pt]{geometry}
+
+% ---------- fonts ----------------------------------------------------------
+\usepackage{fontspec}
+
+% Times New Roman clone shipped with TeX (metrically compatible).
+\setmainfont{texgyretermes}[
+  Extension      = .otf,
+  UprightFont    = *-regular,
+  BoldFont       = *-bold,
+  ItalicFont     = *-italic,
+  BoldItalicFont = *-bolditalic]
+\setsansfont{texgyreheros}[
+  Extension      = .otf,
+  UprightFont    = *-regular,
+  BoldFont       = *-bold,
+  ItalicFont     = *-italic,
+  BoldItalicFont = *-bolditalic]
+\setmonofont{texgyrecursor}[
+  Extension      = .otf,
+  UprightFont    = *-regular,
+  BoldFont       = *-bold,
+  ItalicFont     = *-italic,
+  BoldItalicFont = *-bolditalic,
+  Scale          = 0.88]
+
+% ---------- Indic script fonts (for the qualitative translation samples) ----
+% Serif variants: they match the Times-like body text, and unlike the Sans
+% Gujarati/Bengali faces they carry the ASCII punctuation the samples contain.
+\newfontfamily\devafont{Noto Serif Devanagari}[Script=Devanagari, Scale=0.96]
+\newfontfamily\bengfont{Noto Serif Bengali}[Script=Bengali, Scale=0.96]
+\newfontfamily\gujrfont{Noto Serif Gujarati}[Script=Gujarati, Scale=0.96]
+\newfontfamily\guruonfont{Noto Serif Gurmukhi}[Script=Gurmukhi, Scale=0.96]
+\newfontfamily\oryafont{Noto Serif Oriya}[Script=Oriya, Scale=0.96]
+\newfontfamily\tamlfont{Noto Serif Tamil}[Script=Tamil, Scale=0.96]
+\newfontfamily\telufont{Noto Serif Telugu}[Script=Telugu, Scale=0.96]
+\newfontfamily\kndafont{Noto Serif Kannada}[Script=Kannada, Scale=0.96]
+\newfontfamily\mlymfont{Noto Serif Malayalam}[Script=Malayalam, Scale=0.96]
+
+\newcommand{\dev}[1]{{\devafont #1}}      % Hindi, Marathi
+\newcommand{\ben}[1]{{\bengfont #1}}      % Bengali, Assamese
+\newcommand{\guj}[1]{{\gujrfont #1}}
+\newcommand{\gur}[1]{{\guruonfont #1}}    % Punjabi
+\newcommand{\ory}[1]{{\oryafont #1}}
+\newcommand{\tam}[1]{{\tamlfont #1}}
+\newcommand{\tel}[1]{{\telufont #1}}
+\newcommand{\kan}[1]{{\kndafont #1}}
+\newcommand{\mal}[1]{{\mlymfont #1}}
+
+% ---------- spacing --------------------------------------------------------
+\usepackage{setspace}
+\onehalfspacing
+\setlength{\parindent}{0.5in}          % "1 tab space at the beginning of each para"
+\setlength{\parskip}{0.35em}
+\usepackage{microtype}
+% Allow hyphenation inside \texttt{...}: long identifiers, paths and flags would
+% otherwise run into the margin.
+\usepackage[htt]{hyphenat}
+\setlength{\emergencystretch}{3em}
+
+% ---------- tables, figures, graphics --------------------------------------
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{makecell}
+\usepackage{colortbl}
+\usepackage[table,dvipsnames]{xcolor}
+\usepackage{float}
+\usepackage[font=normalsize,labelfont=bf,skip=6pt]{caption}
+\captionsetup[table]{position=top}
+\captionsetup[figure]{position=bottom}
+\renewcommand{\arraystretch}{1.25}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+\newcolumntype{R}[1]{>{\raggedleft\arraybackslash}p{#1}}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+
+\definecolor{headblue}{HTML}{DCE6F1}
+\definecolor{rowgrey}{HTML}{F4F4F4}
+\definecolor{inkgrey}{HTML}{555555}
+\definecolor{passgreen}{HTML}{1B7A3D}
+\definecolor{warnamber}{HTML}{A9600A}
+\newcommand{\pass}{\textcolor{passgreen}{\textbf{Pass}}}
+\newcommand{\near}{\textcolor{warnamber}{\textbf{Near}}}
+\newcommand{\yes}{\textcolor{passgreen}{\textbf{Yes}}}
+
+% ---------- lists ----------------------------------------------------------
+\usepackage{enumitem}
+\setlist[itemize]{leftmargin=0.55in, topsep=3pt, itemsep=2pt, parsep=0pt}
+\setlist[enumerate]{leftmargin=0.55in, topsep=3pt, itemsep=2pt, parsep=0pt}
+\setlist[description]{leftmargin=0.55in, topsep=3pt, itemsep=2pt}
+
+% ---------- headings -------------------------------------------------------
+\usepackage{titlesec}
+
+\titleformat{\chapter}[display]
+  {\normalfont\bfseries}
+  {\fontsize{16}{20}\selectfont\raggedright CHAPTER \thechapter}
+  {6pt}
+  {\fontsize{18}{24}\selectfont\centering\MakeUppercase}
+\titlespacing*{\chapter}{0pt}{0pt}{22pt}
+
+\titleformat{\section}
+  {\normalfont\fontsize{16}{19}\selectfont\bfseries\raggedright}{\thesection}{0.6em}{}
+\titlespacing*{\section}{0pt}{16pt}{8pt}
+
+\titleformat{\subsection}
+  {\normalfont\fontsize{14}{17}\selectfont\bfseries\raggedright}{\thesubsection}{0.6em}{}
+\titlespacing*{\subsection}{0pt}{12pt}{6pt}
+
+\titleformat{\subsubsection}
+  {\normalfont\fontsize{12}{15}\selectfont\bfseries\raggedright}{\thesubsubsection}{0.6em}{}
+\titlespacing*{\subsubsection}{0pt}{10pt}{4pt}
+
+\setcounter{secnumdepth}{3}
+\setcounter{tocdepth}{2}
+
+% ---------- header / footer ------------------------------------------------
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+
+\newcommand{\projecttitle}{SETU: Multilingual Preference Distillation for Offline Indian Language SLM Translators}
+\newcommand{\shorttitle}{SETU: Offline Indian Language SLM Translators}
+\newcommand{\deptname}{Dept. of AI \& ML, BIT}
+\newcommand{\acadyear}{2025-2026}
+
+\fancypagestyle{setumain}{%
+  \fancyhf{}
+  \renewcommand{\headrulewidth}{0.4pt}
+  \renewcommand{\footrulewidth}{0.4pt}
+  \fancyhead[R]{\footnotesize\itshape\shorttitle}
+  \fancyfoot[L]{\footnotesize\deptname}
+  \fancyfoot[C]{\footnotesize\acadyear}
+  \fancyfoot[R]{\footnotesize\thepage}
+}
+% Chapter-opening pages: footer only, no header (per the template note).
+\fancypagestyle{plain}{%
+  \fancyhf{}
+  \renewcommand{\headrulewidth}{0pt}
+  \renewcommand{\footrulewidth}{0.4pt}
+  \fancyfoot[L]{\footnotesize\deptname}
+  \fancyfoot[C]{\footnotesize\acadyear}
+  \fancyfoot[R]{\footnotesize\thepage}
+}
+\pagestyle{setumain}
+
+% ---------- code listings --------------------------------------------------
+\usepackage{listings}
+\definecolor{lstbg}{HTML}{F7F7F4}
+\definecolor{lstkw}{HTML}{8A3B2E}
+\definecolor{lstcm}{HTML}{6B7280}
+\definecolor{lstst}{HTML}{1F6F43}
+\lstdefinestyle{setucode}{
+  basicstyle      = \ttfamily\footnotesize,
+  keywordstyle    = \color{lstkw}\bfseries,
+  commentstyle    = \color{lstcm}\itshape,
+  stringstyle     = \color{lstst},
+  numbers         = left,
+  numberstyle     = \ttfamily\scriptsize\color{inkgrey},
+  numbersep       = 8pt,
+  backgroundcolor = \color{lstbg},
+  frame           = single,
+  rulecolor       = \color{inkgrey},
+  breaklines      = true,
+  breakatwhitespace = true,
+  showstringspaces  = false,
+  tabsize         = 4,
+  captionpos      = b,
+  xleftmargin     = 20pt,
+  framexleftmargin= 18pt,
+  aboveskip       = 10pt,
+  belowskip       = 10pt,
+  upquote         = true,
+  literate        = {-}{{-}}1 {>}{{>}}1 {<}{{<}}1,
+}
+\lstset{style=setucode}
+\renewcommand{\lstlistingname}{Listing}
+
+% ---------- diagrams -------------------------------------------------------
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, shapes.misc, arrows.meta, positioning,
+                calc, fit, backgrounds, chains, decorations.pathreplacing}
+
+\tikzset{
+  proc/.style   = {rectangle, rounded corners=2pt, draw=black!70, fill=blue!5,
+                   minimum width=30mm, minimum height=9mm, align=center,
+                   font=\footnotesize, inner sep=3pt},
+  store/.style  = {cylinder, shape border rotate=90, aspect=0.16, draw=black!70,
+                   fill=orange!8, minimum width=24mm, minimum height=11mm,
+                   align=center, font=\footnotesize, inner sep=2pt},
+  term/.style   = {rectangle, rounded corners=7pt, draw=black!70, fill=black!5,
+                   minimum width=26mm, minimum height=8mm, align=center,
+                   font=\footnotesize},
+  dec/.style    = {diamond, aspect=2.1, draw=black!70, fill=green!6,
+                   align=center, font=\scriptsize, inner sep=1pt},
+  st/.style     = {rectangle, rounded corners=5pt, draw=black!70, fill=violet!6,
+                   minimum width=32mm, minimum height=9mm, align=center,
+                   font=\footnotesize},
+  ent/.style    = {rectangle, draw=black!70, fill=yellow!8, minimum width=26mm,
+                   minimum height=8mm, align=center, font=\footnotesize},
+  cls/.style    = {rectangle, draw=black!70, fill=cyan!5, align=left,
+                   text width=38mm, inner sep=4pt, font=\scriptsize,
+                   execute at begin node={\hyphenpenalty=10000\exhyphenpenalty=10000\relax}},
+  bar/.style    = {rectangle, draw=black!60, minimum height=4.6mm, inner sep=0pt},
+  fl/.style     = {-{Stealth[length=2.2mm]}, draw=black!75, font=\scriptsize},
+  lbl/.style    = {font=\scriptsize, inner sep=1.5pt, fill=white},
+}
+
+% ---------- misc -----------------------------------------------------------
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{textcomp}
+\usepackage{lipsum}
+\usepackage[hidelinks, bookmarksnumbered]{hyperref}
+\hypersetup{
+  pdftitle   = {SETU: Multilingual Preference Distillation for Offline Indian Language SLM Translators},
+  pdfauthor  = {Jannat Zafrin, Prabhav Sharma, Rishabh Sharma, Sindhuja Tiwari},
+  pdfsubject = {Project Phase-II Report, Dept. of AI and ML, Bangalore Institute of Technology},
+}
+
+% Class-box separator usable inside a TikZ node (\hrule is illegal there)
+\newcommand{\clsrule}{\\[1pt]\rule{\linewidth}{0.3pt}\\[1pt]}
+
+% Frequently used shorthands
+\newcommand{\setu}{\textsc{Setu}}
+\newcommand{\seqkd}{SeqKD}
+\newcommand{\arrowto}{\discretionary{}{}{}$\rightarrow$\discretionary{}{}{}}
+\newcommand{\vs}{\textit{vs.}}
+\newcommand{\tick}{\checkmark}
+
+% A centred, unnumbered heading used in the front matter
+\newcommand{\frontheading}[1]{%
+  \begin{center}\fontsize{18}{22}\selectfont\bfseries\MakeUppercase{#1}\end{center}
+  \vspace{6pt}}

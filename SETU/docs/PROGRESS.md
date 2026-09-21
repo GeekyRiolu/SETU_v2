@@ -352,6 +352,32 @@ balancing, EWC anti-forgetting, device resolution, scorecard.
 
 ## 10. Session changelog
 
+- **2026-09-21 (Project Phase-II report written in LaTeX + PDF)** - Read the three
+  guideline docs in `docs/Report/` (`R.1.Guidelines.docx`, `R.2. Preparation.docx`,
+  `Project Phase-II Report Template.docx`) and the interim deck, then wrote the full
+  report as LaTeX under `docs/Report/latex/` and built
+  `docs/Report/SETU_Project_Phase-II_Report.pdf` (**129 pages**, 49 tables, 10 figures,
+  31 references, ~34.8k words). All nine prescribed chapters plus abstract, declaration,
+  certificate, acknowledgement, TOC/LOT/LOF, references, appendix and glossary.
+  Formatting follows R.1 exactly: A4, 1.5 spacing, Times (TeX Gyre Termes), margins
+  L 1.25in / R 1in / T-B 0.75in, chapter no. left 16pt + CAPS centred title 18pt bold,
+  section 16pt / subsection 14pt bold left, body 12pt, header = title (suppressed on
+  chapter-opening pages), footer = dept | 2025-2026 | page, chapter-wise figure/table
+  numbering with table captions above and figure captions below.
+  Content is drawn from the real measured record, not the deck's older DPO narrative:
+  the refuted H1 (SeqKD 17.09 vs ref+DPO 11.10 BLEU at matched size), the data-scaling
+  curve (0.607 -> 0.764 -> 0.806), the 22-direction scorecard (14/22 >= 0.80, mean 0.838),
+  the three training failure modes, the two LR-5e-4 collapses and their 3e-4 recovery,
+  and the English-pivot coverage argument. Diagrams: the five Mermaid PNGs from
+  `vm/diagrams/` plus five new TikZ diagrams drawn for the report (activity, state chart,
+  ER, class, PERT network). Indic samples render natively via Noto **Serif** Indic fonts
+  (the Sans Gujarati/Bengali faces lack ASCII punctuation and produced tofu); a coverage
+  check confirms all 62 Indic-wrapped strings are fully covered. Build is clean: zero
+  LaTeX warnings, zero unresolved references, zero page overflows, no overfull box above
+  10pt. Toolchain: tectonic (XeTeX) fetched to the scratchpad, since no TeX was installed.
+  Placeholders left for the user: college/VTU emblems, the Principal's name, and the
+  paper-publication certificate block in the appendix.
+
 - **2026-07-17** — Created this log and `docs/PAPER_PLAN.md` (research question,
   baselines, metrics, results-table templates, ablations, venues). Established the
   convention: append a dated entry here at the end of every session. Prior to

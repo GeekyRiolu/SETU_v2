@@ -1,0 +1,353 @@
+% ============================== CHAPTER 7 ===================================
+\chapter{Testing}
+\label{ch:testing}
+
+Testing a machine learning system requires attention to a class of defect that
+conventional software testing does not encounter: the silent failure that
+produces plausible output. A translation model that returns fluent English for
+every input has not crashed, raised an exception, or violated any type contract
+--- and it is completely broken. Three such failures occurred during this
+project, and none of them would have been caught by testing only for exceptions
+and return types.
+
+The testing strategy therefore combines conventional software testing --- unit
+tests for module behaviour, integration tests for module interaction, system
+tests for the non-functional targets --- with property tests that assert the
+things a model must be true of rather than what it must return. This chapter
+describes the approach and reports the test cases with their data and outcomes.
+
+\section{Testing Approach}
+\label{sec:testapproach}
+
+\subsection{Strategy}
+\label{subsec:teststrategy}
+
+The suite comprises \textbf{85 automated tests} executed by \texttt{pytest},
+organised into the categories of Table~\ref{tab:testcategories}. They run on
+every change and gate every milestone; a milestone is not closed while any test
+fails.
+
+\begin{longtable}{@{}L{3.4cm} L{4.0cm} L{6.6cm}@{}}
+\caption{Test suite organisation}
+\label{tab:testcategories}\\
+\toprule
+\rowcolor{headblue}
+\textbf{Category} & \textbf{Modules covered} & \textbf{What is asserted} \\
+\midrule
+\endfirsthead
+\multicolumn{3}{c}{\textit{Table \thetable{} --- continued from previous page}}\\
+\toprule
+\rowcolor{headblue}
+\textbf{Category} & \textbf{Modules covered} & \textbf{What is asserted} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{3}{r}{\textit{continued on next page}}\\
+\endfoot
+\bottomrule
+\endlastfoot
+
+Configuration & \texttt{config}, registry & YAML loads; all 22 languages plus English present; ISO-to-FLORES mapping correct including dual-script entries \\
+\rowcolor{rowgrey}
+Corpus & \texttt{corpus/*} & Normalisation preserves ZWJ/ZWNJ; each filter removes what it should and nothing else; deduplication is exact \\
+Teacher & \texttt{teacher/*} & The abstraction wall holds; an optional smoke test runs the real teacher \\
+\rowcolor{rowgrey}
+Preference & \texttt{preference/*} & Every emitted pair has preferred chrF strictly greater than dispreferred; low-delta pairs are dropped \\
+Distillation & \texttt{distill/*} & Targets are replaced by teacher output; an empty candidate falls back to the reference and is counted \\
+\rowcolor{rowgrey}
+Training & \texttt{training/*} & Loss decreases; the DPO reference stays frozen; sequences beyond the limit are truncated rather than crashing \\
+Quantisation & \texttt{quantize/*} & ONNX export validates against ONNX Runtime; size and latency budgets hold; inference succeeds with sockets disabled \\
+\rowcolor{rowgrey}
+Inference & \texttt{inference/*} & Direct routing, pivot routing, stub behaviour, rejection of invalid requests \\
+Interfaces & \texttt{rest}, \texttt{cli}, \texttt{pwa} & Endpoint contracts, error codes, CORS, service-worker caching \\
+\rowcolor{rowgrey}
+Expansion & \texttt{aio\_kd}, \texttt{ewc} & Every direction is sampled; the EWC penalty is zero at the snapshot, positive away from it, and retains an old task better than plain fine-tuning \\
+Multi-pair & \texttt{test\_multipair} & The pipeline runs end to end on a pair other than the configured default \\
+\rowcolor{rowgrey}
+Reporting & \texttt{report} & The scorecard prints \textsc{unverified} rather than a pass when evidence is absent \\
+\end{longtable}
+
+Two isolation devices were necessary. An autouse fixture sets
+\texttt{SETU\_MODELS\_ROOT} to a temporary directory so that tests never read
+the developer's real models and never observe each other's writes. And a
+separate fixture forces the stub engine where a test is checking interface
+behaviour rather than translation quality, so that interface tests pass on a
+machine with no models installed.
+
+\subsection{Unit Testing}
+\label{subsec:unittest}
+
+Unit tests exercise one module in isolation. The tables below give the cases
+for the components whose failure modes matter most, each with at least one valid
+and two invalid inputs.
+
+\subsubsection{Translation Engine}
+
+\begin{table}[H]
+\centering
+\caption{Unit test UT-1 to UT-5 --- translation engine, Hindi\arrowto{}English INT4 ONNX student}
+\label{tab:ut1}
+\begin{tabular}{@{}c L{3.9cm} L{3.6cm} L{3.9cm} c@{}}
+\toprule
+\rowcolor{headblue}
+\textbf{\#} & \textbf{Test data (input)} & \textbf{Expected result} & \textbf{Actual result} & \textbf{Verdict} \\
+\midrule
+UT-1 & \texttt{src=hi, tgt=en},\newline \dev{भारत एक विशाल देश है।} & Fluent English translation & \textit{``India is a vast country.''} & \pass \\
+\rowcolor{rowgrey}
+UT-2 & \texttt{src=hi, tgt=hi} (identical languages) & Rejected with HTTP 400 / \texttt{ValueError} & HTTP 400: \textit{source and target are both `hi'} & \pass \\
+UT-3 & \texttt{src=xx, tgt=en} (unknown language code) & Rejected: unknown language code & \texttt{ValueError} raised; request refused & \pass \\
+\rowcolor{rowgrey}
+UT-4 & Empty string input & Empty output, no exception & \texttt{""} returned; no exception & \pass \\
+UT-5 & Sentence exceeding \texttt{max\_seq\_len} & Truncated and translated, not crashed & Truncated to the limit; translation returned & \pass \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Corpus Pipeline}
+
+\begin{table}[H]
+\centering
+\caption{Unit tests UT-6 to UT-10 --- corpus cleaning filters}
+\label{tab:ut2}
+\begin{tabular}{@{}c L{4.2cm} L{3.7cm} L{3.5cm} c@{}}
+\toprule
+\rowcolor{headblue}
+\textbf{\#} & \textbf{Test data (input)} & \textbf{Expected result} & \textbf{Actual result} & \textbf{Verdict} \\
+\midrule
+UT-6 & Well-formed Hindi--English pair & Retained & Retained & \pass \\
+\rowcolor{rowgrey}
+UT-7 & Pair with length ratio 5:1 & Rejected (ratio $>3.0$) & Rejected, counted as \texttt{length\_ratio} & \pass \\
+UT-8 & Devanagari source paired with a Tamil ``English'' side & Rejected (script fraction below 0.5) & Rejected, counted as \texttt{wrong\_script} & \pass \\
+\rowcolor{rowgrey}
+UT-9 & Text containing ZWJ and ZWNJ & Both preserved through normalisation & Both preserved; NFC applied & \pass \\
+UT-10 & Duplicate of an earlier pair & Removed & Removed, counted as \texttt{duplicate} & \pass \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Training Mechanics}
+
+These are the property tests. Each asserts something that cannot be verified by
+reading the output of a training run.
+
+\begin{table}[H]
+\centering
+\caption{Unit tests UT-11 to UT-15 --- training mechanics}
+\label{tab:ut3}
+\begin{tabular}{@{}c L{4.0cm} L{4.0cm} L{3.4cm} c@{}}
+\toprule
+\rowcolor{headblue}
+\textbf{\#} & \textbf{Property under test} & \textbf{Expected result} & \textbf{Actual result} & \textbf{Verdict} \\
+\midrule
+UT-11 & DPO reference model is frozen & No parameter of the reference receives a gradient & All reference gradients \texttt{None} & \pass \\
+\rowcolor{rowgrey}
+UT-12 & Training loss decreases over a short run & Final loss below initial & Loss decreased monotonically & \pass \\
+UT-13 & Padding is excluded from the loss & Label tensor contains $-100$ at every pad position & Verified for every batch & \pass \\
+\rowcolor{rowgrey}
+UT-14 & EWC penalty is zero at the snapshot & Penalty $= 0$ at $\theta^{*}$, $>0$ away from it & $0.0$ at snapshot; grows with distance & \pass \\
+UT-15 & AIO-KD samples every direction & Coverage report lists all configured directions & All directions sampled & \pass \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Integration Testing}
+\label{subsec:integrationtest}
+
+Integration tests exercise two or more modules together. The most important is
+the English pivot, because it is the only path in the system in which the output
+of one model becomes the input of another.
+
+\subsubsection{Inference Engine and Pivot Router}
+
+\begin{table}[H]
+\centering
+\caption{Integration tests IT-1 to IT-4 --- English-pivot chaining for Indic-to-Indic pairs}
+\label{tab:it1}
+\begin{tabular}{@{}c L{3.6cm} L{3.2cm} L{4.2cm} c@{}}
+\toprule
+\rowcolor{headblue}
+\textbf{\#} & \textbf{Test data (input)} & \textbf{Expected result} & \textbf{Actual result} & \textbf{Verdict} \\
+\midrule
+IT-1 & \texttt{src=hi, tgt=bn},\newline \dev{भारत एक विशाल देश है।}\newline (no direct model) & Route via English; return Bengali & \ben{ভারত একটি বিশাল দেশ।}\newline (\texttt{pivot="en"}, $\approx$57\,ms) & \pass \\
+\rowcolor{rowgrey}
+IT-2 & \texttt{src=ta, tgt=te},\newline \tam{இந்தியா ஒரு பெரிய நாடு.} & Route via English; return Telugu & \tel{భారతదేశం ఒక పెద్ద దేశం.}\newline (\texttt{pivot="en"}) & \pass \\
+IT-3 & \texttt{src=as, tgt=bn},\newline \ben{ভাৰত এখন ডাঙৰ দেশ।} & Route via English; return Bengali & \ben{ভারত একটি বড় দেশ।}\newline (\texttt{pivot="en"}) & \pass \\
+\rowcolor{rowgrey}
+IT-4 & \texttt{src=mr, tgt=kn} & Route via English; return Kannada & Correct Kannada returned, $\approx$50--65\,ms & \pass \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{REST API and Inference Engine}
+
+\begin{table}[H]
+\centering
+\caption{Integration tests IT-5 to IT-9 --- REST service against the routing layer}
+\label{tab:it2}
+\begin{tabular}{@{}c L{3.8cm} L{3.8cm} L{3.6cm} c@{}}
+\toprule
+\rowcolor{headblue}
+\textbf{\#} & \textbf{Request} & \textbf{Expected result} & \textbf{Actual result} & \textbf{Verdict} \\
+\midrule
+IT-5 & \texttt{GET /models} & All installed pairs with variant and size & \texttt{count: 22}, each \texttt{int4}, 103.9\,MB & \pass \\
+\rowcolor{rowgrey}
+IT-6 & \texttt{GET /languages} & 22 scheduled languages plus English & 23 entries with ISO, FLORES, script, endonym & \pass \\
+IT-7 & \texttt{POST /translate} with \texttt{ta}\arrowto{}\texttt{en} & Real translation, \texttt{stub:false} & Correct English, $\approx$40--60\,ms, \texttt{stub:false} & \pass \\
+\rowcolor{rowgrey}
+IT-8 & \texttt{POST /translate} with an unknown code & HTTP 400 with a descriptive message & HTTP 400 returned & \pass \\
+IT-9 & CORS preflight from the browser client & Preflight accepted & \texttt{OPTIONS} returns the expected headers & \pass \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Full Pipeline}
+
+\begin{table}[H]
+\centering
+\caption{Integration tests IT-10 to IT-13 --- end-to-end pipeline}
+\label{tab:it3}
+\begin{tabular}{@{}c L{4.4cm} L{4.2cm} L{2.9cm} c@{}}
+\toprule
+\rowcolor{headblue}
+\textbf{\#} & \textbf{Scenario} & \textbf{Expected result} & \textbf{Actual result} & \textbf{Verdict} \\
+\midrule
+IT-10 & Corpus \arrowto{} distil \arrowto{} train \arrowto{} evaluate on a small slice & Runs end to end; a training report is written & Report written with BLEU, chrF and ratio & \pass \\
+\rowcolor{rowgrey}
+IT-11 & Train \arrowto{} export \arrowto{} quantise \arrowto{} translate offline & Quantised model translates with sockets disabled & Translation returned; no network call & \pass \\
+IT-12 & Same pipeline on a non-default language pair & Pair-agnostic: succeeds without code change & Tamil\arrowto{}English and reverse both succeeded & \pass \\
+\rowcolor{rowgrey}
+IT-13 & CLI and REST for the same request & Identical output from both interfaces & Identical, since both call the same router & \pass \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+IT-13 deserves a note, because it was added in response to a genuine defect. The
+CLI originally constructed an \texttt{InferenceEngine} with the language pair
+from configuration rather than from the request, so \texttt{-{}-src as} loaded
+the Hindi model and translated with it. The output looked like a translation and
+was wrong. The fix --- routing both interfaces through
+\texttt{setu.inference.router} --- is exactly what this test now enforces.
+
+\subsection{System and Non-Functional Testing}
+\label{subsec:systemtest}
+
+\begin{table}[H]
+\centering
+\caption{System tests ST-1 to ST-6 --- non-functional targets}
+\label{tab:st}
+\begin{tabular}{@{}c L{3.0cm} L{2.6cm} L{3.6cm} L{1.6cm}@{}}
+\toprule
+\rowcolor{headblue}
+\textbf{\#} & \textbf{Attribute} & \textbf{Target} & \textbf{Measured} & \textbf{Verdict} \\
+\midrule
+ST-1 & Artifact size & $\leq 200$\,MB per direction & 103.9\,MB for all 22 directions & \pass \\
+\rowcolor{rowgrey}
+ST-2 & Inference latency & $<500$\,ms per sentence & Mean 105--202\,ms; p90 141--541\,ms & \pass (one p90 outlier) \\
+ST-3 & Offline operation & No network call at inference & All sockets disabled; translation succeeded & \pass \\
+\rowcolor{rowgrey}
+ST-4 & Quality ratio & $\geq 0.80$ of teacher BLEU & 14 of 22 directions; mean 0.838 & Partial \\
+ST-5 & Model health across all directions & Every model produces non-degenerate output & 22 of 22 healthy; no empty, passthrough or collapsed output & \pass \\
+\rowcolor{rowgrey}
+ST-6 & Coverage & All pairs among supported languages reachable & 22 direct plus English-pivoted routes & \pass \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+ST-5 was implemented as a dedicated script, \texttt{scripts/translation\_suite.py},
+which loads each model in turn, translates a real source sentence in that
+model's own direction, and flags three specific pathologies: empty output,
+output identical to the input (a passthrough masquerading as a translation), and
+collapsed output (the same string returned for different inputs). It is the test
+that confirmed the two recovered models were genuinely repaired rather than
+merely scoring better.
+
+\subsection{Defects Found by Testing}
+\label{subsec:defects}
+
+Table~\ref{tab:defects} lists the defects the suite caught, with the test that
+caught each. They are reported because the class of defect is instructive: most
+were silent, producing plausible output rather than an error.
+
+\begin{longtable}{@{}p{1.2cm} L{4.6cm} L{4.2cm} L{3.6cm}@{}}
+\caption{Defects found during testing}
+\label{tab:defects}\\
+\toprule
+\rowcolor{headblue}
+\textbf{ID} & \textbf{Defect} & \textbf{Symptom} & \textbf{Caught by} \\
+\midrule
+\endfirsthead
+\toprule
+\rowcolor{headblue}
+\textbf{ID} & \textbf{Defect} & \textbf{Symptom} & \textbf{Caught by} \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+
+D1 & Padding counted in the training loss & Implausibly low loss (0.274); decoder ignored the source entirely & Loss-plausibility check plus UT-13 \\
+\rowcolor{rowgrey}
+D2 & Leading BOS added to labels & Empty translations; BLEU and chrF exactly 0.0 & End-to-end evaluation (IT-10) \\
+D3 & Learning-rate warmup silently ignored & Severe underfitting on a from-scratch model & Training-loss inspection \\
+\rowcolor{rowgrey}
+D4 & Missing gradient clipping & Collapse to a single repeated phrase at larger data volumes & Comparison of runs at 120k and 200k sentences \\
+D5 & Positional-embedding overflow & Crash on sentences longer than the limit & UT-5 (regression test added) \\
+\rowcolor{rowgrey}
+D6 & CLI ignored the requested language pair & Wrong model used; output looked valid & IT-13 \\
+D7 & Teacher post-processing deadlock & Generation hung indefinitely when decoding $n>1$ candidates & Teacher smoke test \\
+\rowcolor{rowgrey}
+D8 & Package shadowing (\texttt{setu.py} vs the \texttt{setu} package) & \texttt{python -m setu.\dots} failed on a clean machine & Module-import test \\
+D9 & Missing checkpoint treated as a remote identifier & Confusing download error instead of a clear failure & Quantisation test with an absent checkpoint \\
+\rowcolor{rowgrey}
+D10 & Stub and real engines leaked state between tests & Order-dependent test failures & Autouse isolation fixture \\
+
+\end{longtable}
+
+\subsection{Test Execution Summary}
+\label{subsec:testsummary}
+
+\begin{longtable}{@{}L{6.6cm} c c c@{}}
+\caption{Final test execution summary}
+\label{tab:testsummary}\\
+\toprule
+\rowcolor{headblue}
+\textbf{Suite} & \textbf{Tests} & \textbf{Passed} & \textbf{Skipped} \\
+\midrule
+\endfirsthead
+\multicolumn{4}{c}{\textit{Table \thetable{} --- continued from previous page}}\\
+\toprule
+\rowcolor{headblue}
+\textbf{Suite} & \textbf{Tests} & \textbf{Passed} & \textbf{Skipped} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{4}{r}{\textit{continued on next page}}\\
+\endfoot
+\bottomrule
+\endlastfoot
+
+Configuration, registry and types      & 8  & 8  & 0 \\
+\rowcolor{rowgrey}
+Corpus pipeline                        & 9  & 9  & 0 \\
+Teacher abstraction and wall           & 5  & 4  & 1 (real-teacher smoke, opt-in) \\
+\rowcolor{rowgrey}
+Preference generation and validation   & 7  & 7  & 0 \\
+Distillation                           & 4  & 4  & 0 \\
+\rowcolor{rowgrey}
+Tokenizer                              & 5  & 5  & 0 \\
+Training (SFT, DPO, pipeline)          & 13 & 13 & 0 \\
+\rowcolor{rowgrey}
+Quantisation, ONNX and offline         & 8  & 8  & 0 \\
+Inference, routing and multi-pair      & 7  & 7  & 0 \\
+\rowcolor{rowgrey}
+Interfaces (REST, CLI, PWA)            & 11 & 11 & 0 \\
+AIO-KD and EWC                         & 5  & 5  & 0 \\
+\rowcolor{rowgrey}
+Benchmark, device and reporting        & 3  & 3  & 0 \\
+\midrule
+\textbf{Total}                         & \textbf{85} & \textbf{85} & \textbf{1 opt-in} \\
+\end{longtable}
+
+The single skipped test runs the real IndicTrans2 teacher and is opt-in through
+the \texttt{SETU\_TEACHER\_SMOKE=1} environment variable, because it downloads
+roughly a gigabyte of weights and takes several seconds per sentence on CPU. It
+passes when enabled, producing fluent English candidates for Hindi input.

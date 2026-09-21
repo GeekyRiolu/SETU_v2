@@ -1,0 +1,45 @@
+% ============================================================================
+%  SETU: Multilingual Preference Distillation for Offline Indian Language
+%        SLM Translators
+%  Project Phase-II Report
+%  Dept. of Artificial Intelligence & Machine Learning
+%  Bangalore Institute of Technology, Bengaluru - 560004
+%
+%  Build:  tectonic -X compile main.tex      (or:  xelatex main.tex  x3 )
+% ============================================================================
+\documentclass[12pt, a4paper, oneside]{report}
+
+\input{preamble}
+
+\begin{document}
+
+% ------------------------------- FRONT MATTER -------------------------------
+\pagenumbering{roman}
+\input{front/titlepage}
+\input{front/certificate}
+\input{front/declaration}
+\input{front/abstract}
+\input{front/acknowledgement}
+\input{front/contents}
+
+% ------------------------------- CHAPTERS -----------------------------------
+\clearpage
+\pagenumbering{arabic}
+\setcounter{page}{1}
+
+\input{chapters/ch1_introduction}
+\input{chapters/ch2_literature}
+\input{chapters/ch3_requirements}
+\input{chapters/ch4_planning}
+\input{chapters/ch5_design}
+\input{chapters/ch6_implementation}
+\input{chapters/ch7_testing}
+\input{chapters/ch8_results}
+\input{chapters/ch9_conclusion}
+
+% ------------------------------- BACK MATTER --------------------------------
+\input{back/references}
+\input{back/appendix}
+\input{back/glossary}
+
+\end{document}

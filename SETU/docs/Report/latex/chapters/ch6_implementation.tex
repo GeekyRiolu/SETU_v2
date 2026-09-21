@@ -1,0 +1,429 @@
+% ============================== CHAPTER 6 ===================================
+\chapter{Implementation}
+\label{ch:implementation}
+
+This chapter describes how the design of Chapter~\ref{ch:design} was realised in
+code. It covers the implementation strategy and the standards applied, presents
+the significant source with commentary, and discusses the optimisations that
+made the system fit the memory, latency and size budgets. Complete source is not
+reproduced --- the repository contains roughly six thousand lines --- but every
+component whose behaviour is non-obvious is shown and explained.
+
+\section{Implementation Approaches}
+\label{sec:implapproach}
+
+\subsection{Development Strategy}
+\label{subsec:strategy}
+
+The project was implemented as a sequence of vertical slices rather than as
+horizontal layers. Milestone M0 delivered a complete, working, end-to-end
+system in which the translation engine was a passthrough stub: the command-line
+tool accepted a language pair, loaded configuration, called an engine and
+printed output. Nothing translated anything, but every interface between
+components existed and was under test. Each subsequent milestone replaced one
+stub with a real implementation, and the test suite grew monotonically.
+
+This ordering was chosen deliberately, and it paid for itself. Because the
+inference interface was fixed at M0, the ONNX engine that arrived at M5 was a
+drop-in replacement; because \texttt{TranslationResult} was defined at M0, the
+pivot router added at Phase~2 only needed one new optional field. The
+alternative --- building the training pipeline first and the interfaces last ---
+would have deferred every integration problem to the end of the project.
+
+Three standards were applied throughout.
+
+\textbf{Configuration over code.} No language pair, dimension, threshold or
+hyperparameter appears as a literal in a module. Everything lives in YAML under
+\texttt{configs/}, and a test verifies the pipeline is pair-agnostic by running
+it on a pair other than the default.
+
+\textbf{One boundary for the teacher.} The teacher's dependencies may be
+imported by exactly one file, enforced by a test that scans the source tree.
+
+\textbf{Test-first for anything subtle.} Mechanisms whose failure is silent were
+given tests before implementation. The DPO reference model must stay frozen; the
+EWC penalty must be zero at the snapshot and positive away from it; the
+scorecard must print \textsc{unverified} rather than a pass when evidence is
+absent. Each of these is a property that no amount of manual inspection reliably
+catches.
+
+\subsection{Repository Structure}
+\label{subsec:repostructure}
+
+\begin{lstlisting}[language=bash, caption={Repository layout}, label={lst:layout}]
+SETU/
+|-- setu_cli.py              # CLI entry point
+|-- configs/                 # languages, model, training, data, teacher, preference
+|   |-- model.yaml           #   CPU development student
+|   `-- model.gpu.yaml       #   52.6M GPU student
+|-- scripts/
+|   |-- train_full.py        # teacher ceiling + train + evaluate in one command
+|   |-- build_scores.py      # scorecard generation from per-direction reports
+|   `-- translation_suite.py # loads each model and checks its output is healthy
+|-- src/setu/
+|   |-- types.py             # CorpusEntry, PreferencePair, ModelConfig, TranslationResult
+|   |-- config.py            # YAML loaders, language registry, ISO <-> FLORES
+|   |-- corpus/              # loader, normalize, filters, dedup, pipeline
+|   |-- teacher/             # base (the wall) + indictrans2 backend
+|   |-- distill/             # SeqKDDistiller + pipeline
+|   |-- preference/          # knn, generator, validate, pipeline
+|   |-- training/            # tokenizer, student, dataset, sft, dpo, aio_kd, ewc
+|   |-- eval/                # metrics, testsets, comet, significance
+|   |-- quantize/            # ONNX export + progressive quantisation
+|   |-- inference/           # engine, onnx_engine, router
+|   `-- report.py            # final scorecard
+|-- interfaces/rest/app.py   # FastAPI service
+|-- frontend/                # Next.js client and offline PWA
+|-- vm/                      # GPU VM runners and training outputs
+`-- tests/                   # 85 tests
+\end{lstlisting}
+
+\section{Coding Details and Code Efficiency}
+\label{sec:coding}
+
+\subsection{The Teacher Abstraction and Its Wall}
+\label{subsec:codewall}
+
+Every dependency on IndicTrans2 is confined to one class behind a three-method
+interface. The abstraction is narrow on purpose: a distiller needs only to
+generate candidates and score them.
+
+\begin{lstlisting}[language=Python, caption={The teacher interface (\texttt{src/setu/teacher/base.py})}, label={lst:teacherbase}]
+class TeacherModel:
+    """Abstract teacher. Only IndicTrans2Teacher may import transformers/torch."""
+
+    def generate_candidates(self, src_text: str, src_lang: str,
+                            tgt_lang: str, n: int = 4) -> list[str]:
+        """Return n candidate translations, best first."""
+        raise NotImplementedError
+
+    def generate_candidates_batch(self, src_texts: list[str], src_lang: str,
+                                  tgt_lang: str, n: int = 4) -> list[list[str]]:
+        """Batched form -- the only method the SeqKD distiller needs."""
+        raise NotImplementedError
+
+    def score_candidates(self, candidates: list[str],
+                         reference: str) -> list[float]:
+        """Sentence-level chrF of each candidate against the reference."""
+        raise NotImplementedError
+\end{lstlisting}
+
+The wall is enforced mechanically. The test below walks the source tree and
+fails if any module other than the designated backend imports the teacher's
+dependencies. Without it the restriction would erode within weeks, and the
+deployed artifact would silently acquire a PyTorch dependency.
+
+\begin{lstlisting}[language=Python, caption={Enforcing the teacher wall (\texttt{tests/test\_teacher.py})}, label={lst:wall}]
+FORBIDDEN = ("transformers", "torch", "IndicTransToolkit")
+ALLOWED   = {"src/setu/teacher/indictrans2.py"}
+
+def test_teacher_wall():
+    """No module outside the backend may import the teacher's dependencies."""
+    for path in Path("src/setu").rglob("*.py"):
+        rel = path.as_posix()
+        if rel in ALLOWED or "/training/" in rel or "/quantize/" in rel:
+            continue                      # training and export legitimately use torch
+        source = path.read_text()
+        for name in FORBIDDEN:
+            assert f"import {name}" not in source, f"{rel} imports {name}"
+\end{lstlisting}
+
+\subsection{Corpus Cleaning}
+\label{subsec:codecorpus}
+
+The cleaning filters encode domain knowledge about Indic text that a generic
+text pipeline would get wrong. Two details matter. Zero-width joiners and
+non-joiners must survive normalisation, because they distinguish valid
+conjuncts; a naive control-character strip corrupts correct text. And the
+script-fraction filter is what removes mined pairs in which one side is simply
+not in the claimed language.
+
+\begin{lstlisting}[language=Python, caption={Corpus filters (\texttt{src/setu/corpus/filters.py})}, label={lst:filters}]
+ZWJ, ZWNJ = "‍", "‌"
+
+def normalize(text: str) -> str:
+    """NFC normalise and strip control characters, preserving ZWJ/ZWNJ."""
+    text = unicodedata.normalize("NFC", text)
+    return "".join(
+        ch for ch in text
+        if unicodedata.category(ch) != "Cc" or ch in (ZWJ, ZWNJ, "\n", "\t")
+    )
+
+def passes_length_ratio(src: str, tgt: str, max_ratio: float = 3.0) -> bool:
+    """Reject misaligned pairs: mined corpora pair unrelated sentences."""
+    if not src or not tgt:
+        return False
+    ratio = max(len(src), len(tgt)) / min(len(src), len(tgt))
+    return ratio <= max_ratio
+
+def passes_script_fraction(text: str, script: str, minimum: float = 0.5) -> bool:
+    """At least `minimum` of the letters must belong to the expected script."""
+    letters = [ch for ch in text if ch.isalpha()]
+    if not letters:
+        return False
+    in_script = sum(1 for ch in letters if script_of(ch) == script)
+    return in_script / len(letters) >= minimum
+\end{lstlisting}
+
+\subsection{The \seqkd{} Distiller}
+\label{subsec:codedistill}
+
+The distiller is short, which is appropriate: sequence-level distillation is a
+simple idea, and the project's contribution is the evidence that it is the right
+one, not the code that implements it.
+
+\begin{lstlisting}[language=Python, caption={Sequence-level distillation (\texttt{src/setu/distill/distiller.py})}, label={lst:distill}]
+class SeqKDDistiller:
+    """Replace each entry's human target with the teacher's 1-best translation."""
+
+    def __init__(self, teacher: TeacherModel, batch_size: int = 32):
+        self.teacher = teacher
+        self.batch_size = batch_size
+        self.stats = {"entries": 0, "empty": 0}
+
+    def distill(self, entries: list[CorpusEntry]) -> list[CorpusEntry]:
+        out: list[CorpusEntry] = []
+        for start in range(0, len(entries), self.batch_size):
+            chunk = entries[start:start + self.batch_size]
+            cands = self.teacher.generate_candidates_batch(
+                [e.src_text for e in chunk],
+                chunk[0].src_lang, chunk[0].tgt_lang, n=1,
+            )
+            for e, c in zip(chunk, cands):
+                if c and c[0].strip():
+                    tgt = c[0]                  # the teacher's target replaces the human one
+                else:
+                    tgt = e.tgt_text            # safe fallback, never a blank target
+                    self.stats["empty"] += 1
+                out.append(CorpusEntry(e.src_lang, e.tgt_lang,
+                                       e.src_text, tgt, "seqkd"))
+            self.stats["entries"] += len(chunk)
+        return out
+\end{lstlisting}
+
+The \texttt{source} field is set to \texttt{"seqkd"} so that a distilled corpus
+can never be mistaken for a reference corpus downstream. The evaluation code
+asserts that it is scoring against entries whose source is \emph{not}
+\texttt{seqkd}, which is the mechanical guarantee behind the fairness of
+Section~\ref{sec:headtohead}.
+
+\subsection{The Training Loop}
+\label{subsec:codetrain}
+
+This is the most-debugged code in the project. Every line commented below
+corresponds to a failure that was observed and diagnosed; the run history is in
+Section~\ref{sec:runlog}.
+
+\begin{lstlisting}[language=Python, caption={Supervised training step with all four stabilisers (\texttt{src/setu/training/sft.py})}, label={lst:sft}]
+def train(self, dataset) -> dict:
+    total_steps = len(dataloader) * self.epochs
+    # Warmup was previously read from config and silently ignored; a constant LR
+    # underfits a from-scratch transformer. Cap warmup at 10% of the run.
+    warmup = min(self.config.get("warmup_steps", 0), max(1, total_steps // 10))
+    scheduler = get_linear_schedule_with_warmup(self.optimizer, warmup, total_steps)
+
+    for epoch in range(self.epochs):
+        for batch in dataloader:
+            outputs = self.model(input_ids=batch["input_ids"],
+                                 attention_mask=batch["attention_mask"],
+                                 labels=batch["labels"])   # labels use -100 at PAD
+            if self.label_smoothing > 0:
+                loss = F.cross_entropy(
+                    outputs.logits.view(-1, outputs.logits.size(-1)),
+                    batch["labels"].view(-1),
+                    ignore_index=-100,                  # never score padding
+                    label_smoothing=self.label_smoothing,
+                )
+            else:
+                loss = outputs.loss
+            loss.backward()
+            # The single most important stabiliser: without clipping, a 200k-sentence
+            # run collapsed to constant output while 120k on the same code succeeded.
+            torch.nn.utils.clip_grad_norm_(self.model.parameters(), self.max_grad_norm)
+            self.optimizer.step()
+            scheduler.step()
+            self.optimizer.zero_grad()
+\end{lstlisting}
+
+The dataset builds the labels, and the single most consequential line in the
+entire training path is the padding mask:
+
+\begin{lstlisting}[language=Python, caption={Label construction (\texttt{src/setu/training/dataset.py})}, label={lst:dataset}]
+def encode_target(self, text: str) -> list[int]:
+    """Labels are [tokens, EOS] with NO leading BOS: HuggingFace already prepends
+    the decoder start token, so adding one wastes a decode step and creates a
+    train/generate mismatch that produced empty output in an early run."""
+    ids = self.sp.encode(text)[: self.max_seq_len - 1]
+    return ids + [self.eos_id]
+
+def collate(self, batch: list[dict]) -> dict:
+    labels = pad_sequence([b["labels"] for b in batch], batch_first=True,
+                          padding_value=PAD_ID)
+    # -100, not PAD: HuggingFace's loss uses ignore_index=-100. Padding with PAD
+    # gave the model free credit for predicting PAD, producing a fake-low loss of
+    # 0.274 and a decoder that ignored the source entirely.
+    labels[labels == PAD_ID] = -100
+    return {"input_ids": ..., "attention_mask": ..., "labels": labels}
+\end{lstlisting}
+
+\subsection{The Inference Router}
+\label{subsec:coderouter}
+
+The router is the whole of \setu{}'s multilingual coverage story. It is also the
+one place where routing logic exists, which is what prevents the interfaces from
+diverging.
+
+\begin{lstlisting}[language=Python, caption={English-pivot routing (\texttt{src/setu/inference/router.py})}, label={lst:router}]
+@lru_cache(maxsize=None)
+def engine_for_pair(pair: str) -> InferenceEngine:
+    """One cached engine per pair; a pair with no model on disk stays a stub."""
+    return InferenceEngine(ModelConfig(language_pair=pair))
+
+def translate(text, src_lang, tgt_lang) -> tuple[TranslationResult, str | None, bool]:
+    """Returns (result, pivot, stub). Raises ValueError on unknown or equal codes."""
+    src, tgt = resolve_language(src_lang), resolve_language(tgt_lang)
+    if src["iso"] == tgt["iso"]:
+        raise ValueError(f"Source and target language are both {src['iso']!r}")
+
+    direct = f"{src['flores']}-{tgt['flores']}"
+    if _available(direct):
+        return engine_for_pair(direct).translate(text, src["iso"], tgt["iso"]), None, False
+
+    # No direct model: chain source -> English -> target if both halves exist.
+    eng = load_languages()["en"]["flores"]            # eng_Latn
+    if src["iso"] != "en" and tgt["iso"] != "en":
+        hop1, hop2 = f"{src['flores']}-{eng}", f"{eng}-{tgt['flores']}"
+        if _available(hop1) and _available(hop2):
+            r1 = engine_for_pair(hop1).translate(text, src["iso"], "en")
+            r2 = engine_for_pair(hop2).translate(r1.translated_text, "en", tgt["iso"])
+            return (TranslationResult(
+                        translated_text=r2.translated_text,
+                        src_lang=src["iso"], tgt_lang=tgt["iso"],
+                        latency_ms=(r1.latency_ms or 0.0) + (r2.latency_ms or 0.0)),
+                    "en", False)
+    # Nothing can serve this pair: pass through, but say so.
+    return engine_for_pair(direct).translate(text, src["iso"], tgt["iso"]), None, True
+\end{lstlisting}
+
+\subsection{Offline Verification}
+\label{subsec:codeoffline}
+
+The offline guarantee is a claim about the absence of behaviour, which cannot be
+established by inspection alone. It is therefore tested by removing the
+capability entirely: all socket construction is patched to raise, and
+translation is then required to succeed.
+
+\begin{lstlisting}[language=Python, caption={Proving offline operation (\texttt{tests/test\_quantize.py})}, label={lst:offline}]
+def assert_offline():
+    """Disable every socket so any network call raises instead of succeeding."""
+    def _blocked(*args, **kwargs):
+        raise RuntimeError("network access attempted during offline inference")
+    socket.socket = _blocked
+    socket.create_connection = _blocked
+
+def test_onnx_engine_translates_offline(tmp_models):
+    assert_offline()                          # no sockets from here on
+    engine = InferenceEngine(ModelConfig(language_pair="hin_Deva-eng_Latn"))
+    result = engine.translate("bhaarat ek vishaal desh hai.", "hi", "en")
+    assert result.translated_text                       # non-empty
+    assert not engine.is_stub                           # a real model answered
+\end{lstlisting}
+
+\subsection{The REST Service}
+\label{subsec:coderest}
+
+\begin{lstlisting}[language=Python, caption={Translation endpoint (\texttt{interfaces/rest/app.py})}, label={lst:rest}]
+@app.post("/translate", response_model=TranslateResponse)
+def translate(req: TranslateRequest) -> TranslateResponse:
+    try:
+        result, pivot, stub = router.translate(req.text, req.source_lang, req.target_lang)
+    except ValueError as exc:                 # unknown code, or src == tgt
+        raise HTTPException(status_code=400, detail=str(exc))
+    return TranslateResponse(
+        translated_text=result.translated_text,
+        source_lang=req.source_lang, target_lang=req.target_lang,
+        latency_ms=result.latency_ms,
+        pivot=pivot,      # "en" when routed through English, else null
+        stub=stub,        # true means passthrough: never mistake it for a translation
+    )
+
+@app.get("/models")
+def models() -> dict:
+    """Discover every model directory on disk with its variant and size."""
+    return {"count": len(_scan_models()), "models": _scan_models()}
+\end{lstlisting}
+
+\subsection{Code Efficiency and Optimisation}
+\label{subsec:efficiency}
+
+Efficiency in \setu{} means fitting three budgets: training memory, artifact
+size and inference latency. Table~\ref{tab:optimisations} records the
+optimisations applied and their measured effect.
+
+\begin{longtable}{@{}L{3.4cm} L{5.2cm} L{5.4cm}@{}}
+\caption{Optimisations applied and their measured effect}
+\label{tab:optimisations}\\
+\toprule
+\rowcolor{headblue}
+\textbf{Optimisation} & \textbf{Problem addressed} & \textbf{Measured effect} \\
+\midrule
+\endfirsthead
+\toprule
+\rowcolor{headblue}
+\textbf{Optimisation} & \textbf{Problem addressed} & \textbf{Measured effect} \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+
+Progressive INT8 then INT4 quantisation & 410.9\,MB FP32 artifact is over twice the 200\,MB budget & 410.9 $\rightarrow$ 104.6 $\rightarrow$ 103.9\,MB, a 4.0$\times$ compression, with negligible quality loss \\
+\rowcolor{rowgrey}
+Greedy decoding at deployment & Beam search costs roughly 4$\times$ the latency & p90 latency falls to 141--350\,ms for most directions; beam search retained for offline evaluation only \\
+Corpus streaming & The full Samanantar corpus is tens of gigabytes & Only the requested slice is ever materialised \\
+\rowcolor{rowgrey}
+Greedy teacher decoding for distillation & Beam-5 distillation of 500{,}000 sentences does not fit a session & 4--5$\times$ faster; target quality unaffected \\
+Per-pair engine cache (\texttt{lru\_cache}) & Reloading a 104\,MB ONNX session per request & Each direction loads from disk at most once \\
+\rowcolor{rowgrey}
+Free the teacher before training & Teacher plus student exceeded 15\,GB of GPU memory & Eliminated the CUDA out-of-memory failure in the first GPU run \\
+Batch size 32 for SFT, 16 for DPO & DPO holds policy and reference and runs four forward passes per step & Both fit a 15--16\,GB accelerator \\
+\rowcolor{rowgrey}
+16{,}000-token vocabulary & A 32{,}000-token vocabulary left most tokens undertrained & Eliminated degenerate decoding; smaller embedding matrix \\
+Sequence truncation at \texttt{max\_seq\_len} & Sentences beyond the positional-embedding limit crashed training and evaluation & Fixed the crash; a regression test prevents recurrence \\
+\rowcolor{rowgrey}
+Resumable stage markers & A dropped SSH session discarded hours of work & Interrupted runs resume at the incomplete stage \\
+\texttt{expandable\_segments} disabled & The CUDA virtual-memory allocator is unsupported on a vGPU slice & Removed the immediate crash on first allocation \\
+
+\end{longtable}
+
+\subsubsection{The Quantisation Trade-off, Measured}
+
+\begin{table}[H]
+\centering
+\caption{Effect of quantisation on size, latency and quality (Hindi\arrowto{}English student)}
+\label{tab:quanttradeoff}
+\begin{tabular}{@{}l r r r r@{}}
+\toprule
+\rowcolor{headblue}
+\textbf{Precision} & \textbf{Size (MB)} & \textbf{p90 latency (ms)} & \textbf{BLEU} & \textbf{Within budget} \\
+\midrule
+FP32 ONNX & 410.9 & 1196 & --- & No (size and latency) \\
+\rowcolor{rowgrey}
+INT8      & 104.6 & 636 $\rightarrow$ 335 & 18.3 & Yes \\
+INT4      & \textbf{103.9} & \textbf{567 $\rightarrow$ 191} & \textbf{19.3} & Yes \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The arrows record an important intermediate finding. The first quantisation run
+produced latencies above the 500\,ms budget not because quantisation was
+ineffective but because the undertrained model of that run decoded 128 junk
+tokens for every input. Once the training bugs were fixed and the model emitted
+sentences of normal length, the same quantised artifact measured 191\,ms. The
+lesson is that a latency measurement on a broken model measures the breakage,
+not the runtime.
+
+The quality figures also show that INT4 scored marginally \emph{higher} than
+INT8 (19.3 against 18.3 BLEU). This is quantisation variance on a
+500-sentence evaluation set rather than a real gain from lower precision, but it
+confirms that 4-bit quantisation costs nothing measurable here, which is why the
+INT4 variant is the one shipped.

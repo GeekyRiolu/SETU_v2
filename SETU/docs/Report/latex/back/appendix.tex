@@ -1,0 +1,208 @@
+% -------------------------------- Appendix ----------------------------------
+\clearpage
+\thispagestyle{plain}
+\frontheading{Appendix}
+\addcontentsline{toc}{chapter}{Appendix}
+
+\section*{A. Paper and Publication Details}
+\addcontentsline{toc}{section}{A. Paper and Publication Details}
+
+The empirical work reported in Chapter~\ref{ch:results} is being prepared for
+submission. The paper's structure and the tables it fills are given below; every
+number in Tables A.1 and A.2 is drawn from the runs reported in this document.
+
+\vspace{6pt}
+\noindent\textbf{Working title.} \textit{Sequence-Level Distillation Beats
+Preference Distillation for Compact On-Device Indic Machine Translation}
+
+\vspace{4pt}
+\noindent\textbf{Contributions claimed.}
+\begin{enumerate}[leftmargin=0.72in]
+  \item A controlled comparison of four training signals for a compact Indic
+        translation student at matched size, showing sequence-level knowledge
+        distillation outperforming preference/DPO distillation by 6.0 BLEU
+        ($+54\,\%$) and identifying reference noise as the binding constraint.
+  \item A data-scaling analysis showing that reference-trained students plateau
+        near a ratio of 0.66 while distilled students continue improving through
+        0.607, 0.764 and 0.806.
+  \item A systems contribution: 22 directions at 103.9\,MB and under 500\,ms on
+        CPU, fully offline, with English-pivot routing turning $2n$ models into
+        $n^2$ directions.
+  \item A reproducible failure analysis covering three training failure modes
+        and two learning-rate collapses, with training loss established as an
+        early collapse indicator.
+\end{enumerate}
+
+\vspace{6pt}
+\noindent\textbf{Table A.1 --- Main comparison (Hindi\arrowto{}English, 100k sentences, matched 52.6\,M student)}
+\vspace{3pt}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}l l r r@{}}
+\toprule
+\rowcolor{headblue}
+\textbf{System} & \textbf{Training signal} & \textbf{BLEU} & \textbf{\% of teacher} \\
+\midrule
+Teacher (IndicTrans2 dist-200M) & ---                    & 28.16 & 100.0 \\
+\rowcolor{rowgrey}
+S0: SFT on references           & Human references       & 10.95 & 38.9 \\
+\textbf{S1: \seqkd{}}           & \textbf{Teacher 1-best} & \textbf{17.09} & \textbf{60.7} \\
+\rowcolor{rowgrey}
+S2: DPO-distill                 & References, then DPO   & 11.10 & 39.4 \\
+S3: \seqkd{} + DPO              & Teacher 1-best, then DPO & \multicolumn{2}{l}{\textit{designed; not run at scale}} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent\textbf{Table A.2 --- Quantisation (Hindi\arrowto{}English student)}
+\vspace{3pt}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}l r r r@{}}
+\toprule
+\rowcolor{headblue}
+\textbf{Precision} & \textbf{Size (MB)} & \textbf{BLEU} & \textbf{p90 latency} \\
+\midrule
+FP32 ONNX & 410.9 & --- & --- \\
+\rowcolor{rowgrey}
+INT8      & 104.6 & 18.3 & 335\,ms \\
+INT4      & \textbf{103.9} & \textbf{19.3} & \textbf{191\,ms} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent\textbf{Target venues.} ACL / EMNLP / NAACL (main or Findings);
+WMT; IJCNLP-AACL; or a workshop on efficient NLP or multilingual NLP.
+
+\vspace{4pt}
+\noindent\textbf{Required before submission.} Rescoring on FLORES-200 devtest
+with COMET and paired-bootstrap significance testing; the S3 run at scale; ARM
+latency measurement on real hardware.
+
+\vspace{10pt}
+\noindent\rule{\textwidth}{0.4pt}
+\vspace{4pt}
+
+\noindent
+\begin{minipage}{\textwidth}
+\centering
+\vspace{10pt}
+{\fontsize{12}{16}\selectfont\itshape
+Space reserved for the paper publication certificate.\\
+Attach the acceptance notification and the published paper here.}
+\vspace{40pt}
+\end{minipage}
+
+\vspace{6pt}
+\noindent\rule{\textwidth}{0.4pt}
+
+\clearpage
+
+\section*{B. Reproducing the Results}
+\addcontentsline{toc}{section}{B. Reproducing the Results}
+
+\subsection*{B.1 Training One Direction}
+
+Every result in Chapter~\ref{ch:results} is reproducible with the commands
+below. \texttt{PAIR} uses script-qualified FLORES codes.
+
+\begin{lstlisting}[language=bash, caption={Training a single direction end to end}]
+# One direction, resumable, on a GPU VM (stage markers skip completed steps)
+PAIR=hin_Deva-eng_Latn LIMIT=500000 bash vm/setu_vm_train.sh
+
+# Or stage by stage:
+setu-data     --pair $PAIR --limit 500000      # clean + deduplicate the corpus
+setu-distill  --pair $PAIR --beams 1           # teacher 1-best targets (greedy)
+python scripts/train_full.py --pair $PAIR \
+       --train-corpus distilled --skip-dpo \
+       --limit 500000 --dev-size 500           # SeqKD student training
+setu-quantize --pair $PAIR                     # ONNX export + INT8/INT4
+setu-eval     --pair $PAIR --teacher           # BLEU / chrF / ratio
+\end{lstlisting}
+
+\subsection*{B.2 Reproducing the Head-to-Head Comparison}
+
+Keep \texttt{-{}-limit} identical across all four systems, or the comparison is
+not matched.
+
+\begin{lstlisting}[language=bash, caption={The four-system comparison of Table~\ref{tab:h2h}}]
+setu-data    --limit 102000
+setu-prefs   --max-entries 8000                # only needed for the DPO variants
+setu-distill --limit 100000 --beams 1
+
+# S1: SeqKD (teacher targets, no DPO)
+python scripts/train_full.py --train-corpus distilled --skip-dpo \
+       --limit 100000 --dev-size 500
+cp checkpoints/<pair>/train_report.json report_S1_seqkd.json
+
+# S0 and S2: reference targets, with DPO (report carries both sft_eval and dpo_eval)
+python scripts/train_full.py --train-corpus processed \
+       --limit 100000 --dev-size 500
+cp checkpoints/<pair>/train_report.json report_S2_dpo.json
+\end{lstlisting}
+
+Read S1 from \texttt{report\_S1\_seqkd.json} under \texttt{sft\_eval}; read S0
+from \texttt{report\_S2\_dpo.json} under \texttt{sft\_eval}; read S2 from the
+same file under \texttt{dpo\_eval}. Evaluation is on real human references in
+every case, enforced by the pipeline.
+
+\subsection*{B.3 Key Configuration Values}
+
+\begin{table}[H]
+\centering
+\caption*{\textbf{Table B.1:} Configuration used for the shipped models}
+\begin{tabular}{@{}L{4.4cm} L{3.4cm} L{5.8cm}@{}}
+\toprule
+\rowcolor{headblue}
+\textbf{Parameter} & \textbf{Value} & \textbf{Note} \\
+\midrule
+Encoder / decoder layers & 6 / 6 & Marian encoder--decoder \\
+\rowcolor{rowgrey}
+Hidden size / FFN size & 512 / 2048 & 52.6\,M parameters total \\
+Attention heads & 8 & \\
+\rowcolor{rowgrey}
+Vocabulary size & 16{,}000 & 32{,}000 caused degenerate decoding at this data scale \\
+Maximum sequence length & 256 & Longer inputs are truncated, not rejected \\
+\rowcolor{rowgrey}
+Dropout & 0.2 & Raised after overfitting was observed \\
+Epochs & 6 & 10 epochs over less data memorised \\
+\rowcolor{rowgrey}
+Batch size (SFT / DPO) & 32 / 16 & DPO holds policy and reference simultaneously \\
+Learning rate (SFT) & $3\times10^{-4}$ & \textbf{Lowered from $5\times10^{-4}$ after two collapses} \\
+\rowcolor{rowgrey}
+Warmup steps & 4000 & Capped at 10\,\% of the run \\
+Label smoothing & 0.1 & \\
+\rowcolor{rowgrey}
+Weight decay & 0.01 & \\
+Gradient clipping & 1.0 & The critical stabiliser \\
+\rowcolor{rowgrey}
+DPO $\beta$ & 0.1 & Reported baseline only; not used for shipped models \\
+Training sentences & $\approx$497{,}000 & From \texttt{LIMIT=500000} after cleaning \\
+\rowcolor{rowgrey}
+Development set & 500 sentences & Held out, real human references \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection*{B.4 Published Artifacts}
+
+\begin{itemize}
+  \item \textbf{Source code:} \texttt{https://github.com/GeekyRiolu/SETU\_v2}
+  \item \textbf{Trained models:} the \texttt{phase1-models} GitHub release ---
+        two archives of approximately 897\,MB each, public, no login required,
+        fetched by \texttt{scripts/fetch\_models.sh}.
+  \item \textbf{Per-direction evaluation reports:} \texttt{vm/out/report\_*.json},
+        one per direction, containing BLEU, chrF, teacher score, ratio, final
+        training loss and training-set size.
+  \item \textbf{Quantisation reports:} \texttt{models/<pair>/quantize\_report.json},
+        containing size and latency at each precision.
+  \item \textbf{Qualitative samples:} \texttt{vm/out/sample\_translations.md} and
+        \texttt{vm/out/complex\_translations.md}.
+  \item \textbf{Engineering log:} \texttt{docs/PROGRESS.md} and
+        \texttt{docs/TRAINING\_LOG.md}, the dated session records from which
+        Chapter~\ref{ch:results} is reconstructed.
+\end{itemize}
+
+\clearpage

@@ -1,0 +1,272 @@
+% ============================== CHAPTER 1 ===================================
+\chapter{Introduction}
+\label{ch:introduction}
+
+This chapter establishes the setting in which \setu{} was built. It describes the
+linguistic and infrastructural problem that motivates an offline Indic
+translator, summarises the state of the art the project builds upon, states the
+objectives that the system was measured against, and closes with a guide to the
+remaining chapters of this report.
+
+\section{Overview}
+\label{sec:overview}
+
+The Eighth Schedule of the Constitution of India recognises twenty-two
+languages. Together with several hundred dialects, these languages define the
+everyday linguistic reality of more than a billion people. Digital services,
+however, remain overwhelmingly English-first. The gap between the language a
+citizen speaks and the language a service responds in is not a matter of
+convenience; it decides whether a person can read a government form, understand
+a prescription, or follow an advisory during a disaster.
+
+Machine translation (MT) is the standard technical answer to that gap, and for
+Indian languages the answer has become a very good one. IndicTrans2
+\cite{ref:indictrans2} covers all twenty-two scheduled languages at a quality
+that was unthinkable five years ago, trained on the Bharat Parallel Corpus
+Collection (BPCC) and evaluated on the IN22 and FLORES-200 benchmarks. Earlier
+multilingual efforts --- mT5-based Indic systems \cite{ref:mt5indic}, Indic-to-Indic
+pivoting systems \cite{ref:indic2indic}, and one-to-many low-resource systems for
+Assamese and Bengali \cite{ref:assamese} --- established that shared multilingual
+representations transfer usefully across related Indian languages.
+
+Every one of those systems, however, shares an architectural assumption that
+this project rejects: that the model runs in a data centre and the user's text
+travels to it. Two consequences follow. The first is availability. A cloud
+translator is useless exactly where translation matters most --- the rural
+primary health centre with intermittent connectivity, the border post beyond
+cellular coverage, the relief camp after a cyclone has taken the towers down.
+The second is privacy. A cloud translator sees every sentence a user submits.
+For a citizen dictating a medical complaint or a legal grievance, that is a
+meaningful disclosure, and it is a disclosure with no technical necessity.
+
+The natural alternative is to run the model on the device. Here the arithmetic
+is unforgiving. The flagship IndicTrans2 checkpoints hold roughly a billion
+parameters and occupy several gigabytes in 32-bit floating point; even the
+distilled 200-million-parameter variants need close to a gigabyte of resident
+memory. A mid-range Android handset or an ARM Cortex-A55 single-board computer
+cannot host either. Closing the gap therefore requires a model one order of
+magnitude smaller that nevertheless retains most of the teacher's translation
+quality.
+
+Model compression research offers several routes to such a model.
+Knowledge distillation trains a compact student to imitate a larger teacher;
+DistilBERT \cite{ref:distilbert} demonstrated the approach for encoders, and for
+translation specifically, sequence-level knowledge distillation replaces human
+reference targets with the teacher's own decoded output. SMaLL-100
+\cite{ref:small100} showed that a deliberately shallow multilingual translator can
+remain competitive for low-resource languages. Work on neural translation for
+mobile devices \cite{ref:mobilenmt} and on shallow-to-deep training
+\cite{ref:shallow2deep} addressed the latency and stability problems that arise
+when translation models are shrunk. In parallel, Direct Preference Optimization
+(DPO) \cite{ref:dpo} made preference-based training practical without a reward
+model or reinforcement learning, and subsequent work applied it to neural
+machine translation with minimum Bayes risk decoding \cite{ref:dpomt}.
+
+\setu{} --- from the Sanskrit \dev{सेतु}, meaning \emph{bridge} --- sits at the
+intersection of these lines of work. It takes IndicTrans2 as a teacher and
+distils it into compact students of 52.6 million parameters, one per translation
+direction, quantised to INT4 ONNX and executed by ONNX Runtime with a local
+SentencePiece tokenizer. Nothing leaves the device at inference time.
+
+The project's original thesis was that preference distillation would be the
+mechanism: generate several teacher hypotheses per source sentence, rank them by
+chrF, pair the best against the rest, and train the student with DPO. That
+thesis was tested directly against the standard sequence-level knowledge
+distillation baseline at matched student size, and it lost decisively ---
+17.09 BLEU for sequence-level distillation against 11.10 BLEU for the
+preference-trained student. The diagnosis, developed in
+Chapter~\ref{ch:results}, is that the limiting factor for a compact Indic
+translator is not the training objective but the noise in web-mined human
+references. Training on the teacher's clean one-best output removes that noise,
+and the student improves accordingly. This report presents that refutation as a
+result in its own right, because a negative result obtained under controlled
+conditions is more useful to the field than an unexamined assumption.
+
+The delivered system trains each direction on approximately 497{,}000
+teacher-distilled sentence pairs, quantises the result to 103.9\,MB, and serves
+it through a REST API, an offline progressive web application, a browser client
+and a command-line tool. Eleven scheduled languages are covered in both
+directions. Because no ungated Indic-to-Indic teacher was available, pairs such
+as Hindi--Bengali are served by chaining two students through English, which
+turns 22 trained models into 132 usable translation directions.
+
+\section{Objectives}
+\label{sec:objectives}
+
+The project set out to design and deliver a multilingual distillation pipeline
+that converts a large Indic translation teacher into compact, quantised students
+capable of fully offline inference on edge hardware; to determine empirically
+whether preference-based distillation or sequence-level knowledge distillation
+produces the better compact student at matched size; to cover a substantial
+subset of the twenty-two scheduled languages in both directions and extend
+coverage to every Indic-to-Indic pair without training a quadratic number of
+models; and to expose the resulting engine through interfaces that a
+non-specialist can actually use.
+
+Stated as measurable targets, the objectives are:
+
+\begin{enumerate}[label=\textbf{O\arabic*.}, leftmargin=0.75in]
+  \item \textbf{Quality.} Each student shall achieve a BLEU score at least
+        80\,\% of its teacher's BLEU on the same held-out evaluation set, i.e.\
+        $\text{BLEU}_{\text{student}} / \text{BLEU}_{\text{teacher}} \geq 0.80$.
+  \item \textbf{Latency.} Translation of a single sentence shall complete in
+        under 500\,ms on ARM-class CPU hardware, with no GPU and no accelerator.
+  \item \textbf{Size.} The deployable quantised artifact for one direction shall
+        not exceed 200\,MB.
+  \item \textbf{Offline operation.} Inference shall succeed with all network
+        sockets disabled; no user text shall leave the device.
+  \item \textbf{Empirical finding.} The preference-distillation hypothesis shall
+        be tested against a sequence-level knowledge distillation baseline at
+        matched student size, on identical data, with evaluation on real human
+        references, and the outcome reported whichever way it falls.
+  \item \textbf{Coverage and extensibility.} A substantial subset of the
+        scheduled languages shall be supported bidirectionally, all
+        Indic-to-Indic pairs shall be reachable, and adding a new language shall
+        be a configuration and data change rather than a code change.
+\end{enumerate}
+
+Objectives O2, O3 and O4 are met by every trained direction without exception.
+Objective O1 is met by 14 of 22 directions; the remaining eight fall between
+0.755 and 0.787, and Chapter~\ref{ch:results} analyses why. Objective O5
+produced a refutation of the project's own founding hypothesis. Objective O6 is
+met for eleven languages, with the remaining eleven blocked by corpus
+availability rather than by the architecture.
+
+\section{Purpose, Scope and Applicability}
+\label{sec:psa}
+
+\subsection{Purpose}
+\label{subsec:purpose}
+
+The purpose of \setu{} is to make high-quality Indic machine translation
+available where the network is not, and to do so without requiring the user to
+disclose what they are translating.
+
+Three concerns motivate the work. The first is \emph{access}. Connectivity in
+India is neither uniform nor reliable, and the populations least well served by
+it overlap heavily with the populations least well served in English. A
+translator that requires bandwidth systematically fails the users with the
+greatest need for it. The second is \emph{privacy}. Translation input is
+frequently sensitive --- symptoms, grievances, legal matters, personal
+correspondence. On-device inference makes the privacy guarantee structural
+rather than contractual: there is no server to trust because there is no server.
+The third is \emph{sovereignty of infrastructure}. A public institution that
+depends on a commercial translation API is exposed to pricing changes, API
+deprecations and terms-of-service revisions. A 104\,MB artifact that runs on the
+institution's own hardware is not.
+
+Theoretically, the project addresses a question that the compact-model
+literature has not settled for translation: when a student is an order of
+magnitude smaller than its teacher and the available parallel data is mined
+rather than curated, which training signal should the student be given? The
+literature offers reference targets, teacher one-best targets and
+preference-ranked teacher hypotheses. \setu{} evaluates all three under matched
+conditions and reports the outcome.
+
+\subsection{Scope}
+\label{subsec:scope}
+
+\textbf{Methodology.} The system distils the ungated rotary IndicTrans2
+distilled-200M checkpoints into 52.6-million-parameter Marian sequence-to-sequence
+students, one per direction, using sequence-level knowledge distillation on
+teacher one-best output. Students are quantised post-training to INT8 and INT4
+ONNX and executed by ONNX Runtime. Evaluation uses sacreBLEU (BLEU and chrF)
+against real human references held out from the training corpus, with the
+student/teacher BLEU ratio as the headline metric.
+
+\textbf{Languages delivered.} Eleven scheduled languages --- Hindi, Bengali,
+Marathi, Telugu, Tamil, Gujarati, Kannada, Odia, Malayalam, Assamese and Punjabi
+--- each paired bidirectionally with English, giving 22 trained directions. Every
+Indic-to-Indic pair among these eleven is served by chaining two students
+through English.
+
+\textbf{Assumptions.} The work assumes that the ungated distilled-200M teacher is
+an acceptable quality ceiling; that Samanantar, though web-mined and noisy, is
+representative enough for distillation; that the student architecture and its
+16{,}000-token vocabulary are sized correctly for the data volume available; and
+that x86 CPU latency measurements are a reasonable proxy for ARM behaviour.
+Each assumption is examined in Chapter~\ref{ch:results}.
+
+\textbf{Limitations, stated up front.} The project is text-to-text only; speech
+input and output are out of scope. The remaining eleven scheduled languages are
+not delivered, because only Assamese and Punjabi among them have ungated
+Samanantar data and the rest require access to the gated BPCC corpus. The
+quality ratio is bounded by the ungated 200M teacher, which is itself weaker than
+the gated one-billion-parameter flagship. Reported ratios are computed on an
+internal Samanantar development slice rather than on FLORES-200, so they are
+comparable within this report but not directly comparable to published
+IndicTrans2 numbers. ARM latency is projected from x86 measurement rather than
+measured on ARM silicon. Finally, INT4 quantisation yields the same on-disk size
+as INT8 in ONNX Runtime's CPU execution provider, which lacks a true 4-bit
+kernel.
+
+\subsection{Applicability}
+\label{subsec:applicability}
+
+\textbf{Direct applications.} In rural healthcare, a doctor or ASHA worker can
+converse with a patient across a language boundary on a handset with no
+connectivity. In defence and border operations, patrol units operating beyond
+cellular coverage can translate without transmitting anything. In education,
+multilingual tutoring tools can serve students in their own language without a
+per-query cloud cost. In government service delivery, forms, notices and
+entitlement documents can be translated at a gram panchayat counter. In disaster
+relief, field workers can communicate with affected communities during the exact
+window in which the network is down.
+
+\textbf{Indirect contributions.} The distillation pipeline is not
+Indic-specific; the same configuration-driven process applies to any
+language family with a strong teacher and a weak-reference parallel corpus. The
+controlled comparison between preference distillation and sequence-level
+distillation contributes a data point to the compact-NMT literature that
+practitioners can act on. The English-pivot router demonstrates that $n$
+languages can be served in $n^2$ directions with $2n$ models, a result of
+practical importance when each additional model costs 104\,MB of device storage.
+And the engineering record in this report --- particularly the two training
+collapses and their diagnosis --- documents failure modes that are rarely
+published but routinely encountered.
+
+\section{Organisation of the Report}
+\label{sec:organisation}
+
+\textbf{Chapter~\ref{ch:literature}, Literature Survey}, reviews twenty papers
+published from 2019 onward across mobile and compact NMT, knowledge
+distillation, preference optimisation and multilingual Indic translation,
+compares the available technologies, and derives the drawbacks of existing
+systems, the problem statement and the proposed solution.
+
+\textbf{Chapter~\ref{ch:requirements}, Requirement Engineering}, specifies the
+hardware and software used for training and deployment, presents the conceptual
+models --- use case, sequence, activity, state chart, data flow, entity
+relationship and class diagrams --- and states the user, system, functional,
+non-functional and domain requirements.
+
+\textbf{Chapter~\ref{ch:planning}, Project Planning}, gives the work breakdown
+structure, the Gantt schedule across both project phases, a PERT network with
+the critical path, the risk register and the division of responsibility within
+the team.
+
+\textbf{Chapter~\ref{ch:design}, System Design}, presents the high-level
+architecture, decomposes the system into eight modules, specifies the external
+interfaces and the core data structures, and gives the algorithms for
+distillation, training, quantisation and pivot routing.
+
+\textbf{Chapter~\ref{ch:implementation}, Implementation}, describes the
+implementation approach and coding standards, presents the significant code with
+commentary, and discusses the optimisations that made training feasible on the
+available hardware.
+
+\textbf{Chapter~\ref{ch:testing}, Testing}, sets out the testing strategy and
+reports the unit, integration and system test cases with their data and
+outcomes.
+
+\textbf{Chapter~\ref{ch:results}, Results, Discussion and Performance
+Analysis}, reports the full 22-direction scorecard, the preference-versus-%
+sequence-distillation head-to-head, the data-scaling curve, the collapse and
+recovery analysis, qualitative translation samples and the user documentation.
+
+\textbf{Chapter~\ref{ch:conclusion}, Conclusion, Applications and Future Work},
+summarises the outcome against each objective, lists applications and
+limitations, and defines the work that follows.
+
+The report closes with \textbf{References}, an \textbf{Appendix} covering the
+publication plan and reproduction instructions, and a \textbf{Glossary}.
