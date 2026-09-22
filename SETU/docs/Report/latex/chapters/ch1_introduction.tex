@@ -24,15 +24,15 @@ Indian languages the answer has become a very good one. IndicTrans2
 \cite{ref:indictrans2} covers all twenty-two scheduled languages at a quality
 that was unthinkable five years ago, trained on the Bharat Parallel Corpus
 Collection (BPCC) and evaluated on the IN22 and FLORES-200 benchmarks. Earlier
-multilingual efforts --- mT5-based Indic systems \cite{ref:mt5indic}, Indic-to-Indic
+multilingual efforts (mT5-based Indic systems \cite{ref:mt5indic}, Indic-to-Indic
 pivoting systems \cite{ref:indic2indic}, and one-to-many low-resource systems for
-Assamese and Bengali \cite{ref:assamese} --- established that shared multilingual
+Assamese and Bengali \cite{ref:assamese}) established that shared multilingual
 representations transfer usefully across related Indian languages.
 
 Every one of those systems, however, shares an architectural assumption that
 this project rejects: that the model runs in a data centre and the user's text
 travels to it. Two consequences follow. The first is availability. A cloud
-translator is useless exactly where translation matters most --- the rural
+translator is useless exactly where translation matters most: the rural
 primary health centre with intermittent connectivity, the border post beyond
 cellular coverage, the relief camp after a cyclone has taken the towers down.
 The second is privacy. A cloud translator sees every sentence a user submits.
@@ -62,7 +62,7 @@ when translation models are shrunk. In parallel, Direct Preference Optimization
 model or reinforcement learning, and subsequent work applied it to neural
 machine translation with minimum Bayes risk decoding \cite{ref:dpomt}.
 
-\setu{} --- from the Sanskrit \dev{सेतु}, meaning \emph{bridge} --- sits at the
+\setu{} (from the Sanskrit \dev{सेतु}, meaning \emph{bridge}) sits at the
 intersection of these lines of work. It takes IndicTrans2 as a teacher and
 distils it into compact students of 52.6 million parameters, one per translation
 direction, quantised to INT4 ONNX and executed by ONNX Runtime with a local
@@ -72,7 +72,7 @@ The project's original thesis was that preference distillation would be the
 mechanism: generate several teacher hypotheses per source sentence, rank them by
 chrF, pair the best against the rest, and train the student with DPO. That
 thesis was tested directly against the standard sequence-level knowledge
-distillation baseline at matched student size, and it lost decisively ---
+distillation baseline at matched student size, and it lost decisively:
 17.09 BLEU for sequence-level distillation against 11.10 BLEU for the
 preference-trained student. The diagnosis, developed in
 Chapter~\ref{ch:results}, is that the limiting factor for a compact Indic
@@ -147,7 +147,7 @@ India is neither uniform nor reliable, and the populations least well served by
 it overlap heavily with the populations least well served in English. A
 translator that requires bandwidth systematically fails the users with the
 greatest need for it. The second is \emph{privacy}. Translation input is
-frequently sensitive --- symptoms, grievances, legal matters, personal
+frequently sensitive: symptoms, grievances, legal matters, personal
 correspondence. On-device inference makes the privacy guarantee structural
 rather than contractual: there is no server to trust because there is no server.
 The third is \emph{sovereignty of infrastructure}. A public institution that
@@ -174,9 +174,8 @@ ONNX and executed by ONNX Runtime. Evaluation uses sacreBLEU (BLEU and chrF)
 against real human references held out from the training corpus, with the
 student/teacher BLEU ratio as the headline metric.
 
-\textbf{Languages delivered.} Eleven scheduled languages --- Hindi, Bengali,
-Marathi, Telugu, Tamil, Gujarati, Kannada, Odia, Malayalam, Assamese and Punjabi
---- each paired bidirectionally with English, giving 22 trained directions. Every
+\textbf{Languages delivered.} Eleven scheduled languages (Hindi, Bengali,
+Marathi, Telugu, Tamil, Gujarati, Kannada, Odia, Malayalam, Assamese and Punjabi) each paired bidirectionally with English, giving 22 trained directions. Every
 Indic-to-Indic pair among these eleven is served by chaining two students
 through English.
 
@@ -221,8 +220,8 @@ distillation contributes a data point to the compact-NMT literature that
 practitioners can act on. The English-pivot router demonstrates that $n$
 languages can be served in $n^2$ directions with $2n$ models, a result of
 practical importance when each additional model costs 104\,MB of device storage.
-And the engineering record in this report --- particularly the two training
-collapses and their diagnosis --- documents failure modes that are rarely
+And the engineering record in this report (particularly the two training
+collapses and their diagnosis) documents failure modes that are rarely
 published but routinely encountered.
 
 \section{Organisation of the Report}
@@ -236,8 +235,8 @@ systems, the problem statement and the proposed solution.
 
 \textbf{Chapter~\ref{ch:requirements}, Requirement Engineering}, specifies the
 hardware and software used for training and deployment, presents the conceptual
-models --- use case, sequence, activity, state chart, data flow, entity
-relationship and class diagrams --- and states the user, system, functional,
+models (use case, sequence, activity, state chart, data flow, entity
+relationship and class diagrams) and states the user, system, functional,
 non-functional and domain requirements.
 
 \textbf{Chapter~\ref{ch:planning}, Project Planning}, gives the work breakdown

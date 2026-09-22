@@ -29,8 +29,8 @@ The project's founding hypothesis was that ranking teacher hypotheses by chrF
 and training the student with DPO would outperform standard sequence-level
 knowledge distillation. Four systems were built and compared under matched
 conditions: identical 52.6-million-parameter student, identical 100{,}000
-training sentences, identical Hindi\arrowto{}English direction, and ---
-critically --- evaluation on \emph{real human references} held out from
+training sentences, identical Hindi\arrowto{}English direction, and,
+critically, evaluation on \emph{real human references} held out from
 training, which makes the comparison fair no matter what each system trained on.
 
 \begin{table}[H]
@@ -64,7 +64,7 @@ S3 & Teacher one-best  & Yes & Does preference learning help on top of strong di
 \rowcolor{headblue}
 \textbf{System} & \textbf{Training signal} & \textbf{BLEU} & \textbf{Ratio} & \textbf{$\Delta$ vs S0} \\
 \midrule
-S0: SFT on references & Human references (Samanantar) & 10.95 & 0.389 & --- \\
+S0: SFT on references & Human references (Samanantar) & 10.95 & 0.389 & n/a \\
 \rowcolor{rowgrey}
 \textbf{S1: \seqkd{}}  & \textbf{Teacher one-best}      & \textbf{17.09} & \textbf{0.607} & \textbf{$+6.14$} \\
 S2: DPO-distill       & References, then DPO          & 11.10 & 0.394 & $+0.15$ \\
@@ -75,7 +75,7 @@ S2: DPO-distill       & References, then DPO          & 11.10 & 0.394 & $+0.15$ 
 The hypothesis is refuted, and not marginally. Sequence-level distillation beats
 preference distillation by \textbf{5.99 BLEU}, an improvement of roughly
 \textbf{54\,\%}, at identical model size on identical data. Applying DPO on top
-of a reference-trained base adds 0.15 BLEU over that base --- within the noise of
+of a reference-trained base adds 0.15 BLEU over that base, within the noise of
 a 500-sentence evaluation set.
 
 \subsection{Why the Hypothesis Failed}
@@ -90,14 +90,14 @@ validated preference pairs, with a median chrF quality delta of 29.5 and a mean
 of 32.7. Every emitted pair passes a validation gate requiring the preferred
 candidate to score strictly above the dispreferred one.
 
-Second, \textbf{DPO learns what it is asked to learn}. The margin accuracy ---
+Second, \textbf{DPO learns what it is asked to learn}. The margin accuracy,
 the fraction of pairs on which the trained policy ranks preferred above
-dispreferred --- reaches 0.923 and later 1.0. The optimisation is succeeding
+dispreferred, reaches 0.923 and later 1.0. The optimisation is succeeding
 completely at its stated objective.
 
 Third, \textbf{DPO produces the effect its ranking metric predicts}. Because the
-preferences were ranked by chrF, DPO consistently improves chrF --- from 37.85
-to 40.33 in one run, and from 45.40 to 45.94 in another --- while costing
+preferences were ranked by chrF, DPO consistently improves chrF (from 37.85
+to 40.33 in one run, and from 45.40 to 45.94 in another) while costing
 approximately one BLEU point. The preference signal is being transferred
 faithfully; it simply is not the signal that most improves translation quality.
 
@@ -107,14 +107,14 @@ compact Indic student}. Samanantar is web-mined. Its sentence pairs vary in
 register, in alignment quality and in fidelity; roughly one pair in a hundred is
 discarded outright by the cleaning filters, and many more that survive are
 imperfect. A model with billions of parameters can average over that
-inconsistency. A model with 52 million cannot --- it spends its limited capacity
+inconsistency. A model with 52 million cannot; it spends its limited capacity
 modelling the noise. The teacher's one-best output, by contrast, is internally
 consistent: it is drawn from a single distribution, in a single register, with
 alignment guaranteed by construction. Training on it is a denoising operation.
 
 Two subsequent observations support H1$'$ directly. Reference-trained students
 plateau near a ratio of 0.66 and do not improve when data is increased from
-200{,}000 to 250{,}000 sentences --- the data lever saturates while the noise
+200{,}000 to 250{,}000 sentences; the data lever saturates while the noise
 remains. Distilled students do not plateau; they continue improving to 0.806 at
 500{,}000 sentences. If data volume were the binding constraint both curves would
 rise; if noise is the binding constraint only the denoised curve rises, which is
@@ -188,7 +188,7 @@ fixed, and because all three produce output that looks superficially reasonable.
 \#3 & \textbf{First success} & BLEU 13.42, chrF 37.85, ratio 0.438; correct idiomatic output & The pad-loss fix plus scaling to 120{,}000 sentences. Loss an honest 3.39 \\
 \#4 & Collapse & BLEU 0.03; \textit{``What is the''} for every input, at 200{,}000 sentences on the same code that worked at 120{,}000 & No gradient clipping. More data means more steps and more chances to hit a gradient spike; run \#3 was lucky. Fix: clip gradient norm at 1.0 \\
 \rowcolor{rowgrey}
-\#5 & Stable & BLEU 18.60, chrF 45.40, ratio 0.654 & Clipping resolved the collapse --- the last major training bug \\
+\#5 & Stable & BLEU 18.60, chrF 45.40, ratio 0.654 & Clipping resolved the collapse, the last major training bug \\
 \#6 & Plateau & BLEU 18.64, ratio 0.657 at 250{,}000 sentences: flat against \#5 & Data volume had saturated for reference targets. This is what motivated the \seqkd{} comparison, and it is a reportable result in its own right \\
 
 \end{longtable}
@@ -206,7 +206,7 @@ asking whether the reported number was physically plausible.
 
 During the 22-direction training campaign, two students collapsed. Both produced
 the same characteristic pathology: fluent, grammatical, entirely
-source-independent output --- a ``stock news sentence'' returned regardless of
+source-independent output, a ``stock news sentence'' returned regardless of
 input.
 
 \begin{table}[H]
@@ -221,7 +221,7 @@ input.
 Telugu\arrowto{}English   & $5\times10^{-4}$ & 3.13 & 0.036 & $3\times10^{-4}$ & \textbf{0.817} \\
 \rowcolor{rowgrey}
 Malayalam\arrowto{}English & $5\times10^{-4}$ & 3.96 & 0.013 & $3\times10^{-4}$ & \textbf{0.898} \\
-English\arrowto{}Malayalam & $5\times10^{-4}$ & --- & 0.570 & $3\times10^{-4}$ & \textbf{0.863} \\
+English\arrowto{}Malayalam & $5\times10^{-4}$ & n/a & 0.570 & $3\times10^{-4}$ & \textbf{0.863} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -230,7 +230,7 @@ The diagnosis rests on a controlled observation: Tamil\arrowto{}English
 and Kannada\arrowto{}English trained at the same learning rate, on the same amount
 of data, through the same code, and did \emph{not} collapse. The failure was
 therefore training instability rather than a data problem specific to Telugu or
-Malayalam. The recovery confirmed it --- each collapsed direction was retrained
+Malayalam. The recovery confirmed it: each collapsed direction was retrained
 using its \emph{existing, good} distilled corpus, changing only the
 supervised-fine-tuning learning rate from $5\times10^{-4}$ to $3\times10^{-4}$,
 and both recovered completely. The Malayalam retrain also lifted the reverse
@@ -243,7 +243,7 @@ carries a real risk of total loss of a multi-hour run.
 
 \textbf{Training loss is a reliable collapse indicator.} Healthy runs settle at
 a final supervised loss of 1.5 to 2.3; collapsed runs sit at 3 to 4. This is a
-cheap, early signal --- available long before evaluation --- and it is now
+cheap, early signal, available long before evaluation, and it is now
 checked before a run is allowed to proceed to quantisation.
 
 \section{Test Reports}
@@ -264,7 +264,7 @@ directions.
 \textbf{\#} & \textbf{Direction} & \textbf{BLEU} & \textbf{chrF} & \textbf{Teacher} & \textbf{Ratio} & \textbf{$\geq$0.80} & \textbf{Latency} \\
 \midrule
 \endfirsthead
-\multicolumn{8}{c}{\textit{Table \thetable{} --- continued from previous page}}\\
+\multicolumn{8}{c}{\textit{Table \thetable{} (continued)}}\\
 \toprule
 \rowcolor{headblue}
 \textbf{\#} & \textbf{Direction} & \textbf{BLEU} & \textbf{chrF} & \textbf{Teacher} & \textbf{Ratio} & \textbf{$\geq$0.80} & \textbf{Latency} \\
@@ -375,14 +375,14 @@ Three observations follow.
 \textbf{Direction symmetry holds.} Once the collapses are excluded,
 English\arrowto{}Indic averages 0.854 and Indic\arrowto{}English averages 0.827.
 The two directions are close, which suggests the method is not biased towards
-translating into English --- a common asymmetry in multilingual systems.
+translating into English, a common asymmetry in multilingual systems.
 
 \textbf{The near-misses are under-converged, not unstable.} All six near-miss
 directions have supervised losses of 2.00 to 2.32, at the upper end of the
 healthy band of 1.5 to 2.3, whereas the passing directions cluster between 1.46
 and 1.95. The pattern points to insufficient training rather than instability,
-which means the cheap remedies --- beam search at evaluation, more epochs, more
-distilled data --- are the appropriate ones.
+which means the cheap remedies (beam search at evaluation, more epochs, more
+distilled data) are the appropriate ones.
 
 \textbf{BLEU understates agglutinative languages.} English\arrowto{}Malayalam
 \emph{passes} the target at 0.863 while scoring only 5.2 BLEU, because its
@@ -516,7 +516,7 @@ en \arrowto{} ml & Water is essential for life. & \mal{ജീവിതത്ത�
 
 Output on simple sentences is idiomatic rather than merely literal. The Hindi
 model renders \dev{विशाल} as ``vast'' and \dev{पसंद है} as ``love reading''
-rather than the word-by-word ``liking exists'' --- a 52-million-parameter
+rather than the word-by-word ``liking exists''; a 52-million-parameter
 student is producing natural English. The two recovered models, Malayalam and
 Telugu into English, are correct, which is the qualitative confirmation that the
 recovery was genuine and not merely a better score.
@@ -550,7 +550,7 @@ ml & \mal{കാലാവസ്ഥ ഭയാനകമായിരുന്നെ
 \end{table}
 
 The concessive clause survives in every language, each using its own idiomatic
-construction --- \dev{हालांकि}, \guj{હોવા છતાં}, \kan{ಆಗಿದ್ದರೂ},
+construction: \dev{हालांकि}, \guj{હોવા છતાં}, \kan{ಆಗಿದ್ದರೂ},
 \tel{ఉన్నప్పటికీ}. The models are not transliterating an English structure;
 they are producing target-language syntax.
 
@@ -577,8 +577,8 @@ ml & \mal{നിങ്ങൾ എന്നോട് നേരത്തെ പറ�
 Counterfactual conditionals are a demanding test because they require the
 correct irrealis mood in the main clause. Hindi, Marathi and Gujarati all
 produce it correctly. Telugu, by contrast, renders the protasis as a simple
-conditional and the apodosis in the past indicative --- \tel{బుక్ చేసుకున్నాను}
-(``I booked'') rather than ``I would have booked'' --- losing the counterfactual
+conditional and the apodosis in the past indicative, \tel{బుక్ చేసుకున్నాను}
+(``I booked'') rather than ``I would have booked'', losing the counterfactual
 sense. This is a genuine error and matches Telugu's position in the scorecard.
 
 \subsection{Recurring Error Patterns}
@@ -603,7 +603,7 @@ Dropped modifier & Kannada omits ``fifteen percent'' in a reported-speech senten
 \end{tabular}
 \end{table}
 
-A round-trip test --- English to the target language and back --- was also run.
+A round-trip test (English to the target language and back) was also run.
 Hindi and Marathi round-trip almost perfectly. Kannada drifts noticeably, again
 matching its scorecard position. The qualitative and quantitative assessments
 agree throughout, which is itself a useful validation of the metric.
@@ -673,10 +673,10 @@ cd frontend && npm install && npm run dev      # http://localhost:3000
 \midrule
 \texttt{POST /translate} & \texttt{\{source\_lang, target\_lang, text\}} & \texttt{\{translated\_text, latency\_ms, pivot, stub\}}. \texttt{pivot} is \texttt{"en"} for a chained translation; \texttt{stub} true means passthrough \\
 \rowcolor{rowgrey}
-\texttt{GET /languages} & --- & 23 entries: ISO code, FLORES code, script, endonym \\
-\texttt{GET /models} & --- & \texttt{\{count, models: [\{pair, variant, size\_mb\}]\}} \\
+\texttt{GET /languages} & n/a & 23 entries: ISO code, FLORES code, script, endonym \\
+\texttt{GET /models} & n/a & \texttt{\{count, models: [\{pair, variant, size\_mb\}]\}} \\
 \rowcolor{rowgrey}
-\texttt{GET /health} & --- & \texttt{\{status, stub\}} \\
+\texttt{GET /health} & n/a & \texttt{\{status, stub\}} \\
 \bottomrule
 \end{tabular}
 \end{table}

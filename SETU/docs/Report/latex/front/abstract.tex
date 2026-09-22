@@ -18,9 +18,9 @@ or ARM board can host.
 
 \setu{} (Sanskrit \dev{सेतु}, ``bridge'') closes that gap by distilling a strong
 teacher into compact students that run entirely on the device. The project began
-from the hypothesis that \emph{preference distillation} --- ranking teacher
+from the hypothesis that \emph{preference distillation}, ranking teacher
 hypotheses by chrF and training the student with Direct Preference Optimization
-(DPO) --- would beat standard sequence-level knowledge distillation for tiny
+(DPO), would beat standard sequence-level knowledge distillation for tiny
 translation models. A controlled head-to-head at matched student size refuted
 that hypothesis and produced the project's central empirical finding: at 100{,}000
 training sentences, sequence-level knowledge distillation (\seqkd{}) on the
@@ -33,7 +33,7 @@ negative result rather than quietly discarded.
 
 The delivered system trains one 52.6-million-parameter Marian student per
 translation direction on approximately 497{,}000 teacher-distilled sentence
-pairs, then quantises it to INT4 ONNX at \textbf{103.9\,MB} --- a fourfold
+pairs, then quantises it to INT4 ONNX at \textbf{103.9\,MB}, a fourfold
 compression from 411\,MB FP32. Twenty-two directions covering eleven scheduled
 languages in both directions were trained on an NVIDIA A40 vGPU. Measured
 against the teacher on a held-out Samanantar development slice,
@@ -44,7 +44,7 @@ three non-quality targets pass without exception: every artifact is 103.9\,MB
 (target $\leq 200$\,MB), mean latency is 105--202\,ms per sentence on commodity
 CPU (target $<500$\,ms), and inference completes with all network sockets
 disabled. Because no Indic-to-Indic student exists, an English-pivot router
-chains two students, so all 11 languages translate in every direction ---
+chains two students, so all 11 languages translate in every direction:
 22 direct models serve 132 usable directions. Two training collapses
 (Telugu\arrowto{}English and Malayalam\arrowto{}English, both degenerating to a
 fixed output string) were diagnosed as learning-rate instability at

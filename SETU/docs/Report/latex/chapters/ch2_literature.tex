@@ -8,8 +8,8 @@ available for compressing a translation model to edge size, for training a
 compact student from a strong teacher, and for covering many Indian languages at
 once. Second, it compares those available technologies so that the choices made
 in Chapter~\ref{ch:design} can be justified rather than asserted. Third, it
-isolates the specific capability that none of the surveyed systems provides ---
-offline, on-device, multi-directional Indic translation within 200\,MB --- which
+isolates the specific capability that none of the surveyed systems provides:
+offline, on-device, multi-directional Indic translation within 200\,MB, which
 becomes the problem statement of this project.
 
 Twenty papers published from 2019 onward are reviewed, ordered by year of
@@ -27,8 +27,8 @@ Indian languages at high quality but requires GPU-class hardware. The research
 directions that matter for this project are the ones that ask what can be
 recovered after the parameters are taken away again.
 
-Three lines of work answer that question. Compression research --- pruning,
-quantisation, shallow architectures --- reduces a trained model to a size a
+Three lines of work answer that question. Compression research (pruning,
+quantisation, shallow architectures) reduces a trained model to a size a
 device can hold. Distillation research transfers behaviour from a large teacher
 to a small student, either by matching output distributions or by training the
 student on the teacher's decoded output. Alignment research, developed for large
@@ -54,7 +54,7 @@ between directions and pivoting error when no direct model exists.
 \textbf{\#} & \textbf{Title} & \textbf{Authors} & \textbf{Venue \& Year} & \textbf{Contributions and drawbacks} \\
 \midrule
 \endfirsthead
-\multicolumn{5}{c}{\textit{Table \thetable{} --- continued from previous page}}\\
+\multicolumn{5}{c}{\textit{Table \thetable{} (continued)}}\\
 \toprule
 \rowcolor{headblue}
 \textbf{\#} & \textbf{Title} & \textbf{Authors} & \textbf{Venue \& Year} & \textbf{Contributions and drawbacks} \\
@@ -93,7 +93,7 @@ between directions and pivoting error when no direct model exists.
     \textbf{Drawback:} quality still trails the large model it compresses,
     particularly on high-resource pairs where capacity matters. \\
 
-4 & The Tatoeba Translation Challenge --- Realistic Data Sets for Low Resource
+4 & The Tatoeba Translation Challenge -- Realistic Data Sets for Low Resource
     and Multilingual MT
   & J. Tiedemann
   & WMT, 2021
@@ -218,7 +218,7 @@ between directions and pivoting error when no direct model exists.
   & P. S. Bohra, K. Berwal
   & IEEE, 2024
   & Proposes an offline, edge-deployed tactical translation system for use in
-    harsh environments without connectivity --- the closest published motivation
+    harsh environments without connectivity, the closest published motivation
     to this project. \textbf{Drawback:} largely conceptual, without real-world
     validation, and constrained by data scarcity for the target languages. \\
 
@@ -252,7 +252,7 @@ not only the models but the surrounding artifacts: the BPCC corpus and the IN22
 benchmark, which together made Indic MT reproducible. \setu{} adopts its
 script-qualified FLORES language codes (\texttt{hin\_Deva}, \texttt{eng\_Latn})
 as internal identifiers so that student tokenizer tags remain stable as
-languages are added. The project's quality target --- 80\,\% of teacher BLEU --- is
+languages are added. The project's quality target (80\,\% of teacher BLEU) is
 defined relative to this system. A practical constraint arose here: the official
 \texttt{ai4bharat} checkpoints and the BPCC dataset are access-gated on Hugging
 Face, returning HTTP 401 without an authenticated account that has accepted the
@@ -262,9 +262,9 @@ This lowers the achievable ceiling, and Chapter~\ref{ch:results} quantifies by
 how much.
 
 \textbf{Direct Preference Optimization} \cite{ref:dpo} supplied the project's
-original hypothesis. Its key insight --- that the optimal policy under a
+original hypothesis. Its key insight (that the optimal policy under a
 Bradley-Terry preference model has a closed form, so preference learning reduces
-to a classification loss on preferred and dispreferred pairs --- makes preference
+to a classification loss on preferred and dispreferred pairs) makes preference
 training cheap enough to attempt on a student model. \setu{} implements DPO with
 a frozen supervised-fine-tuning reference model, chrF-ranked teacher hypotheses
 as preferred candidates, and $k$-nearest-neighbour retrieved translations as
@@ -306,7 +306,7 @@ justification.
 \textbf{Decision} & \textbf{Alternatives considered} & \textbf{Trade-off} & \textbf{Choice and justification} \\
 \midrule
 \endfirsthead
-\multicolumn{4}{c}{\textit{Table \thetable{} --- continued from previous page}}\\
+\multicolumn{4}{c}{\textit{Table \thetable{} (continued)}}\\
 \toprule
 \rowcolor{headblue}
 \textbf{Decision} & \textbf{Alternatives considered} & \textbf{Trade-off} & \textbf{Choice and justification} \\
@@ -406,9 +406,9 @@ roughly 50 million parameters. That parameter budget in turn eliminates
 retrieval-augmented approaches such as nearest-neighbour distillation
 \cite{ref:knnkd}, whose datastore alone would exceed the budget.
 
-The 500\,ms latency budget on CPU eliminates beam search at deployment --- the
+The 500\,ms latency budget on CPU eliminates beam search at deployment (the
 deployed engine decodes greedily, with beam search reserved for offline
-evaluation --- and eliminates any method requiring a retrieval lookup per token.
+evaluation) and eliminates any method requiring a retrieval lookup per token.
 
 The offline requirement eliminates any runtime that fetches weights, tokenizer
 artifacts or telemetry, which is why the tokenizer is a local SentencePiece
@@ -430,7 +430,7 @@ translation problem unsolved.
 requires an active network connection. IndicTrans2 \cite{ref:indictrans2}, mT5
 based systems \cite{ref:mt5indic} and LLM-based simultaneous translators
 \cite{ref:latency} all assume server-side execution. In regions with intermittent
-connectivity --- which is where the language barrier is most acute --- these
+connectivity, which is where the language barrier is most acute, these
 systems are unavailable exactly when needed. Cloud execution also means that
 every translated sentence is transmitted to and processed by a third party.
 
@@ -467,9 +467,9 @@ languages had ungated data sufficient to train against.
 \itshape
 There is a need for a lightweight, offline-capable multilingual translation
 framework that delivers high-quality translation across the scheduled languages
-of India on edge devices --- retaining at least 80\,\% of a strong teacher's BLEU
+of India on edge devices (retaining at least 80\,\% of a strong teacher's BLEU
 within a 200\,MB artifact and under 500\,ms of CPU latency per sentence, with
-zero network calls at inference --- and that supports incremental addition of new
+zero network calls at inference) and that supports incremental addition of new
 languages without catastrophic forgetting and without a quadratic growth in the
 number of trained models.
 \end{quote}
@@ -477,35 +477,35 @@ number of trained models.
 The overall problem decomposes into six sub-problems, each addressed by an
 identifiable part of the system.
 
-\textbf{P1 --- Corpus quality.} The available ungated parallel data (Samanantar)
+\textbf{P1: Corpus quality.} The available ungated parallel data (Samanantar)
 is web-mined, and contains misaligned pairs, length-ratio anomalies,
 wrong-script segments and duplicates. \emph{Sub-problem:} construct a cleaning
 pipeline that yields a corpus a 52-million-parameter student can learn from.
 Addressed by the Corpus Loader module (Section~\ref{subsec:mod1}).
 
-\textbf{P2 --- Choice of training signal.} It is not established which signal
---- human references, teacher one-best output, or preference-ranked teacher
-hypotheses --- best trains a student an order of magnitude smaller than its
+\textbf{P2: Choice of training signal.} It is not established which signal
+(human references, teacher one-best output, or preference-ranked teacher
+hypotheses) best trains a student an order of magnitude smaller than its
 teacher on noisy data. \emph{Sub-problem:} construct all three and compare them
 under matched conditions. Addressed by the Teacher Distiller and Trainer modules
 and reported in Section~\ref{sec:headtohead}.
 
-\textbf{P3 --- Training stability.} A Transformer trained from scratch at this
+\textbf{P3: Training stability.} A Transformer trained from scratch at this
 scale is unstable: three distinct failure modes (empty output, unconditional
 decoding, and mid-training collapse) were encountered. \emph{Sub-problem:}
 identify and eliminate each. Addressed in Section~\ref{sec:runlog}.
 
-\textbf{P4 --- Deployment footprint.} A 52.6-million-parameter FP32 model
+\textbf{P4: Deployment footprint.} A 52.6-million-parameter FP32 model
 occupies 411\,MB, over twice the size budget, and decodes too slowly in PyTorch
 on CPU. \emph{Sub-problem:} compress and accelerate without materially losing
 quality. Addressed by the Quantiser module (Section~\ref{subsec:mod4}).
 
-\textbf{P5 --- Indic-to-Indic coverage.} No ungated Indic-to-Indic teacher exists,
+\textbf{P5: Indic-to-Indic coverage.} No ungated Indic-to-Indic teacher exists,
 and training direct models for every pair would require $n(n-1)$ models at
 104\,MB each. \emph{Sub-problem:} serve every pair without quadratic growth.
 Addressed by the English-pivot router (Section~\ref{subsec:mod5}).
 
-\textbf{P6 --- Extensibility.} Adding a language must not require retraining
+\textbf{P6: Extensibility.} Adding a language must not require retraining
 everything or degrade the languages already supported. \emph{Sub-problem:}
 provide a mechanism for incremental expansion with measured retention. Addressed
 by the All-in-One KD and Elastic Weight Consolidation implementations
@@ -514,7 +514,7 @@ by the All-in-One KD and Elastic Weight Consolidation implementations
 \section{Proposed Solution}
 \label{sec:proposedsolution}
 
-\setu{} proposes a four-stage pipeline --- distil, train, quantise, serve ---
+\setu{} proposes a four-stage pipeline (distil, train, quantise, serve)
 instantiated once per translation direction and bound together by a routing
 layer that pivots through English.
 
@@ -550,7 +550,7 @@ command-line tool, an offline progressive web application and a browser client.
 The project's founding hypothesis was H1: \emph{preference distillation produces
 better compact students than sequence-level knowledge distillation}. It was
 tested at matched student size, on identical data, with evaluation on real human
-references held out from training --- a design that is fair regardless of what
+references held out from training, a design that is fair regardless of what
 each system trained on. Table~\ref{tab:h1} gives the outcome.
 
 \begin{table}[H]
@@ -573,11 +573,11 @@ S2: DPO-distill       & references, then DPO          & 11.10 & 0.394 & no gain 
 
 H1 is refuted. Sequence-level distillation beats preference distillation by
 6.0 BLEU, an improvement of about 54\,\%, and DPO applied on top of a
-reference-trained base adds 0.15 BLEU over that base --- indistinguishable from
+reference-trained base adds 0.15 BLEU over that base, indistinguishable from
 noise. The replacement hypothesis, H1$'$, is supported by every subsequent
 result: \emph{reference noise, not the training objective, is what caps a
 compact Indic student.} Teacher-distilled targets remove that noise, and the
-student then continues to improve with data --- the ratio rises from 0.607 at
+student then continues to improve with data: the ratio rises from 0.607 at
 100{,}000 sentences to 0.764 at 250{,}000 and 0.806 at 500{,}000, whereas
 reference-trained students plateau near 0.66 regardless of data volume.
 
@@ -585,6 +585,6 @@ The DPO implementation is not defective, which is what makes the result
 informative. Its margin accuracy reaches 1.0, meaning it ranks preferred above
 dispreferred candidates perfectly; it consistently improves chrF by one to two
 points while costing about one BLEU point. The preference signal is being
-learned correctly --- it simply is not the signal that a 52-million-parameter
+learned correctly; it simply is not the signal that a 52-million-parameter
 student most needs when its reference targets are noisy. \setu{} therefore ships
 \seqkd{}, and reports DPO as a controlled negative result.

@@ -34,7 +34,7 @@ Preference Distillation for Compact On-Device Indic Machine Translation}
 \end{enumerate}
 
 \vspace{6pt}
-\noindent\textbf{Table A.1 --- Main comparison (Hindi\arrowto{}English, 100k sentences, matched 52.6\,M student)}
+\noindent\textbf{Table A.1: Main comparison (Hindi\arrowto{}English, 100k sentences, matched 52.6\,M student)}
 \vspace{3pt}
 
 \begin{table}[H]
@@ -44,7 +44,7 @@ Preference Distillation for Compact On-Device Indic Machine Translation}
 \rowcolor{headblue}
 \textbf{System} & \textbf{Training signal} & \textbf{BLEU} & \textbf{\% of teacher} \\
 \midrule
-Teacher (IndicTrans2 dist-200M) & ---                    & 28.16 & 100.0 \\
+Teacher (IndicTrans2 dist-200M) & n/a                    & 28.16 & 100.0 \\
 \rowcolor{rowgrey}
 S0: SFT on references           & Human references       & 10.95 & 38.9 \\
 \textbf{S1: \seqkd{}}           & \textbf{Teacher 1-best} & \textbf{17.09} & \textbf{60.7} \\
@@ -55,7 +55,7 @@ S3: \seqkd{} + DPO              & Teacher 1-best, then DPO & \multicolumn{2}{l}{
 \end{tabular}
 \end{table}
 
-\noindent\textbf{Table A.2 --- Quantisation (Hindi\arrowto{}English student)}
+\noindent\textbf{Table A.2: Quantisation (Hindi\arrowto{}English student)}
 \vspace{3pt}
 
 \begin{table}[H]
@@ -65,7 +65,7 @@ S3: \seqkd{} + DPO              & Teacher 1-best, then DPO & \multicolumn{2}{l}{
 \rowcolor{headblue}
 \textbf{Precision} & \textbf{Size (MB)} & \textbf{BLEU} & \textbf{p90 latency} \\
 \midrule
-FP32 ONNX & 410.9 & --- & --- \\
+FP32 ONNX & 410.9 & n/a & n/a \\
 \rowcolor{rowgrey}
 INT8      & 104.6 & 18.3 & 335\,ms \\
 INT4      & \textbf{103.9} & \textbf{19.3} & \textbf{191\,ms} \\
@@ -190,7 +190,7 @@ Development set & 500 sentences & Held out, real human references \\
 
 \begin{itemize}
   \item \textbf{Source code:} \texttt{https://github.com/GeekyRiolu/SETU\_v2}
-  \item \textbf{Trained models:} the \texttt{phase1-models} GitHub release ---
+  \item \textbf{Trained models:} the \texttt{phase1-models} GitHub release:
         two archives of approximately 897\,MB each, public, no login required,
         fetched by \texttt{scripts/fetch\_models.sh}.
   \item \textbf{Per-direction evaluation reports:} \texttt{vm/out/report\_*.json},

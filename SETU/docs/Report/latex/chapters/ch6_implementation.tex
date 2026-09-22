@@ -6,7 +6,7 @@ This chapter describes how the design of Chapter~\ref{ch:design} was realised in
 code. It covers the implementation strategy and the standards applied, presents
 the significant source with commentary, and discusses the optimisations that
 made the system fit the memory, latency and size budgets. Complete source is not
-reproduced --- the repository contains roughly six thousand lines --- but every
+reproduced (the repository contains roughly six thousand lines), but every
 component whose behaviour is non-obvious is shown and explained.
 
 \section{Implementation Approaches}
@@ -27,7 +27,7 @@ This ordering was chosen deliberately, and it paid for itself. Because the
 inference interface was fixed at M0, the ONNX engine that arrived at M5 was a
 drop-in replacement; because \texttt{TranslationResult} was defined at M0, the
 pivot router added at Phase~2 only needed one new optional field. The
-alternative --- building the training pipeline first and the interfaces last ---
+alternative, building the training pipeline first and the interfaces last,
 would have deferred every integration problem to the end of the project.
 
 Three standards were applied throughout.
@@ -406,7 +406,7 @@ Resumable stage markers & A dropped SSH session discarded hours of work & Interr
 \rowcolor{headblue}
 \textbf{Precision} & \textbf{Size (MB)} & \textbf{p90 latency (ms)} & \textbf{BLEU} & \textbf{Within budget} \\
 \midrule
-FP32 ONNX & 410.9 & 1196 & --- & No (size and latency) \\
+FP32 ONNX & 410.9 & 1196 & n/a & No (size and latency) \\
 \rowcolor{rowgrey}
 INT8      & 104.6 & 636 $\rightarrow$ 335 & 18.3 & Yes \\
 INT4      & \textbf{103.9} & \textbf{567 $\rightarrow$ 191} & \textbf{19.3} & Yes \\

@@ -5,14 +5,13 @@
 Testing a machine learning system requires attention to a class of defect that
 conventional software testing does not encounter: the silent failure that
 produces plausible output. A translation model that returns fluent English for
-every input has not crashed, raised an exception, or violated any type contract
---- and it is completely broken. Three such failures occurred during this
+every input has not crashed, raised an exception, or violated any type contract; and it is completely broken. Three such failures occurred during this
 project, and none of them would have been caught by testing only for exceptions
 and return types.
 
-The testing strategy therefore combines conventional software testing --- unit
+The testing strategy therefore combines conventional software testing (unit
 tests for module behaviour, integration tests for module interaction, system
-tests for the non-functional targets --- with property tests that assert the
+tests for the non-functional targets) with property tests that assert the
 things a model must be true of rather than what it must return. This chapter
 describes the approach and reports the test cases with their data and outcomes.
 
@@ -35,7 +34,7 @@ fails.
 \textbf{Category} & \textbf{Modules covered} & \textbf{What is asserted} \\
 \midrule
 \endfirsthead
-\multicolumn{3}{c}{\textit{Table \thetable{} --- continued from previous page}}\\
+\multicolumn{3}{c}{\textit{Table \thetable{} (continued)}}\\
 \toprule
 \rowcolor{headblue}
 \textbf{Category} & \textbf{Modules covered} & \textbf{What is asserted} \\
@@ -85,7 +84,7 @@ and two invalid inputs.
 
 \begin{table}[H]
 \centering
-\caption{Unit test UT-1 to UT-5 --- translation engine, Hindi\arrowto{}English INT4 ONNX student}
+\caption{Unit test UT-1 to UT-5: translation engine, Hindi\arrowto{}English INT4 ONNX student}
 \label{tab:ut1}
 \begin{tabular}{@{}c L{3.9cm} L{3.6cm} L{3.9cm} c@{}}
 \toprule
@@ -107,7 +106,7 @@ UT-5 & Sentence exceeding \texttt{max\_seq\_len} & Truncated and translated, not
 
 \begin{table}[H]
 \centering
-\caption{Unit tests UT-6 to UT-10 --- corpus cleaning filters}
+\caption{Unit tests UT-6 to UT-10: corpus cleaning filters}
 \label{tab:ut2}
 \begin{tabular}{@{}c L{4.2cm} L{3.7cm} L{3.5cm} c@{}}
 \toprule
@@ -132,7 +131,7 @@ reading the output of a training run.
 
 \begin{table}[H]
 \centering
-\caption{Unit tests UT-11 to UT-15 --- training mechanics}
+\caption{Unit tests UT-11 to UT-15: training mechanics}
 \label{tab:ut3}
 \begin{tabular}{@{}c L{4.0cm} L{4.0cm} L{3.4cm} c@{}}
 \toprule
@@ -161,7 +160,7 @@ of one model becomes the input of another.
 
 \begin{table}[H]
 \centering
-\caption{Integration tests IT-1 to IT-4 --- English-pivot chaining for Indic-to-Indic pairs}
+\caption{Integration tests IT-1 to IT-4: English-pivot chaining for Indic-to-Indic pairs}
 \label{tab:it1}
 \begin{tabular}{@{}c L{3.6cm} L{3.2cm} L{4.2cm} c@{}}
 \toprule
@@ -182,7 +181,7 @@ IT-4 & \texttt{src=mr, tgt=kn} & Route via English; return Kannada & Correct Kan
 
 \begin{table}[H]
 \centering
-\caption{Integration tests IT-5 to IT-9 --- REST service against the routing layer}
+\caption{Integration tests IT-5 to IT-9: REST service against the routing layer}
 \label{tab:it2}
 \begin{tabular}{@{}c L{3.8cm} L{3.8cm} L{3.6cm} c@{}}
 \toprule
@@ -204,7 +203,7 @@ IT-9 & CORS preflight from the browser client & Preflight accepted & \texttt{OPT
 
 \begin{table}[H]
 \centering
-\caption{Integration tests IT-10 to IT-13 --- end-to-end pipeline}
+\caption{Integration tests IT-10 to IT-13: end-to-end pipeline}
 \label{tab:it3}
 \begin{tabular}{@{}c L{4.4cm} L{4.2cm} L{2.9cm} c@{}}
 \toprule
@@ -225,15 +224,15 @@ IT-13 deserves a note, because it was added in response to a genuine defect. The
 CLI originally constructed an \texttt{InferenceEngine} with the language pair
 from configuration rather than from the request, so \texttt{-{}-src as} loaded
 the Hindi model and translated with it. The output looked like a translation and
-was wrong. The fix --- routing both interfaces through
-\texttt{setu.inference.router} --- is exactly what this test now enforces.
+was wrong. The fix, routing both interfaces through
+\texttt{setu.inference.router}, is exactly what this test now enforces.
 
 \subsection{System and Non-Functional Testing}
 \label{subsec:systemtest}
 
 \begin{table}[H]
 \centering
-\caption{System tests ST-1 to ST-6 --- non-functional targets}
+\caption{System tests ST-1 to ST-6: non-functional targets}
 \label{tab:st}
 \begin{tabular}{@{}c L{3.0cm} L{2.6cm} L{3.6cm} L{1.6cm}@{}}
 \toprule
@@ -313,7 +312,7 @@ D10 & Stub and real engines leaked state between tests & Order-dependent test fa
 \textbf{Suite} & \textbf{Tests} & \textbf{Passed} & \textbf{Skipped} \\
 \midrule
 \endfirsthead
-\multicolumn{4}{c}{\textit{Table \thetable{} --- continued from previous page}}\\
+\multicolumn{4}{c}{\textit{Table \thetable{} (continued)}}\\
 \toprule
 \rowcolor{headblue}
 \textbf{Suite} & \textbf{Tests} & \textbf{Passed} & \textbf{Skipped} \\

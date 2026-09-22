@@ -352,6 +352,24 @@ balancing, EWC anti-forgetting, device resolution, scorecard.
 
 ## 10. Session changelog
 
+- **2026-09-22 (report: em dashes removed, rebuilt)** - Rewrote all **184 em dashes**
+  out of the Phase-II report at the user's request (same preference applied earlier to
+  the frontend copy). Not a blind substitution: each occurrence was categorised and
+  rewritten in context by a scripted pass (`ws_start`/`ws_end` around each `---`, applied
+  last-to-first so offsets stay valid). Paired parentheticals became parentheses or comma
+  pairs, single dashes became a colon, semicolon or comma depending on whether what
+  follows is an appositive or an independent clause, headings like `Module 1 --- Corpus
+  Loader` and every figure/table caption took a colon, longtable `--- continued from
+  previous page` markers became `(continued)`, "not applicable" table cells became `n/a`,
+  and the three published paper titles that genuinely contain a dash (Tatoeba, the
+  Assamese/Bengali NMT paper, SURYA-TAC) were set with an **en** dash, which is what those
+  titles actually use. Range en dashes (`2025--2026`, `105--202`, `pp.~1174--1182`) were
+  left untouched. Verified: **0** `---` in the source outside comments, **0** U+2014 in the
+  rendered PDF, no punctuation artifacts outside code listings. Rebuilt clean at 129 pages
+  with zero LaTeX warnings, zero overfull boxes above 10pt and zero page overflows;
+  refreshed `docs/Report/SETU_Project_Phase-II_Report.pdf` and the shareable
+  `SETU_Phase-II_Report_LaTeX.zip` (verified by extracting and recompiling standalone).
+
 - **2026-09-21 (Project Phase-II report written in LaTeX + PDF)** - Read the three
   guideline docs in `docs/Report/` (`R.1.Guidelines.docx`, `R.2. Preparation.docx`,
   `Project Phase-II Report Template.docx`) and the interim deck, then wrote the full

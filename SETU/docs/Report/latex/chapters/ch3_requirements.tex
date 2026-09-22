@@ -19,8 +19,8 @@ of how they are satisfied.
 \label{subsec:hw}
 
 Table~\ref{tab:hwtrain} gives the training hardware. The primary training
-platform was an NVIDIA A40-16Q --- a 16\,GB vGPU slice of a 48\,GB A40, software
-partitioned rather than MIG partitioned --- on a Debian host. A local CPU-only
+platform was an NVIDIA A40-16Q (a 16\,GB vGPU slice of a 48\,GB A40, software
+partitioned rather than MIG partitioned) on a Debian host. A local CPU-only
 workstation was used for development, testing and the pipeline's smaller runs;
 its constraints are listed because they shaped several design decisions that
 survive into the final system.
@@ -49,8 +49,8 @@ The 7.4\,GB ceiling on the development machine is worth recording, because it
 produced a real design constraint rather than a mere inconvenience. A
 52-million-parameter student with an AdamW optimiser state and batch-64
 activations exceeded available memory, drove the machine into 5.6\,GB of swap
-and slowed training to roughly four seconds per step. The response --- a smaller
-development student and a batch size of 16 --- is why the repository carries two
+and slowed training to roughly four seconds per step. The response (a smaller
+development student and a batch size of 16) is why the repository carries two
 parallel configuration sets, \texttt{model.yaml}/\texttt{training.yaml} for CPU
 development and \texttt{model.gpu.yaml}/\texttt{training.gpu.yaml} for GPU
 training.
@@ -90,7 +90,7 @@ Network     & Required only for the initial one-time model download; not used th
 \textbf{Stage} & \textbf{Tool / library} & \textbf{Role in the system} \\
 \midrule
 \endfirsthead
-\multicolumn{3}{c}{\textit{Table \thetable{} --- continued from previous page}}\\
+\multicolumn{3}{c}{\textit{Table \thetable{} (continued)}}\\
 \toprule
 \rowcolor{headblue}
 \textbf{Stage} & \textbf{Tool / library} & \textbf{Role in the system} \\
@@ -167,9 +167,9 @@ English-pivot design in Section~\ref{subsec:mod5}.
 \label{sec:modelling}
 
 This section models \setu{} from two complementary perspectives. The
-object-oriented view --- use case, sequence, activity, state chart and class
-diagrams --- describes actors, interactions and structure. The structured view
---- data flow and entity-relationship diagrams --- describes how data moves and
+object-oriented view (use case, sequence, activity, state chart and class
+diagrams) describes actors, interactions and structure. The structured view
+(data flow and entity-relationship diagrams) describes how data moves and
 how it is related. Together they define what the system does before
 Chapter~\ref{ch:design} decides how it does it.
 
@@ -190,7 +190,7 @@ a secondary actor that hosts the quantised model and executes inference.
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.94\textwidth, height=0.72\textheight, keepaspectratio]{figures/use_case.png}
-\caption{Use case diagram --- End User, ML Engineer and Edge Device actors}
+\caption{Use case diagram: End User, ML Engineer and Edge Device actors}
 \label{fig:usecase}
 \end{figure}
 
@@ -224,7 +224,7 @@ Execute Inference & Edge Device & Quantised model and tokenizer present locally 
 
 Figure~\ref{fig:sequence} traces a single translation request. The significant
 branch is the pivot: when a directly trained model exists the engine performs
-one hop, and when it does not --- every Indic-to-Indic pair --- the engine
+one hop, and when it does not (every Indic-to-Indic pair) the engine
 performs two, passing the intermediate English string from the first student to
 the second. The response carries the summed latency of both hops and a
 \texttt{pivot} field so that the caller can tell the two cases apart.
@@ -232,7 +232,7 @@ the second. The response carries the summed latency of both hops and a
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.96\textwidth, height=0.72\textheight, keepaspectratio]{figures/sequence.png}
-\caption{Sequence diagram --- direct translation and the two-hop English pivot}
+\caption{Sequence diagram: direct translation and the two-hop English pivot}
 \label{fig:sequence}
 \end{figure}
 
@@ -242,7 +242,7 @@ the second. The response carries the summed latency of both hops and a
 Figure~\ref{fig:activity} shows the full training and deployment activity flow.
 Everything above the dividing line executes once per direction on a GPU;
 everything below executes on the user's device. The two decision points are the
-quality gate --- does the student reach 80\,\% of teacher BLEU --- and the
+quality gate (does the student reach 80\,\% of teacher BLEU) and the
 routing decision at inference time.
 
 \begin{figure}[H]
@@ -291,7 +291,7 @@ routing decision at inference time.
   \draw[fl] (single) -- (out);
   \draw[fl] (out) -- (endo);
 \end{tikzpicture}}
-\caption{Activity diagram --- offline training pipeline (above) and on-device inference (below)}
+\caption{Activity diagram: offline training pipeline (above) and on-device inference (below)}
 \label{fig:activity}
 \end{figure}
 
@@ -331,7 +331,7 @@ achieved by retraining at a lower learning rate on the same distilled corpus.
   \draw[fl] (evl) -- node[lbl,above]{loss $>3$} (col);
   \draw[fl] (col.north) |- node[lbl,pos=0.75,above]{retrain at lr $3\times10^{-4}$, same corpus} ([yshift=5mm]trn.north east) -- ([xshift=8mm]trn.north);
 \end{tikzpicture}
-\caption{State chart diagram --- model lifecycle from raw corpus to deployed artifact, including the observed collapse and recovery transitions}
+\caption{State chart diagram: model lifecycle from raw corpus to deployed artifact, including the observed collapse and recovery transitions}
 \label{fig:statechart}
 \end{figure}
 
@@ -349,15 +349,15 @@ deployment.
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.96\textwidth, height=0.72\textheight, keepaspectratio]{figures/data_flow.png}
-\caption{Level-1 data flow diagram --- corpus to deployed translation}
+\caption{Level-1 data flow diagram: corpus to deployed translation}
 \label{fig:dfd}
 \end{figure}
 
 \subsection{Entity-Relationship Model}
 \label{subsec:er}
 
-\setu{} does not use a relational database --- an offline edge deployment should
-not require one --- but its persistent artifacts have a clear relational
+\setu{} does not use a relational database (an offline edge deployment should
+not require one), but its persistent artifacts have a clear relational
 structure, recorded in Figure~\ref{fig:er}. Corpora are stored as JSONL,
 reports as JSON, models as ONNX with an accompanying SentencePiece tokenizer,
 and the language registry as YAML.
@@ -453,7 +453,7 @@ no training dependencies at all.
   \draw[fl] (router) -- node[lbl,left]{returns} (res);
   \draw[fl] (eng)  -- node[lbl,above]{loads} (sft);
 \end{tikzpicture}}
-\caption{Class diagram --- training classes (left) are used offline by the ML Engineer; inference classes (right) ship to the device}
+\caption{Class diagram: training classes (left) are used offline by the ML Engineer; inference classes (right) ship to the device}
 \label{fig:class}
 \end{figure}
 
@@ -523,7 +523,7 @@ UR-9 & Deployer & Install models on a fresh machine and run the system without t
 \textbf{ID} & \textbf{Requirement} & \textbf{Verified by} \\
 \midrule
 \endfirsthead
-\multicolumn{3}{c}{\textit{Table \thetable{} --- continued from previous page}}\\
+\multicolumn{3}{c}{\textit{Table \thetable{} (continued)}}\\
 \toprule
 \rowcolor{headblue}
 \textbf{ID} & \textbf{Requirement} & \textbf{Verified by} \\

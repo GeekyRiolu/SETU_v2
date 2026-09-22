@@ -22,13 +22,13 @@ deployed artifact small enough and offline enough to satisfy the requirements.
 \label{sec:architecture}
 
 Figure~\ref{fig:sysarch} gives the high-level architecture. Data flows left to
-right through four stages --- corpus, distillation, training, deployment --- and
+right through four stages (corpus, distillation, training, deployment) and
 then fans out to the four client interfaces.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.99\textwidth, height=0.72\textheight, keepaspectratio]{figures/system_design.png}
-\caption{System architecture --- \seqkd{} distillation and offline deployment pipeline}
+\caption{System architecture: \seqkd{} distillation and offline deployment pipeline}
 \label{fig:sysarch}
 \end{figure}
 
@@ -39,7 +39,7 @@ and stores two corpora per direction: the \emph{processed} corpus, which retains
 human references and is used only for evaluation, and the \emph{distilled}
 corpus, whose targets are the teacher's one-best translations and which is used
 for training. Keeping both is what allows evaluation to remain on real
-references regardless of what the student was trained on --- the property that
+references regardless of what the student was trained on, the property that
 makes the comparison in Section~\ref{sec:headtohead} fair.
 
 \textbf{The model layer} holds the teacher behind an abstract interface and the
@@ -65,7 +65,7 @@ choices that follow.
 student. This avoids the cross-lingual interference that multilingual
 distillation frameworks report \cite{ref:aiokd}, permits an independent quality
 gate per direction, and means a collapsed direction can be retrained without
-disturbing any other. The cost is storage --- 104\,MB per direction --- which the
+disturbing any other. The cost is storage, 104\,MB per direction, which the
 English pivot then bounds at $2n$ rather than $n^2$.
 
 \textbf{The teacher lives behind a wall.} \texttt{IndicTrans2Teacher} is the only
@@ -98,15 +98,15 @@ too expensive to repeat.
 The system decomposes into eight modules. Each has a single responsibility, a
 defined input and output, and its own tests.
 
-\subsection{Module 1 --- Corpus Loader}
+\subsection{Module 1: Corpus Loader}
 \label{subsec:mod1}
 
 \textbf{Responsibility:} turn a raw parallel corpus into a clean, deduplicated
 set of \texttt{CorpusEntry} objects.
 
-The module streams Samanantar from Hugging Face --- streaming rather than
+The module streams Samanantar from Hugging Face (streaming rather than
 downloading, because the full corpus is tens of gigabytes and only a slice is
-needed --- and passes each pair through four stages. \emph{Normalisation}
+needed) and passes each pair through four stages. \emph{Normalisation}
 applies Unicode NFC and strips control characters while explicitly preserving
 zero-width joiners and non-joiners, which carry meaning in Indic scripts.
 \emph{Filtering} removes pairs shorter than 3 or longer than 1024 characters,
@@ -121,7 +121,7 @@ script, 10 for excessive length and 4 as duplicates. Roughly one pair in a
 hundred of web-mined data is unusable, and the wrong-script filter in particular
 catches pairs where one side is simply not in the language it claims to be.
 
-\subsection{Module 2 --- Teacher Distiller}
+\subsection{Module 2: Teacher Distiller}
 \label{subsec:mod2}
 
 \textbf{Responsibility:} replace every human reference target with the teacher's
@@ -139,7 +139,7 @@ sentence, the original human reference is retained for that pair and the event
 is counted in the module's statistics, so a teacher hiccup cannot silently
 introduce blank training targets.
 
-\subsection{Module 3 --- \seqkd{} Trainer}
+\subsection{Module 3: \seqkd{} Trainer}
 \label{subsec:mod3}
 
 \textbf{Responsibility:} train a 52.6-million-parameter student from scratch on
@@ -161,8 +161,7 @@ added in response to an observed failure rather than adopted by convention:
         against overconfidence and memorisation.
   \item \textbf{Gradient-norm clipping at 1.0.} The single most important
         stabiliser. Without it, a 200{,}000-sentence run collapsed to a constant
-        output while the identical code at 120{,}000 sentences had succeeded
-        --- more steps simply meant more opportunities to hit a gradient spike.
+        output while the identical code at 120{,}000 sentences had succeeded: more steps simply meant more opportunities to hit a gradient spike.
   \item \textbf{Generation safeguards.} Decoding suppresses the PAD, UNK and BOS
         tokens and forbids repeated 3-grams, so output can never be empty and
         cannot degenerate into a repeated phrase.
@@ -174,15 +173,15 @@ gradients, since an unfrozen reference silently reduces DPO to a no-op. This
 path is retained for the reported comparison but is not used for the shipped
 models.
 
-\subsection{Module 4 --- Quantiser}
+\subsection{Module 4: Quantiser}
 \label{subsec:mod4}
 
 \textbf{Responsibility:} convert a trained PyTorch checkpoint into a deployable
 ONNX artifact.
 
 The module exports to FP32 ONNX, validates the export by running it through ONNX
-Runtime and comparing outputs, then quantises progressively --- INT8 first, INT4
-second --- benchmarking size and latency at each stage. The measured progression
+Runtime and comparing outputs, then quantises progressively (INT8 first, INT4
+second), benchmarking size and latency at each stage. The measured progression
 for a 52.6-million-parameter student is 410.9\,MB FP32, 104.6\,MB INT8 and
 103.9\,MB INT4.
 
@@ -192,7 +191,7 @@ kernel, so INT4 export falls back to 8-bit storage for most tensors. The INT4
 variant is nonetheless the one shipped, because it benchmarked marginally faster
 and, in several directions, marginally more accurate.
 
-\subsection{Module 5 --- Inference Engine and Pivot Router}
+\subsection{Module 5: Inference Engine and Pivot Router}
 \label{subsec:mod5}
 
 \textbf{Responsibility:} translate text using a quantised student, offline, and
@@ -207,8 +206,8 @@ inference needs no network.
 The router sits above it and solves the coverage problem. Given a source and
 target language it resolves both to FLORES codes, rejects identical pairs and
 unknown codes, then checks for a directly trained model. If one exists it
-translates in a single hop. If not --- the case for every Indic-to-Indic pair,
-since no ungated Indic-to-Indic teacher was available --- it checks whether both
+translates in a single hop. If not (the case for every Indic-to-Indic pair,
+since no ungated Indic-to-Indic teacher was available), it checks whether both
 source\arrowto{}English and English\arrowto{}target models exist, and if so
 chains them, returning the combined latency and a \texttt{pivot: "en"} flag. The
 arithmetic is favourable: 22 direct models serve 132 usable directions, and
@@ -220,7 +219,7 @@ routing. Consolidating the routing logic here fixed a real defect: the CLI had
 previously constructed an engine with the default configured pair, so
 \texttt{-{}-src as} silently translated using the Hindi model.
 
-\subsection{Module 6 --- REST API}
+\subsection{Module 6: REST API}
 \label{subsec:mod6}
 
 \textbf{Responsibility:} expose the engine over HTTP.
@@ -233,7 +232,7 @@ latency and pivot information. \texttt{GET /languages} returns the registry of
 quantisation variant and size on disk. \texttt{GET /health} reports readiness.
 CORS is enabled so that a browser client can call the service directly.
 
-\subsection{Module 7 --- Client Interfaces}
+\subsection{Module 7: Client Interfaces}
 \label{subsec:mod7}
 
 \textbf{Responsibility:} make the engine usable.
@@ -248,7 +247,7 @@ remainder shown but disabled, so coverage is visible rather than hidden. The
 worker and continues to function without a network. \textbf{Mobile SDK stubs}
 for Android and iOS wrap the same API surface.
 
-\subsection{Module 8 --- Evaluator and Expansion Mechanisms}
+\subsection{Module 8: Evaluator and Expansion Mechanisms}
 \label{subsec:mod8}
 
 \textbf{Responsibility:} measure quality, and provide a route to adding
@@ -268,7 +267,7 @@ low-resource directions from being swamped. \textbf{Elastic Weight
 Consolidation} adds a diagonal-Fisher penalty that anchors parameters important
 to previously learned languages, enabling a new language to be added without a
 full retrain. Its tests prove the penalty is zero at the snapshot point, grows
-with distance from it, and --- measured rather than assumed --- keeps
+with distance from it, and (measured rather than assumed) keeps
 Fisher-weighted drift on an old task below that of plain fine-tuning after a
 conflicting new task.
 
@@ -333,8 +332,8 @@ characteristics from a single-hop one and the user is entitled to know.
 
 Visually the client uses a warm paper-and-ink palette with a single accent
 colour, a light and dark theme, and typography that names every language in its
-own script --- \dev{हिन्दी}, \ben{বাংলা}, \tam{தமிழ்}, \tel{తెలుగు},
-\kan{ಕನ್ನಡ}, \mal{മലയാളം}, \guj{ગુજરાતી}, \ory{ଓଡ଼ିଆ}, \gur{ਪੰਜਾਬੀ} --- rather
+own script (\dev{हिन्दी}, \ben{বাংলা}, \tam{தமிழ்}, \tel{తెలుగు},
+\kan{ಕನ್ನಡ}, \mal{മലയാളം}, \guj{ગુજરાતી}, \ory{ଓଡ଼ିଆ}, \gur{ਪੰਜਾਬੀ}) rather
 than transliterating them into Latin. Fonts are self-hosted so that the client
 loads no external resource at run time, which is a functional requirement rather
 than a stylistic one.
@@ -398,14 +397,14 @@ models remain valid and no re-tokenisation is ever required.
 \section{Algorithm Design}
 \label{sec:algorithms}
 
-\subsection{Algorithm 1 --- Sequence-Level Knowledge Distillation}
+\subsection{Algorithm 1: Sequence-Level Knowledge Distillation}
 \label{subsec:alg1}
 
 This is the core training algorithm and the one the empirical comparison
 selected.
 
 \begin{longtable}{@{}L{14.0cm}@{}}
-\caption{Algorithm 1 --- \seqkd{} training of one direction}
+\caption{Algorithm 1: \seqkd{} training of one direction}
 \label{tab:alg1}\\
 \toprule
 \rowcolor{headblue}
@@ -414,7 +413,7 @@ selected.
 \textbf{Output:} trained student parameters $\theta^{*}$ \\
 \midrule
 \endfirsthead
-\multicolumn{1}{c}{\textit{Table \thetable{} --- continued from previous page}}\\
+\multicolumn{1}{c}{\textit{Table \thetable{} (continued)}}\\
 \toprule
 \rowcolor{headblue}
 \textbf{Input:} cleaned corpus $C = \{(x_i, y_i)\}_{i=1}^{N}$; teacher $T$; student architecture $\theta$ \\
@@ -445,16 +444,16 @@ selected.
 \end{longtable}
 
 Three details carry the algorithm's correctness. Line~2 discards the human
-target --- that is the whole method, and it is what breaks the reference-noise
+target; that is the whole method, and it is what breaks the reference-noise
 ceiling. Line~9's $-100$ masking is what keeps the loss honest. Line~12
 evaluates on human references even though training used teacher targets, which
 is what makes the numbers comparable with a reference-trained baseline.
 
-\subsection{Algorithm 2 --- English-Pivot Routing}
+\subsection{Algorithm 2: English-Pivot Routing}
 \label{subsec:alg2}
 
 \begin{longtable}{@{}L{14.0cm}@{}}
-\caption{Algorithm 2 --- routing a translation request}
+\caption{Algorithm 2: routing a translation request}
 \label{tab:alg2}\\
 \toprule
 \rowcolor{headblue}
@@ -463,7 +462,7 @@ is what makes the numbers comparable with a reference-trained baseline.
 \textbf{Output:} translation, pivot flag, stub flag \\
 \midrule
 \endfirsthead
-\multicolumn{1}{c}{\textit{Table \thetable{} --- continued from previous page}}\\
+\multicolumn{1}{c}{\textit{Table \thetable{} (continued)}}\\
 \toprule
 \rowcolor{headblue}
 \textbf{Input:} text $t$; source language $s$; target language $g$ \\
@@ -497,12 +496,12 @@ are cheap after the first call. Line~13 is the honesty guarantee: when nothing
 can translate the request the input is returned unchanged and explicitly marked,
 never presented as a translation.
 
-\subsection{Algorithm 3 --- Progressive Quantisation}
+\subsection{Algorithm 3: Progressive Quantisation}
 \label{subsec:alg3}
 
 \begin{table}[H]
 \centering
-\caption{Algorithm 3 --- export and progressive quantisation}
+\caption{Algorithm 3: export and progressive quantisation}
 \label{tab:alg3}
 \begin{tabular}{@{}L{14.0cm}@{}}
 \toprule
@@ -523,7 +522,7 @@ never presented as a translation.
 \end{tabular}
 \end{table}
 
-\subsection{Algorithm 4 --- Preference Pair Generation (Reported Baseline)}
+\subsection{Algorithm 4: Preference Pair Generation (Reported Baseline)}
 \label{subsec:alg4}
 
 This algorithm produced the DPO training data for the comparison in
@@ -533,7 +532,7 @@ is not used for the shipped models.
 
 \begin{table}[H]
 \centering
-\caption{Algorithm 4 --- chrF-ranked preference pair construction}
+\caption{Algorithm 4: chrF-ranked preference pair construction}
 \label{tab:alg4}
 \begin{tabular}{@{}L{14.0cm}@{}}
 \toprule
@@ -561,7 +560,7 @@ A representative run turned 500 corpus entries into 3{,}494 candidates and
 2{,}074 validated pairs, discarding 920 for insufficient quality delta; the
 delta distribution had a median of 31.3 chrF points. On GPU the same pipeline
 produced 33{,}535 validated pairs from 8{,}000 entries. The preference data is
-therefore plentiful and well separated --- which is precisely why the negative
+therefore plentiful and well separated, which is precisely why the negative
 result is informative. DPO trained on this data reaches a margin accuracy of
 1.0, ranking every preferred candidate above its dispreferred counterpart, and
 still does not improve translation quality over sequence-level distillation.

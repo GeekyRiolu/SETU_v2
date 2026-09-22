@@ -44,7 +44,7 @@ O6 & Coverage and extensibility & 11 languages both ways; 22 models serve 132 di
 \textbf{An empirical finding, obtained by refuting the project's own
 hypothesis.} For compact on-device Indic machine translation, sequence-level
 knowledge distillation from teacher output decisively outperforms
-preference-based distillation on human references --- 17.09 against 11.10 BLEU at
+preference-based distillation on human references: 17.09 against 11.10 BLEU at
 matched student size on identical data, an improvement of 54\,\%. The
 explanation is that reference noise rather than the training objective is the
 binding constraint. The evidence for that explanation is that reference-trained
@@ -69,9 +69,9 @@ pair would have required more than 11\,GB of device storage for the same
 coverage.
 
 \textbf{A reproducible engineering record.} The project documents three distinct
-training failure modes --- empty output from a label-encoding mismatch,
+training failure modes (empty output from a label-encoding mismatch,
 source-agnostic output from unmasked padding in the loss, and mid-training
-collapse from missing gradient clipping --- each with its diagnosis and fix. It
+collapse from missing gradient clipping), each with its diagnosis and fix. It
 further documents two learning-rate collapses and their complete recovery, and
 establishes that supervised training loss (1.5 to 2.3 healthy, 3 to 4 collapsed)
 is a cheap early indicator available long before evaluation. These failures are
@@ -103,7 +103,7 @@ item of future work.
 \textbf{BLEU is the wrong metric for several covered languages.}
 English\arrowto{}Malayalam passes at a ratio of 0.863 on 5.2 BLEU, because
 Malayalam's agglutinative morphology defeats n-gram overlap. Some of the
-near-misses --- particularly the Tamil and Malayalam directions --- may already
+near-misses, particularly the Tamil and Malayalam directions, may already
 pass under COMET.
 
 \textbf{Eleven scheduled languages are not delivered.} Bodo, Dogri, Konkani,
@@ -113,7 +113,7 @@ and Punjabi among the lower-resource set had ungated parallel data.
 
 \textbf{ARM latency is projected, not measured.} All timings were taken on x86
 CPUs. The target is ARM Cortex-A55 class hardware, and although the margin is
-large --- roughly 150\,ms against a 500\,ms budget --- the figure remains
+large (roughly 150\,ms against a 500\,ms budget), the figure remains
 unverified on the intended silicon.
 
 \textbf{INT4 is INT4 in name only.} The ONNX Runtime CPU execution provider has
@@ -147,7 +147,7 @@ can be translated at a gram panchayat counter without the counter needing a
 working internet connection or a commercial API subscription.
 
 \textbf{Disaster relief.} Field workers can communicate with affected
-communities precisely during the window when networks are down --- the moment
+communities precisely during the window when networks are down, the moment
 when a cloud translator is guaranteed to be unavailable.
 
 \textbf{Privacy-sensitive documents.} Legal, medical and financial text can be
@@ -215,12 +215,12 @@ several languages resident on a phone simultaneously.
 Chapter~\ref{ch:literature} shows cascaded ASR-then-MT still outperforming
 end-to-end speech translation in low-resource settings \cite{ref:iwslt}. An
 offline speech front-end over \setu{}'s existing text engine would extend the
-system to users who cannot type in their own script --- which, for several of
+system to users who cannot type in their own script, which, for several of
 the target populations, is the majority.
 
 \textbf{Revisit preference learning on clean targets.} The refuted hypothesis
-tested DPO on noisy human references. The S3 configuration --- sequence-level
-distillation followed by DPO on \emph{teacher-derived} preferences --- was
+tested DPO on noisy human references. The S3 configuration, sequence-level
+distillation followed by DPO on \emph{teacher-derived} preferences, was
 designed but not run at scale. Whether preference learning helps on top of a
 strong distilled base remains genuinely open, and the existing DPO
 implementation makes it a training run rather than an engineering project.
