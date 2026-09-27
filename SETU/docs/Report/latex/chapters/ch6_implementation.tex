@@ -139,7 +139,7 @@ script-fraction filter is what removes mined pairs in which one side is simply
 not in the claimed language.
 
 \begin{lstlisting}[language=Python, caption={Corpus filters (\texttt{src/setu/corpus/filters.py})}, label={lst:filters}]
-ZWJ, ZWNJ = "‍", "‌"
+ZWJ, ZWNJ = "\u200d", "\u200c"   # zero-width joiner / non-joiner
 
 def normalize(text: str) -> str:
     """NFC normalise and strip control characters, preserving ZWJ/ZWNJ."""

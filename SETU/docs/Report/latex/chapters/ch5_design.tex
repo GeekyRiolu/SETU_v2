@@ -25,12 +25,9 @@ Figure~\ref{fig:sysarch} gives the high-level architecture. Data flows left to
 right through four stages (corpus, distillation, training, deployment) and
 then fans out to the four client interfaces.
 
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.99\textwidth, height=0.72\textheight, keepaspectratio]{figures/system_design.png}
-\caption{System architecture: \seqkd{} distillation and offline deployment pipeline}
-\label{fig:sysarch}
-\end{figure}
+% Aspect ratio 4.88: sideways page so the pipeline labels stay legible.
+\widefigure{width=\linewidth, keepaspectratio}{figures/system_design.png}%
+  {System architecture: \seqkd{} distillation and offline deployment pipeline}{fig:sysarch}
 
 The architecture has four layers.
 

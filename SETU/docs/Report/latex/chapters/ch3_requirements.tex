@@ -189,7 +189,7 @@ a secondary actor that hosts the quantised model and executes inference.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.94\textwidth, height=0.72\textheight, keepaspectratio]{figures/use_case.png}
+\includegraphics[width=\textwidth, height=0.88\textheight, keepaspectratio]{figures/use_case.png}
 \caption{Use case diagram: End User, ML Engineer and Edge Device actors}
 \label{fig:usecase}
 \end{figure}
@@ -231,7 +231,7 @@ the second. The response carries the summed latency of both hops and a
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.96\textwidth, height=0.72\textheight, keepaspectratio]{figures/sequence.png}
+\includegraphics[width=\textwidth, height=0.80\textheight, keepaspectratio]{figures/sequence.png}
 \caption{Sequence diagram: direct translation and the two-hop English pivot}
 \label{fig:sequence}
 \end{figure}
@@ -346,12 +346,9 @@ the artifact and produces translations. The evaluator is a side branch that
 consumes both student and teacher outputs to compute the ratio that gates
 deployment.
 
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.96\textwidth, height=0.72\textheight, keepaspectratio]{figures/data_flow.png}
-\caption{Level-1 data flow diagram: corpus to deployed translation}
-\label{fig:dfd}
-\end{figure}
+% Aspect ratio 9.74, the widest diagram in the report: sideways page.
+\widefigure{width=\linewidth, keepaspectratio}{figures/data_flow.png}%
+  {Level-1 data flow diagram: corpus to deployed translation}{fig:dfd}
 
 \subsection{Entity-Relationship Model}
 \label{subsec:er}

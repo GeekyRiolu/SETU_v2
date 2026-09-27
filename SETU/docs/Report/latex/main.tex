@@ -14,7 +14,9 @@
 \begin{document}
 
 % ------------------------------- FRONT MATTER -------------------------------
+% Roman numerals, no header and no footer text: just the centred page number.
 \pagenumbering{roman}
+\usefrontmatterstyle
 \input{front/titlepage}
 \input{front/certificate}
 \input{front/declaration}
@@ -23,7 +25,9 @@
 \input{front/contents}
 
 % ------------------------------- CHAPTERS -----------------------------------
+% Back to the report's normal running head and footer, Arabic from page 1.
 \clearpage
+\usemainmatterstyle
 \pagenumbering{arabic}
 \setcounter{page}{1}
 

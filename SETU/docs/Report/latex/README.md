@@ -1,6 +1,6 @@
 # SETU — Project Phase-II Report (LaTeX source)
 
-Built PDF: `../SETU_Project_Phase-II_Report.pdf` (129 pages, A4).
+Built PDF: `../SETU_Project_Phase-II_Report.pdf` (130 pages, A4).
 
 ## Build
 
@@ -43,10 +43,22 @@ figures/          diagram PNGs (copied from SETU/vm/diagrams/)
 | Tables numbered chapter-wise, caption above | `\captionsetup[table]{position=top}` |
 | References numbered `[n]` in order of occurrence | `thebibliography` + `\cite` |
 | No chapter number or header for References | `\renewcommand{\bibname}` |
+| Front matter: no header/footer, Roman number centred at the foot | `frontmatter` page style + `\usefrontmatterstyle` / `\usemainmatterstyle` in `main.tex` |
+| TOC stops at section level (no 1.3.1 entries) | `\setcounter{tocdepth}{1}` (`secnumdepth` stays 3, so they remain numbered in the text) |
+| Wide diagrams on sideways pages | `pdflscape` + the `\widefigure` macro |
+
+## Logos
+
+`figures/bit_logo.jpg` is the Bangalore Institute of Technology crest, taken
+from the department's own `R.1.Guidelines.docx` (274x318, the highest-resolution
+copy in the project). It appears on the title page (30 mm) and the certificate
+(26 mm). `figures/bit_logo_colour.jpg` is the green version from the SETU deck's
+title slide, if that one is preferred: just change the filename in
+`front/titlepage.tex` and `front/certificate.tex`.
+
+No VTU emblem exists anywhere in the project. To add one, drop the file into
+`figures/` and uncomment the prepared line in `front/titlepage.tex`.
 
 ## Placeholders to replace before printing
 
-- `front/titlepage.tex` and `front/certificate.tex`: the emblem boxes
-  (`\begin{tikzpicture}...`) — swap in `\includegraphics` of the real logos.
-- `front/certificate.tex`: `[Principal's name]`.
 - `back/appendix.tex`: the reserved block for the paper publication certificate.

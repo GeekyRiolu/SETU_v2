@@ -352,6 +352,36 @@ balancing, EWC anti-forgetting, device resolution, scorecard.
 
 ## 10. Session changelog
 
+- **2026-09-28 (report formatting pass: front matter, TOC, figures, logos)** - Six
+  targeted edits to the existing LaTeX, no rewrite. (1) **Front matter** now carries no
+  header and no footer text: a new `frontmatter` fancyhdr style shows only the Roman page
+  number, centred. Because `\tableofcontents`/`\listoftables`/`\listoffigures` each begin
+  with `\chapter*` (which forces `\thispagestyle{plain}`), `plain` is swapped for the
+  duration of the front matter by `\usefrontmatterstyle` and restored by
+  `\usemainmatterstyle` in `main.tex`, so chapter-opening pages keep their original
+  dept | year | page footer. Title page stays unnumbered but still counted, so i..xi runs
+  correctly and Arabic still starts at 1 on the Chapter 1 page. (2) **Acknowledgement**
+  gained the three institutional paragraphs (RVS + BIT management, Principal) at the top;
+  the old opening sentence was dropped because the new first paragraph says the same
+  thing. The Principal's name it supplies, **Dr. Vijaya Prakash A M**, also filled the
+  `[Principal's name]` placeholder on the certificate. (3) **TOC** shortened to section
+  level via `tocdepth` 2 -> 1; `secnumdepth` left at 3 so subsections stay numbered and
+  present in the chapter text. TOC dropped from 5 pages to 2. (4) **Figures**: the three
+  exported diagrams with extreme aspect ratios (data flow 9.74, Gantt 5.18, system
+  architecture 4.88) were collapsing to 1.5-3 cm strips at text width. They now go on
+  sideways pages via `pdflscape` and a new `\widefigure` macro, using the full 23.8 cm
+  text height: **58 % larger**, within margins, aspect preserved, captions/labels/LOF
+  intact. Use-case and sequence diagrams enlarged in place (their height caps were the
+  binding constraint). (5) **Logos**: no logo file existed loose in the repo, but the BIT
+  crest is embedded in two project files; the 274x318 copy from the department's own
+  `R.1.Guidelines.docx` is now `figures/bit_logo.jpg` (title page 30 mm, certificate
+  26 mm), with the green deck version kept as `bit_logo_colour.jpg` and a commented slot
+  for a VTU emblem. (6) Fixed a pre-existing defect: the ZWJ/ZWNJ literals in the ch6 code
+  listing were real invisible characters, producing "missing character" warnings; now
+  written as `\u200d`/`\u200c` escapes. Rebuilt clean at **130 pages**: zero LaTeX
+  warnings, zero missing characters, zero overfull boxes above 10 pt, no unresolved
+  references, all 10 figures and 49 tables correctly numbered.
+
 - **2026-09-22 (report: em dashes removed, rebuilt)** - Rewrote all **184 em dashes**
   out of the Phase-II report at the user's request (same preference applied earlier to
   the frontend copy). Not a blind substitution: each occurrence was categorised and

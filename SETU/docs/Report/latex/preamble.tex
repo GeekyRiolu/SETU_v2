@@ -131,7 +131,10 @@
 \titlespacing*{\subsubsection}{0pt}{10pt}{4pt}
 
 \setcounter{secnumdepth}{3}
-\setcounter{tocdepth}{2}
+% Table of contents stops at section level (1.1, 1.2, 1.3). Subsections such as
+% 1.3.1 stay numbered and visible in the chapter text but are kept out of the
+% TOC to keep it short; secnumdepth above is deliberately left at 3.
+\setcounter{tocdepth}{1}
 
 % ---------- header / footer ------------------------------------------------
 \usepackage{fancyhdr}
@@ -160,6 +163,37 @@
   \fancyfoot[C]{\footnotesize\acadyear}
   \fancyfoot[R]{\footnotesize\thepage}
 }
+% Front matter (certificate .. list of figures): no header, no footer text and
+% no rules -- only the Roman page number, centred at the foot of the page.
+\fancypagestyle{frontmatter}{%
+  \fancyhf{}
+  \renewcommand{\headrulewidth}{0pt}
+  \renewcommand{\footrulewidth}{0pt}
+  \fancyfoot[C]{\footnotesize\thepage}
+}
+
+% \tableofcontents, \listoftables and \listoffigures each start with \chapter*,
+% which forces \thispagestyle{plain} on their opening page. So switching the
+% front matter over means redefining `plain` for its duration and restoring the
+% chapter-opening version before the numbered chapters begin.
+\newcommand{\usefrontmatterstyle}{%
+  \fancypagestyle{plain}{%
+    \fancyhf{}%
+    \renewcommand{\headrulewidth}{0pt}%
+    \renewcommand{\footrulewidth}{0pt}%
+    \fancyfoot[C]{\footnotesize\thepage}}%
+  \pagestyle{frontmatter}}
+
+\newcommand{\usemainmatterstyle}{%
+  \fancypagestyle{plain}{%
+    \fancyhf{}%
+    \renewcommand{\headrulewidth}{0pt}%
+    \renewcommand{\footrulewidth}{0.4pt}%
+    \fancyfoot[L]{\footnotesize\deptname}%
+    \fancyfoot[C]{\footnotesize\acadyear}%
+    \fancyfoot[R]{\footnotesize\thepage}}%
+  \pagestyle{setumain}}
+
 \pagestyle{setumain}
 
 % ---------- code listings --------------------------------------------------
@@ -235,6 +269,27 @@
   pdfauthor  = {Jannat Zafrin, Prabhav Sharma, Rishabh Sharma, Sindhuja Tiwari},
   pdfsubject = {Project Phase-II Report, Dept. of AI and ML, Bangalore Institute of Technology},
 }
+
+% Wide (landscape) diagrams. Three of the exported diagrams have aspect ratios
+% between 4.9 and 9.7; scaled into the 15.3 cm text width they collapse to a
+% 1.5-3 cm strip and their labels become illegible. Turning the page sideways
+% lets them use the full 22 cm text height instead, so they render roughly 50 %
+% larger and print readably. pdflscape also rotates the page in the PDF viewer.
+\usepackage{pdflscape}
+
+% A wide figure on its own sideways page: fills the rotated text block, keeps
+% the aspect ratio, and keeps the caption and label with the figure.
+% #1 = graphics options, #2 = file, #3 = caption, #4 = label
+\newcommand{\widefigure}[4]{%
+  \begin{landscape}
+    \vspace*{\fill}
+    \begin{figure}[H]
+      \centering
+      \includegraphics[#1]{#2}
+      \caption{#3}\label{#4}
+    \end{figure}
+    \vspace*{\fill}
+  \end{landscape}}
 
 % Class-box separator usable inside a TikZ node (\hrule is illegal there)
 \newcommand{\clsrule}{\\[1pt]\rule{\linewidth}{0.3pt}\\[1pt]}

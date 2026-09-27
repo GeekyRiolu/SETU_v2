@@ -6,13 +6,14 @@
 {\fontsize{14}{17}\selectfont\bfseries Visvesvaraya Technological University}\\[2pt]
 {\fontsize{12}{15}\selectfont Jnana Sangama, Belagavi -- 590018, Karnataka}\\[8pt]
 
-% Replace this placeholder with the VTU / college emblem:
-%   \includegraphics[width=0.16\textwidth]{figures/vtu_logo.png}
-\begin{tikzpicture}
-  \draw[black!45, rounded corners=3pt] (0,0) rectangle (2.4,2.4);
-  \node[align=center, font=\scriptsize\itshape, text=black!55]
-        at (1.2,1.2) {VTU /\\College\\emblem};
-\end{tikzpicture}\\[8pt]
+% Bangalore Institute of Technology crest, taken from the department's own
+% R.1.Guidelines.docx. figures/bit_logo_colour.jpg holds the green version used
+% on the SETU deck's title slide if that one is preferred. To add a separate VTU
+% emblem alongside it, drop the file into figures/ and uncomment the second box.
+\begin{minipage}{\textwidth}\centering
+  %\includegraphics[height=30mm, keepaspectratio]{figures/vtu_logo.png}\hspace{18mm}%
+  \includegraphics[height=30mm, keepaspectratio]{figures/bit_logo.jpg}
+\end{minipage}\\[8pt]
 
 {\fontsize{16}{20}\selectfont\bfseries BANGALORE INSTITUTE OF TECHNOLOGY}\\[3pt]
 {\fontsize{12}{15}\selectfont K.\,R. Road, V.\,V. Pura, Bengaluru -- 560004}\\[3pt]
