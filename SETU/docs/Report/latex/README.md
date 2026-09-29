@@ -46,6 +46,8 @@ figures/          diagram PNGs (copied from SETU/vm/diagrams/)
 | Front matter: no header/footer, Roman number centred at the foot | `frontmatter` page style + `\usefrontmatterstyle` / `\usemainmatterstyle` in `main.tex` |
 | TOC stops at section level (no 1.3.1 entries) | `\setcounter{tocdepth}{1}` (`secnumdepth` stays 3, so they remain numbered in the text) |
 | Wide diagrams on sideways pages | `pdflscape` + the `\widefigure` macro |
+| Roman numbering starts at the Abstract (page i) | `\pagenumbering{roman}` + `\setcounter{page}{1}` in `front/abstract.tex`; pages before it use `frontblank` (no number at all) |
+| Justified prose in tables | `J{w}` column type (`ragged2e`'s `\justifying`) for prose columns of 6 cm or more; `L{w}` stays ragged for narrower ones, `r`/`c` for numbers and short labels |
 
 ## Logos
 

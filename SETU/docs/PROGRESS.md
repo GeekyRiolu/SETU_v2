@@ -352,6 +352,34 @@ balancing, EWC anti-forgetting, device resolution, scorecard.
 
 ## 10. Session changelog
 
+- **2026-09-29 (report: designations, table justification, numbering from the abstract)** -
+  (1) **Acknowledgement**: the Project Coordinators sentence now carries the designations
+  inline, matching the style already used for the guide: "Dr. Jyothi D. G., Professor and
+  Dean R \& D, and Dr. Shruthiba A., Assistant Professor". No separate list, no other
+  wording touched. (2) **Tables**: the report mixed ragged `L{}` and justified `p{}`
+  paragraph columns, which is what read as inconsistent. Added a `J{w}` column type
+  (ragged2e's `\justifying`) and applied it by rule at the column-definition level: prose
+  columns of **6 cm or more** justify, narrower prose stays ragged right (5.6 cm was tried
+  first and opened visible rivers in the literature table, so the threshold was raised and
+  that table's content column widened 5.6 -> 6.3 cm), numbers keep `r`, short labels keep
+  `c`. Algorithm listings (14 cm pseudocode) and the certificate/declaration signature
+  layouts were deliberately excluded. Six tables were rebalanced to stop overflow that the
+  change exposed ("Maintainability", "Medium", `setu.inference.router`, `TranslationResult`
+  and the head-to-head table's natural-width columns). (3) **Page numbering** now starts at
+  the abstract: title page, certificate, declaration and acknowledgement are unnumbered via
+  a new `frontblank` style, and `front/abstract.tex` itself does `\pagenumbering{roman}` +
+  `\setcounter{page}{1}`, so the counter is genuinely reset rather than hidden. The front
+  matter was **reordered** (acknowledgement now precedes the abstract, confirmed with the
+  user) so the sequence matches: unnumbered, unnumbered, unnumbered, unnumbered, i, ii...
+  `\pagenumbering{Roman}` is set for the lead pages purely to give hyperref a separate
+  anchor namespace; without it the reset collided with the Arabic chapter pages (4 "Object
+  @page.N already defined" warnings). (4) **TOC** regenerates correctly: Abstract i, List of
+  Tables v, List of Figures vii, chapters Arabic, tocdepth still 1 so 1.3.1-style entries
+  stay hidden while remaining numbered in the text. The Declaration and Acknowledgement TOC
+  entries were removed, since those pages now have no page number to list. Rebuilt clean at
+  **130 pages** with XeLaTeX: zero LaTeX warnings, zero hyperref anchor clashes, zero
+  overfull vboxes, and one 3.5 pt overfull hbox in a TikZ diagram (pre-existing).
+
 - **2026-09-28 (report formatting pass: front matter, TOC, figures, logos)** - Six
   targeted edits to the existing LaTeX, no rewrite. (1) **Front matter** now carries no
   header and no footer text: a new `frontmatter` fancyhdr style shows only the Roman page

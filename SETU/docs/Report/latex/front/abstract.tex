@@ -1,4 +1,10 @@
 % --------------------------------- Abstract ---------------------------------
+% Roman numbering starts here: the abstract is page i. Everything before it
+% (title page, certificate, declaration, acknowledgement) is unnumbered, so the
+% counter is genuinely reset rather than merely hidden.
+\pagenumbering{roman}
+\setcounter{page}{1}
+\usefrontmatterstyle
 \thispagestyle{frontmatter}
 \frontheading{Abstract}
 \addcontentsline{toc}{chapter}{Abstract}

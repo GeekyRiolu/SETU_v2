@@ -88,6 +88,16 @@
 \captionsetup[table]{position=top}
 \captionsetup[figure]{position=bottom}
 \renewcommand{\arraystretch}{1.25}
+% ragged2e gives \justifying, which justifies a p-column the way body text is
+% justified (with hyphenation) rather than the ragged-right \raggedright.
+\usepackage{ragged2e}
+
+% Paragraph column types:
+%   J{w}  justified   -- prose cells wide enough to justify cleanly (>= 4 cm)
+%   L{w}  ragged right-- narrow prose cells, where justifying opens ugly gaps
+%   C{w}  centred     -- short labels
+%   R{w}  flush right -- numeric
+\newcolumntype{J}[1]{>{\justifying\arraybackslash}p{#1}}
 \newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
 \newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
 \newcolumntype{R}[1]{>{\raggedleft\arraybackslash}p{#1}}
@@ -171,11 +181,26 @@
   \renewcommand{\footrulewidth}{0pt}
   \fancyfoot[C]{\footnotesize\thepage}
 }
+% Pages before the abstract: no header, no footer, no number at all.
+\fancypagestyle{frontblank}{%
+  \fancyhf{}
+  \renewcommand{\headrulewidth}{0pt}
+  \renewcommand{\footrulewidth}{0pt}
+}
 
 % \tableofcontents, \listoftables and \listoffigures each start with \chapter*,
 % which forces \thispagestyle{plain} on their opening page. So switching the
 % front matter over means redefining `plain` for its duration and restoring the
 % chapter-opening version before the numbered chapters begin.
+% Title page .. acknowledgement: nothing at all in the head or foot, and no
+% page number, since Roman numbering only starts at the abstract.
+\newcommand{\usefrontblankstyle}{%
+  \fancypagestyle{plain}{%
+    \fancyhf{}%
+    \renewcommand{\headrulewidth}{0pt}%
+    \renewcommand{\footrulewidth}{0pt}}%
+  \pagestyle{frontblank}}
+
 \newcommand{\usefrontmatterstyle}{%
   \fancypagestyle{plain}{%
     \fancyhf{}%

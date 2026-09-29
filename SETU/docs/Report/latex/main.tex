@@ -14,14 +14,18 @@
 \begin{document}
 
 % ------------------------------- FRONT MATTER -------------------------------
-% Roman numerals, no header and no footer text: just the centred page number.
-\pagenumbering{roman}
-\usefrontmatterstyle
+% Title page .. acknowledgement carry no page number at all. Roman numbering
+% starts at the abstract, which resets the counter itself (front/abstract.tex).
+% These four pages use \pagenumbering{Roman} purely so hyperref gives them their
+% own anchor namespace (@page.I ...); nothing is printed, and without it their
+% anchors would collide with the Arabic chapter pages once the counter resets.
+\pagenumbering{Roman}
+\usefrontblankstyle
 \input{front/titlepage}
 \input{front/certificate}
 \input{front/declaration}
-\input{front/abstract}
 \input{front/acknowledgement}
+\input{front/abstract}
 \input{front/contents}
 
 % ------------------------------- CHAPTERS -----------------------------------

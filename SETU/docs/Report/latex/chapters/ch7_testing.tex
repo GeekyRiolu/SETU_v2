@@ -26,7 +26,7 @@ organised into the categories of Table~\ref{tab:testcategories}. They run on
 every change and gate every milestone; a milestone is not closed while any test
 fails.
 
-\begin{longtable}{@{}L{3.4cm} L{4.0cm} L{6.6cm}@{}}
+\begin{longtable}{@{}L{3.4cm} L{4.0cm} J{6.6cm}@{}}
 \caption{Test suite organisation}
 \label{tab:testcategories}\\
 \toprule
@@ -108,7 +108,7 @@ UT-5 & Sentence exceeding \texttt{max\_seq\_len} & Truncated and translated, not
 \centering
 \caption{Unit tests UT-6 to UT-10: corpus cleaning filters}
 \label{tab:ut2}
-\begin{tabular}{@{}c L{4.2cm} L{3.7cm} L{3.5cm} c@{}}
+\begin{tabular}{@{}c L{4.0cm} L{3.6cm} L{3.4cm} c@{}}
 \toprule
 \rowcolor{headblue}
 \textbf{\#} & \textbf{Test data (input)} & \textbf{Expected result} & \textbf{Actual result} & \textbf{Verdict} \\
@@ -133,7 +133,7 @@ reading the output of a training run.
 \centering
 \caption{Unit tests UT-11 to UT-15: training mechanics}
 \label{tab:ut3}
-\begin{tabular}{@{}c L{4.0cm} L{4.0cm} L{3.4cm} c@{}}
+\begin{tabular}{@{}c L{3.9cm} L{3.9cm} L{3.3cm} c@{}}
 \toprule
 \rowcolor{headblue}
 \textbf{\#} & \textbf{Property under test} & \textbf{Expected result} & \textbf{Actual result} & \textbf{Verdict} \\
@@ -205,7 +205,7 @@ IT-9 & CORS preflight from the browser client & Preflight accepted & \texttt{OPT
 \centering
 \caption{Integration tests IT-10 to IT-13: end-to-end pipeline}
 \label{tab:it3}
-\begin{tabular}{@{}c L{4.4cm} L{4.2cm} L{2.9cm} c@{}}
+\begin{tabular}{@{}c L{4.2cm} L{4.1cm} L{2.8cm} c@{}}
 \toprule
 \rowcolor{headblue}
 \textbf{\#} & \textbf{Scenario} & \textbf{Expected result} & \textbf{Actual result} & \textbf{Verdict} \\
@@ -267,7 +267,7 @@ Table~\ref{tab:defects} lists the defects the suite caught, with the test that
 caught each. They are reported because the class of defect is instructive: most
 were silent, producing plausible output rather than an error.
 
-\begin{longtable}{@{}p{1.2cm} L{4.6cm} L{4.2cm} L{3.6cm}@{}}
+\begin{longtable}{@{}L{1.2cm} L{4.6cm} L{4.2cm} L{3.6cm}@{}}
 \caption{Defects found during testing}
 \label{tab:defects}\\
 \toprule
@@ -304,7 +304,7 @@ D10 & Stub and real engines leaked state between tests & Order-dependent test fa
 \subsection{Test Execution Summary}
 \label{subsec:testsummary}
 
-\begin{longtable}{@{}L{6.6cm} c c c@{}}
+\begin{longtable}{@{}J{6.6cm} c c c@{}}
 \caption{Final test execution summary}
 \label{tab:testsummary}\\
 \toprule
