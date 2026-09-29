@@ -60,7 +60,3 @@ title slide, if that one is preferred: just change the filename in
 
 No VTU emblem exists anywhere in the project. To add one, drop the file into
 `figures/` and uncomment the prepared line in `front/titlepage.tex`.
-
-## Placeholders to replace before printing
-
-- `back/appendix.tex`: the reserved block for the paper publication certificate.

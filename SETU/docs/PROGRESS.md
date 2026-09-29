@@ -352,6 +352,13 @@ balancing, EWC anti-forgetting, device resolution, scorecard.
 
 ## 10. Session changelog
 
+- **2026-09-29 (cont.)** - Removed the "Space reserved for the paper publication
+  certificate" placeholder block from Appendix A at the user's request, together with the
+  two horizontal rules that framed it and the README line that listed it as something to
+  fill in before printing. Appendix A now ends on "Required before submission" and runs
+  straight into Appendix B. Still 130 pages, build unchanged: no LaTeX warnings, no anchor
+  clashes, one pre-existing 3.5 pt overfull hbox in a TikZ diagram.
+
 - **2026-09-29 (report: designations, table justification, numbering from the abstract)** -
   (1) **Acknowledgement**: the Project Coordinators sentence now carries the designations
   inline, matching the style already used for the guide: "Dr. Jyothi D. G., Professor and
