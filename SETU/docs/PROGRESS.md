@@ -352,6 +352,21 @@ balancing, EWC anti-forgetting, device resolution, scorecard.
 
 ## 10. Session changelog
 
+- **2026-09-30 (split the report into mono and colour print sets)** - Added
+  `docs/Report/make_print_pdfs.py`, which measures each page's saturated-colour
+  coverage (chroma = max RGB minus min RGB, threshold 60, so the pale `headblue`
+  table header at chroma 21 does not count but the green Pass at 95 does) and splits
+  `SETU_Project_Phase-II_Report.pdf` into two disjoint files: **26 colour pages**
+  (`SETU_Report_PRINT_colour.pdf`) and **104 mono pages** (`SETU_Report_PRINT_bw.pdf`),
+  plus a manifest listing which pages went where and why. The colour set is the 10 figure
+  pages (the Mermaid and TikZ diagrams use colour to distinguish node types) plus 16 pages
+  carrying saturated coloured text: the code listings' syntax highlighting and the
+  green/amber Pass/Near verdicts in the scorecard and test tables. Verified the two sets
+  are disjoint, cover pages 1-130 exactly, and separate cleanly (the mono file's most
+  coloured page is 0.007 % saturated; the colour file peaks at 0.543 %). Page numbering is
+  untouched, so the two stacks interleave back into one bound copy. `--strong 999` gives a
+  figures-only variant (10 colour pages) if the coloured text is not worth paying for.
+
 - **2026-09-29 (cont.)** - Removed the "Space reserved for the paper publication
   certificate" placeholder block from Appendix A at the user's request, together with the
   two horizontal rules that framed it and the README line that listed it as something to
