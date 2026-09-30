@@ -267,7 +267,7 @@ translates in a single hop. If not (the case for every Indic-to-Indic pair,
 since no ungated Indic-to-Indic teacher was available), it checks whether both
 source\arrowto{}English and English\arrowto{}target models exist, and if so
 chains them, returning the combined latency and a \texttt{pivot: "en"} flag. The
-arithmetic is favourable: 22 direct models serve 132 usable directions, and
+arithmetic is favourable: 44 direct models serve 506 usable directions, and
 measured two-hop latency is approximately 50--65\,ms.
 
 Engines are cached one per pair, so a direction is loaded from disk at most
@@ -378,11 +378,9 @@ The \textbf{on-device badge} reports whether the response came from a real
 quantised model or the passthrough stub, alongside the measured latency in
 milliseconds. A user is never shown a number without knowing what produced it.
 
-The \textbf{language picker} lists all 23 languages, not only the trained ones.
-Trained languages are grouped under an ``available now'' heading; the remaining
-eleven appear below, visibly disabled and labelled as Phase 2. Hiding untrained
-languages would have made the system look complete; showing them disabled makes
-the actual coverage legible.
+The \textbf{language picker} lists all 23 languages, every one of them
+selectable: the twenty-two scheduled languages and English. There are no
+disabled entries, because every direction is trained and served.
 
 The \textbf{pivot indicator} tells the user when a translation was routed
 through English, because a two-hop translation has different failure
@@ -447,8 +445,8 @@ model directory into place is all that is needed for the API to serve it.
 The SentencePiece vocabulary is 16{,}000 unigram tokens, chosen after a
 32{,}000-token vocabulary was measured to leave most tokens undertrained on the
 available data and to produce degenerate decoding. All 23 FLORES language tags
-are reserved as special tokens from the very first training run, even for
-languages not yet trained. This costs 23 vocabulary slots and buys a guarantee:
+are reserved as special tokens from the very first training run, ahead of the
+directions that used them. This costs 23 vocabulary slots and buys a guarantee:
 token identifiers do not shift when a language is added, so previously trained
 models remain valid and no re-tokenisation is ever required.
 

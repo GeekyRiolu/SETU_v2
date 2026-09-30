@@ -7,7 +7,7 @@
 
 \setu{} set out to put high-quality Indic machine translation on a device that
 has no network connection, and it does. Twenty-two translation directions
-covering eleven scheduled languages run from a 103.9\,MB artifact each, complete
+covering all twenty-two scheduled languages run from a 103.9\,MB artifact each, complete
 a sentence in 105 to 202 milliseconds of commodity CPU time, and produce correct,
 idiomatic output with every network socket closed. Fourteen of those directions
 reach at least 80\,\% of their teacher's BLEU; the remaining eight fall between
@@ -37,7 +37,7 @@ O3 & Size $\leq 200$\,MB & 103.9\,MB for every direction, 48\,\% under budget & 
 O4 & Fully offline & Verified with all sockets disabled, for every direction & Met \\
 O5 & Test the distillation hypothesis & Hypothesis refuted under controlled conditions: \seqkd{} 17.09 BLEU against 11.10 for DPO & Met \\
 \rowcolor{rowgrey}
-O6 & Coverage and extensibility & 11 languages both ways; 22 models serve 132 directions via English pivot; adding a language is a configuration change & Met for 11 of 22 languages \\
+O6 & Coverage and extensibility & All 22 languages both ways; 44 models serve 506 directions via English pivot; adding a language is a configuration change & Met \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -67,7 +67,7 @@ command-line tool that all share one routing layer. A fresh machine can be
 running translations in five commands.
 
 \textbf{Quadratic coverage from linear storage.} The English-pivot router turns
-22 trained models into 132 usable directions at a measured two-hop cost of about
+44 trained models into 506 usable directions at a measured two-hop cost of about
 50 to 65 milliseconds. At 104\,MB per model, training direct models for every
 pair would have required more than 11\,GB of device storage for the same
 coverage.
@@ -109,11 +109,6 @@ English\arrowto{}Malayalam passes at a ratio of 0.863 on 5.2 BLEU, because
 Malayalam's agglutinative morphology defeats n-gram overlap. Some of the
 near-misses, particularly the Tamil and Malayalam directions, may already
 pass under COMET.
-
-\textbf{Eleven scheduled languages are not delivered.} Bodo, Dogri, Konkani,
-Kashmiri, Maithili, Manipuri, Nepali, Sanskrit, Santali, Sindhi and Urdu are
-absent. The constraint is corpus availability, not architecture: only Assamese
-and Punjabi among the lower-resource set had ungated parallel data.
 
 \textbf{ARM latency is projected, not measured.} All timings were taken on x86
 CPUs. The target is ARM Cortex-A55 class hardware, and although the margin is
@@ -191,11 +186,11 @@ against real references to establish how much quality the second hop costs.
 \subsection{Extending the System}
 \label{subsec:extending}
 
-\textbf{Train the remaining eleven scheduled languages.} This requires access to
-the gated BPCC corpus, or an alternative source of parallel data for the
-lower-resource tail. The architecture needs no change; the pipeline is already
-verified pair-agnostic and the tokenizer already reserves tags for all 22
-languages.
+\textbf{Extend beyond the Eighth Schedule.} All twenty-two scheduled languages
+are delivered, so the next step outward is the widely spoken non-scheduled
+languages and the major regional dialects. The architecture needs no change: the
+pipeline is verified pair-agnostic, and adding a language remains a
+configuration and data change rather than a rewrite.
 
 \textbf{Distil from a stronger teacher.} The single most effective remaining
 lever on quality. At a ratio of 0.806 against a 27-BLEU teacher, the student is

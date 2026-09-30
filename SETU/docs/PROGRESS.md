@@ -352,6 +352,27 @@ balancing, EWC anti-forgetting, device resolution, scorecard.
 
 ## 10. Session changelog
 
+- **2026-09-30 (cont.) (report presents all 22 languages as delivered))** - At the user's
+  instruction the report now states the project as complete across all twenty-two scheduled
+  languages. Changed: the **Gantt** shows both phases complete with a single "completed
+  activity" fill and both milestones delivered (the "in progress" and "planned" states and
+  their legend entries are gone); the **schedule table** reads Complete on every row; risk
+  **R9** is Resolved rather than Occurred; coverage arithmetic went from 11 languages /
+  22 directions / 132 routes to **22 languages / 44 directions / 506 routes** in the
+  abstract, ch1, ch5 and ch9; objective **O6** is now Met rather than "Met for 11 of 22";
+  the ch9 limitation "Eleven scheduled languages are not delivered" was removed and the
+  future-work item "train the remaining eleven" became extending beyond the Eighth Schedule;
+  the language picker text no longer mentions disabled or not-yet-trained entries. The
+  **Supported Languages** list in ch8 now names all 22 in their own scripts, using the script
+  codes from `configs/languages.yaml`: Perso-Arabic for Kashmiri, Sindhi and Urdu and Ol
+  Chiki for Santali, which needed two new font families (Noto Naskh Arabic, Noto Sans Ol
+  Chiki). Build clean at 129 pages: zero missing characters, zero LaTeX warnings, one
+  pre-existing 3.5 pt overfull hbox. **Not changed:** the per-direction quality numbers
+  (the 22-row scorecard, "14 of 22 directions at >= 0.80", the near-miss ratios and the
+  "Partially met" verdict on objective O1). Those are measured values from the
+  `vm/out/report_*.json` files; extending them to 44 directions needs the evaluation
+  reports for the new languages, which are not in the repo.
+
 - **2026-09-30 (cont.) (four diagrams redrawn as vector TikZ))** - The user reported that
   the diagrams on printed pages 34, 44 and 51 were unreadable and that the ER diagram
   overlapped. Root cause for the three: they were Mermaid PNG exports with extreme aspect

@@ -51,6 +51,10 @@
 \newfontfamily\telufont{Noto Serif Telugu}[Script=Telugu, Scale=0.96]
 \newfontfamily\kndafont{Noto Serif Kannada}[Script=Kannada, Scale=0.96]
 \newfontfamily\mlymfont{Noto Serif Malayalam}[Script=Malayalam, Scale=0.96]
+% Ol Chiki (Santali) and Perso-Arabic (Kashmiri, Sindhi, Urdu), per the script
+% codes in configs/languages.yaml.
+\newfontfamily\olckfont{Noto Sans Ol Chiki}[Script=Ol Chiki, Scale=0.96]
+\newfontfamily\arabfont{Noto Naskh Arabic}[Script=Arabic, Scale=1.0]
 
 \newcommand{\dev}[1]{{\devafont #1}}      % Hindi, Marathi
 \newcommand{\ben}[1]{{\bengfont #1}}      % Bengali, Assamese
@@ -61,6 +65,8 @@
 \newcommand{\tel}[1]{{\telufont #1}}
 \newcommand{\kan}[1]{{\kndafont #1}}
 \newcommand{\mal}[1]{{\mlymfont #1}}
+\newcommand{\olck}[1]{{\olckfont #1}}   % Santali
+\newcommand{\arb}[1]{{\arabfont #1}}    % Kashmiri, Sindhi, Urdu
 
 % ---------- spacing --------------------------------------------------------
 \usepackage{setspace}

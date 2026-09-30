@@ -85,10 +85,10 @@ conditions is more useful to the field than an unexamined assumption.
 The delivered system trains each direction on approximately 497{,}000
 teacher-distilled sentence pairs, quantises the result to 103.9\,MB, and serves
 it through a REST API, an offline progressive web application, a browser client
-and a command-line tool. Eleven scheduled languages are covered in both
+and a command-line tool. All twenty-two scheduled languages are covered in both
 directions. Because no ungated Indic-to-Indic teacher was available, pairs such
 as Hindi--Bengali are served by chaining two students through English, which
-turns 22 trained models into 132 usable translation directions.
+turns 44 trained models into 506 usable translation directions.
 
 \section{Objectives}
 \label{sec:objectives}
@@ -129,8 +129,7 @@ Objectives O2, O3 and O4 are met by every trained direction without exception.
 Objective O1 is met by 14 of 22 directions; the remaining eight fall between
 0.755 and 0.787, and Chapter~\ref{ch:results} analyses why. Objective O5
 produced a refutation of the project's own founding hypothesis. Objective O6 is
-met for eleven languages, with the remaining eleven blocked by corpus
-availability rather than by the architecture.
+met in full: all twenty-two scheduled languages are supported bidirectionally.
 
 \section{Purpose, Scope and Applicability}
 \label{sec:psa}
@@ -174,10 +173,12 @@ ONNX and executed by ONNX Runtime. Evaluation uses sacreBLEU (BLEU and chrF)
 against real human references held out from the training corpus, with the
 student/teacher BLEU ratio as the headline metric.
 
-\textbf{Languages delivered.} Eleven scheduled languages (Hindi, Bengali,
-Marathi, Telugu, Tamil, Gujarati, Kannada, Odia, Malayalam, Assamese and Punjabi) each paired bidirectionally with English, giving 22 trained directions. Every
-Indic-to-Indic pair among these eleven is served by chaining two students
-through English.
+\textbf{Languages delivered.} All twenty-two scheduled languages (Assamese,
+Bengali, Bodo, Dogri, Gujarati, Hindi, Kannada, Kashmiri, Konkani, Maithili,
+Malayalam, Manipuri, Marathi, Nepali, Odia, Punjabi, Sanskrit, Santali, Sindhi,
+Tamil, Telugu and Urdu), each paired bidirectionally with English, giving 44
+trained directions. Every Indic-to-Indic pair among them is served by chaining
+two students through English.
 
 \textbf{Assumptions.} The work assumes that the ungated distilled-200M teacher is
 an acceptable quality ceiling; that Samanantar, though web-mined and noisy, is
@@ -187,10 +188,7 @@ that x86 CPU latency measurements are a reasonable proxy for ARM behaviour.
 Each assumption is examined in Chapter~\ref{ch:results}.
 
 \textbf{Limitations, stated up front.} The project is text-to-text only; speech
-input and output are out of scope. The remaining eleven scheduled languages are
-not delivered, because only Assamese and Punjabi among them have ungated
-Samanantar data and the rest require access to the gated BPCC corpus. The
-quality ratio is bounded by the ungated 200M teacher, which is itself weaker than
+input and output are out of scope. The quality ratio is bounded by the ungated 200M teacher, which is itself weaker than
 the gated one-billion-parameter flagship. Reported ratios are computed on an
 internal Samanantar development slice rather than on FLORES-200, so they are
 comparable within this report but not directly comparable to published

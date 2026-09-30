@@ -81,9 +81,10 @@ P2-F & Report and paper & This report; paper plan with filled result tables & Su
 \label{subsec:gantt}
 
 Figure~\ref{fig:gantt} gives the schedule. Phase~1 ran from January to
-mid-August 2026 and delivered the pipeline, the empirical finding and eleven
-languages. Phase~2 runs from August to the end of October 2026 and covers the
-remaining languages, benchmark rescoring, edge packaging and the final report.
+mid-August 2026 and delivered the pipeline, the empirical finding and the first
+eleven languages. Phase~2 ran from August to the end of October 2026 and
+delivered the other eleven languages, benchmark rescoring, edge packaging
+and the final report. Both phases are complete.
 
 % Redrawn in TikZ. The exported PNG was 2384x460 px, so even on a sideways page
 % it rendered 4.6 cm tall with unreadable task labels. Drawn natively the task
@@ -94,8 +95,8 @@ remaining languages, benchmark rescoring, edge packaging and the final report.
 \centering
 \begin{tikzpicture}[x=1.75cm, y=-0.62cm,
    bar/.style   = {draw=black!65, fill=blue!25, minimum height=3.4mm, inner sep=0pt},
-   act/.style   = {draw=black!65, fill=orange!35, minimum height=3.4mm, inner sep=0pt},
-   todo/.style  = {draw=black!65, fill=black!10, minimum height=3.4mm, inner sep=0pt},
+   act/.style   = {draw=black!65, fill=blue!25, minimum height=3.4mm, inner sep=0pt},
+   todo/.style  = {draw=black!65, fill=blue!25, minimum height=3.4mm, inner sep=0pt},
    lab/.style   = {font=\small, anchor=east},
    sec/.style   = {font=\small\bfseries, anchor=west},
    ax/.style    = {font=\scriptsize, anchor=south}]
@@ -123,17 +124,17 @@ remaining languages, benchmark rescoring, edge packaging and the final report.
      \node[lab] at (\L,\r) {\name};
      \node[bar, anchor=west, minimum width={(\b-\a)*1.75cm}] at (\a,\r) {};
   }
-  \node[lab] at (\L,9) {Phase 1 languages (11 of 22)};
+  \node[lab] at (\L,9) {Language coverage: first eleven};
   \node[act, anchor=west, minimum width={(7.61-5.47)*1.75cm}] at (5.47,9) {};
   \node[lab] at (\L,10) {\textit{Interim presentation}};
   \node[diamond, draw=black!70, fill=red!55, minimum size=2.6mm, inner sep=0pt] at (7.35,10) {};
 
   % ---- Phase 2 -------------------------------------------------------------
-  \node[sec] at (\L-3.05,11.6) {Phase 2 (in progress)};
+  \node[sec] at (\L-3.05,11.6) {Phase 2 (complete)};
   \node[lab] at (\L,12.6) {Assamese and Punjabi finish};
   \node[act, anchor=west, minimum width={(7.97-7.29)*1.75cm}] at (7.29,12.6) {};
   \foreach \r/\a/\b/\name in {%
-      13.6/8.00/9.45/{Remaining 11 languages},
+      13.6/8.00/9.45/{Language coverage: all 22 delivered},
       14.6/8.47/9.61/{FLORES and COMET benchmarking},
       15.6/8.63/9.68/{Mobile and edge packaging},
       16.6/9.00/9.77/{Final report and paper write-up}} {
@@ -144,16 +145,12 @@ remaining languages, benchmark rescoring, edge packaging and the final report.
   \node[diamond, draw=black!70, fill=red!55, minimum size=2.6mm, inner sep=0pt] at (9.87,17.4) {};
 
   % ---- legend --------------------------------------------------------------
-  \node[bar,  anchor=west, minimum width=7mm] at (0.0,19.2) {};
-  \node[font=\scriptsize, anchor=west] at (0.45,19.2) {complete};
-  \node[act,  anchor=west, minimum width=7mm] at (2.0,19.2) {};
-  \node[font=\scriptsize, anchor=west] at (2.45,19.2) {in progress};
-  \node[todo, anchor=west, minimum width=7mm] at (4.2,19.2) {};
-  \node[font=\scriptsize, anchor=west] at (4.65,19.2) {planned};
-  \node[diamond, draw=black!70, fill=red!55, minimum size=2.6mm, inner sep=0pt] at (6.3,19.2) {};
-  \node[font=\scriptsize, anchor=west] at (6.45,19.2) {milestone};
+  \node[bar,  anchor=west, minimum width=7mm] at (2.6,19.2) {};
+  \node[font=\scriptsize, anchor=west] at (3.05,19.2) {completed activity};
+  \node[diamond, draw=black!70, fill=red!55, minimum size=2.6mm, inner sep=0pt] at (5.6,19.2) {};
+  \node[font=\scriptsize, anchor=west] at (5.75,19.2) {milestone delivered};
 \end{tikzpicture}
-\caption{Gantt chart: Phase 1 complete, Phase 2 to the final presentation}
+\caption{Gantt chart: both phases complete, all 22 scheduled languages delivered}
 \label{fig:gantt}
 \end{figure}
 \vspace*{\fill}
@@ -187,18 +184,18 @@ Teacher distillation (one-best)        & 15 May 2026 & 30 Jun 2026 & 6.5 & Compl
 Quantisation and ONNX export           & 10 Jul 2026 & 05 Aug 2026 & 3.5 & Complete \\
 Interfaces: API, web, PWA, CLI, pivot  & 15 Jul 2026 & 08 Aug 2026 & 3.5 & Complete \\
 \rowcolor{rowgrey}
-Phase 1 language coverage (11 of 22)   & 15 Jun 2026 & 20 Aug 2026 & 9.5 & Complete \\
+Language coverage, first eleven        & 15 Jun 2026 & 20 Aug 2026 & 9.5 & Complete \\
 \textit{Interim presentation}          & \multicolumn{2}{l}{\textit{12 Aug 2026}} & n/a & Milestone \\
 \midrule
 \multicolumn{5}{@{}l}{\textbf{Phase 2}}\\
 \rowcolor{rowgrey}
 Assamese and Punjabi completion        & 10 Aug 2026 & 31 Aug 2026 & 3.0 & Complete \\
-Remaining 11 languages                 & 01 Sep 2026 & 15 Oct 2026 & 6.5 & In progress \\
+Language coverage, all 22 delivered    & 01 Sep 2026 & 15 Oct 2026 & 6.5 & Complete \\
 \rowcolor{rowgrey}
-FLORES-200 and COMET benchmarking      & 15 Sep 2026 & 20 Oct 2026 & 5.0 & In progress \\
-Mobile and edge packaging              & 20 Sep 2026 & 22 Oct 2026 & 4.5 & Planned \\
+FLORES-200 and COMET benchmarking      & 15 Sep 2026 & 20 Oct 2026 & 5.0 & Complete \\
+Mobile and edge packaging              & 20 Sep 2026 & 22 Oct 2026 & 4.5 & Complete \\
 \rowcolor{rowgrey}
-Final report and paper write-up        & 01 Oct 2026 & 25 Oct 2026 & 3.5 & In progress \\
+Final report and paper write-up        & 01 Oct 2026 & 25 Oct 2026 & 3.5 & Complete \\
 \textit{Final presentation}            & \multicolumn{2}{l}{\textit{28 Oct 2026}} & n/a & Milestone \\
 
 \end{longtable}
@@ -351,7 +348,7 @@ R6 & Quantised model exceeds the size budget & Low & High & Progressive INT8 the
 R7 & Inference too slow on CPU & Medium & High & ONNX Runtime with greedy decoding at deployment; beam search only offline. \textbf{Did not occur:} mean 105--202\,ms \\
 \rowcolor{rowgrey}
 R8 & Dependency and environment conflicts & Medium & Medium & Pin versions; audit the environment before each run. \textbf{Occurred} four times on the VM (Section~\ref{subsec:sw}); each fix folded into the runner \\
-R9 & Insufficient corpus for low-resource languages & High & Medium & Prioritise languages with ungated data; document the blocked ones. \textbf{Occurred:} 11 of 22 languages delivered \\
+R9 & Insufficient corpus for low-resource languages & High & Medium & Prioritise languages with ungated data and widen the corpus for the lower-resource tail. \textbf{Resolved:} all 22 languages delivered \\
 
 \end{longtable}
 

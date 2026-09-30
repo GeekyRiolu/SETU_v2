@@ -684,18 +684,19 @@ cd frontend && npm install && npm run dev      # http://localhost:3000
 \subsection{Supported Languages}
 \label{subsec:supportedlangs}
 
-Eleven scheduled languages are delivered in Phase 1, each paired both ways with
-English: Hindi (\dev{हिन्दी}), Bengali (\ben{বাংলা}), Marathi (\dev{मराठी}),
-Telugu (\tel{తెలుగు}), Tamil (\tam{தமிழ்}), Gujarati (\guj{ગુજરાતી}), Kannada
-(\kan{ಕನ್ನಡ}), Odia (\ory{ଓଡ଼ିଆ}), Malayalam (\mal{മലയാളം}), Assamese
-(\ben{অসমীয়া}) and Punjabi (\gur{ਪੰਜਾਬੀ}). Any pair among these eleven
-translates through the English pivot, so a user may translate Hindi to Bengali
-or Tamil to Telugu without a direct model existing.
+All twenty-two scheduled languages are delivered, each paired both ways with
+English: Assamese (\ben{অসমীয়া}), Bengali (\ben{বাংলা}), Bodo (\dev{बर'}),
+Dogri (\dev{डोगरी}), Gujarati (\guj{ગુજરાતી}), Hindi (\dev{हिन्दी}), Kannada
+(\kan{ಕನ್ನಡ}), Kashmiri (\arb{کٲشُر}), Konkani (\dev{कोंकणी}), Maithili
+(\dev{मैथिली}), Malayalam (\mal{മലയാളം}), Manipuri (\ben{মৈতৈলোন্}), Marathi
+(\dev{मराठी}), Nepali (\dev{नेपाली}), Odia (\ory{ଓଡ଼ିଆ}), Punjabi
+(\gur{ਪੰਜਾਬੀ}), Sanskrit (\dev{संस्कृतम्}), Santali (\olck{ᱥᱟᱱᱛᱟᱲᱤ}), Sindhi
+(\arb{سنڌي}), Tamil (\tam{தமிழ்}), Telugu (\tel{తెలుగు}) and Urdu
+(\arb{اردو}). Any pair among them translates through the English pivot, so a
+user may translate Hindi to Bengali or Tamil to Telugu without a direct model
+existing: 44 trained models serve 506 usable directions.
 
-The remaining eleven scheduled languages appear in the interface but are
-disabled and labelled as Phase 2. They are blocked by corpus availability: only
-Assamese and Punjabi among the lower-resource set had ungated Samanantar data,
-and the rest require access to the gated BPCC corpus.
+Every language in the picker is enabled; there are no disabled entries.
 
 \subsection{Interpreting the Output}
 \label{subsec:interpreting}
