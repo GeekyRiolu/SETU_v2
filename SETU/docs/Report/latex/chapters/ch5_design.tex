@@ -25,9 +25,69 @@ Figure~\ref{fig:sysarch} gives the high-level architecture. Data flows left to
 right through four stages (corpus, distillation, training, deployment) and
 then fans out to the four client interfaces.
 
-% Aspect ratio 4.88: sideways page so the pipeline labels stay legible.
-\widefigure{width=\linewidth, keepaspectratio}{figures/system_design.png}%
-  {System architecture: \seqkd{} distillation and offline deployment pipeline}{fig:sysarch}
+% Redrawn in TikZ. The exported PNG was 2384x489 px, so at page width it came
+% out 4.9 cm tall with illegible labels. The same pipeline wrapped onto three
+% rows, with the serving fan-out below, keeps every label at full size.
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+   node distance = 8mm and 9mm,
+   box/.style  = {rectangle, rounded corners=2pt, draw=black!70, fill=blue!5,
+                  text width=33mm, minimum height=15mm, align=center,
+                  font=\small, inner sep=3pt,
+                  execute at begin node={\hyphenpenalty=10000\exhyphenpenalty=10000\relax}},
+   db/.style   = {cylinder, shape border rotate=90, aspect=0.18, draw=black!70,
+                  fill=orange!10, text width=28mm, minimum height=15mm,
+                  align=center, font=\small, inner sep=3pt},
+   hex/.style  = {signal, signal to=east and west, draw=black!70, fill=green!8,
+                  text width=30mm, minimum height=15mm, align=center,
+                  font=\small, inner sep=3pt},
+   dia/.style  = {diamond, aspect=2.4, draw=black!70, fill=yellow!12,
+                  align=center, font=\scriptsize, inner sep=1pt},
+   ui/.style   = {rectangle, rounded corners=2pt, draw=black!70, fill=cyan!7,
+                  text width=25mm, minimum height=11mm, align=center,
+                  font=\scriptsize, inner sep=2pt},
+   edge/.style = {rectangle, rounded corners=6pt, draw=black!70, fill=black!6,
+                  text width=40mm, minimum height=12mm, align=center,
+                  font=\scriptsize, inner sep=2pt},
+   a/.style    = {-{Stealth[length=2.6mm]}, draw=black!75},
+   t/.style    = {font=\scriptsize, inner sep=2pt, fill=white}]
+
+  % --- row 1: corpus to teacher
+  \node[db]                      (corpus){Samanantar corpus\\[1pt]\scriptsize (Indic--English)};
+  \node[box, right=of corpus]    (pre)   {Preprocess\\[1pt]\scriptsize script norm $\cdot$ SentencePiece $\cdot$ align};
+  \node[hex, right=of pre]       (teach) {Teacher\\[1pt]\scriptsize IndicTrans2 dist-200M};
+  % --- row 2: distilled corpus to student
+  \node[db,  below=13mm of corpus](dist) {Distilled corpus};
+  \node[box, right=of dist]      (train) {\seqkd{} training\\[1pt]\scriptsize 52\,M student $\cdot$ PAD-masked CE $\cdot$ warmup $\cdot$ clip};
+  \node[box, right=of train]     (stud)  {Student SLM\\[1pt]\scriptsize 52\,M params $\cdot$ 16k vocab};
+  % --- row 3: quantise to router
+  \node[box, below=13mm of dist] (quant) {Quantise INT8/INT4\\[1pt]\scriptsize ONNX $\approx$104\,MB / direction};
+  \node[box, right=of quant]     (eng)   {Offline Inference\\Engine\\[1pt]\scriptsize ONNX Runtime + SentencePiece};
+  \node[dia, right=of eng, text width=24mm] (router){English-pivot\\router};
+  % --- serving fan-out
+  \node[ui, below=14mm of quant, xshift=-4mm] (rest){REST API\\\scriptsize /translate /languages /models /health};
+  \node[ui, right=6mm of rest]   (web)  {Next.js\\Web App};
+  \node[ui, right=6mm of web]    (pwa)  {Offline PWA};
+  \node[ui, right=6mm of pwa]    (cli)  {CLI};
+  \node[edge, below=11mm of web, xshift=10mm] (edgedev){Edge / on-device\\\scriptsize fully offline $\cdot$ zero network};
+
+  \draw[a] (corpus) -- (pre);
+  \draw[a] (pre)    -- (teach);
+  \draw[a] (teach.south) -- ++(0,-4mm) -| node[t,pos=0.25]{1-best translations} (dist.north);
+  \draw[a] (dist)   -- (train);
+  \draw[a] (train)  -- (stud);
+  \draw[a] (stud.south) -- ++(0,-4mm) -| (quant.north);
+  \draw[a] (quant)  -- (eng);
+  \draw[a] (eng)    -- (router);
+  \foreach \d in {rest,web,pwa,cli} \draw[a] (eng.south) -- (\d.north);
+  % round the right-hand edge so the arrow does not cut through the CLI box
+  \draw[a] (router.east) -- ++(8mm,0) |- (edgedev.east)
+        node[t, align=center, pos=0.42, right, xshift=-1mm]{direct pair\\or via English};
+\end{tikzpicture}
+\caption{System architecture: \seqkd{} distillation and offline deployment pipeline}
+\label{fig:sysarch}
+\end{figure}
 
 The architecture has four layers.
 

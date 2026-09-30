@@ -350,9 +350,63 @@ the artifact and produces translations. The evaluator is a side branch that
 consumes both student and teacher outputs to compute the ratio that gates
 deployment.
 
-% Aspect ratio 9.74, the widest diagram in the report: sideways page.
-\widefigure{width=\linewidth, keepaspectratio}{figures/data_flow.png}%
-  {Level-1 data flow diagram: corpus to deployed translation}{fig:dfd}
+% Redrawn in TikZ. The exported PNG was 2163x222 px: at any page width it
+% rendered as a 2.4 cm strip with unreadable labels. Wrapping the same nine
+% stages onto three rows makes every label full size.
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+   node distance = 9mm and 10mm,
+   box/.style   = {rectangle, rounded corners=2pt, draw=black!70, fill=blue!5,
+                   text width=31mm, minimum height=13mm, align=center,
+                   font=\small, inner sep=3pt},
+   db/.style    = {cylinder, shape border rotate=90, aspect=0.18, draw=black!70,
+                   fill=orange!10, text width=27mm, minimum height=13mm,
+                   align=center, font=\small, inner sep=3pt},
+   hex/.style   = {signal, signal to=east and west, draw=black!70, fill=green!8,
+                   text width=29mm, minimum height=13mm, align=center,
+                   font=\small, inner sep=3pt},
+   ev/.style    = {rectangle, rounded corners=2pt, draw=black!70, fill=violet!8,
+                   text width=44mm, minimum height=12mm, align=center,
+                   font=\small, inner sep=3pt},
+   a/.style     = {-{Stealth[length=2.6mm]}, draw=black!75},
+   t/.style     = {font=\scriptsize, inner sep=2pt, fill=white}]
+
+  % row 1
+  \node[db]                       (corpus) {Samanantar\\corpus};
+  \node[box, right=of corpus]     (pre)    {Preprocess\\[1pt]\scriptsize normalise $\cdot$ tokenise $\cdot$ align};
+  \node[hex, right=of pre]        (teach)  {IndicTrans2\\teacher};
+  % row 2
+  \node[db,  below=14mm of corpus] (dist)  {Distilled\\corpus};
+  \node[box, right=of dist]        (train) {SeqKD Trainer};
+  \node[box, right=of train]       (stud)  {52\,M Student};
+  % row 3
+  \node[box, below=14mm of dist]   (quant) {Quantiser\\[1pt]\scriptsize INT4 ONNX $\approx$104\,MB};
+  \node[box, right=of quant]       (eng)   {Inference Engine\\[1pt]\scriptsize + English pivot};
+  \node[box, right=of eng]         (out)   {Translation\\output};
+  % evaluator
+  \node[ev, below=12mm of eng]     (eval)  {Evaluator\\[1pt]\scriptsize student / teacher ratio};
+
+  \draw[a] (corpus) -- (pre);
+  \draw[a] (pre)    -- (teach);
+  \draw[a] (teach.south) -- ++(0,-4mm) -| node[t,pos=0.25]{1-best} (dist.north);
+  \draw[a] (dist)   -- (train);
+  \draw[a] (train)  -- (stud);
+  \draw[a] (stud.south) -- ++(0,-4mm) -| (quant.north);
+  \draw[a] (quant)  -- (eng);
+  \draw[a] (eng)    -- (out);
+
+  % both feeds run down a corridor to the right of the pipeline
+  \coordinate (cA) at ([xshift=16mm]teach.east);
+  \coordinate (cB) at ([xshift= 7mm]stud.east);
+  \draw[a, dashed, black!55] (teach.east) -- (cA) |- (eval.east)
+        node[t, pos=0.62, above]{teacher BLEU};
+  \draw[a, dashed, black!55] (stud.east)  -- (cB) |- ([yshift=3mm]eval.east)
+        node[t, pos=0.62, above]{student BLEU};
+\end{tikzpicture}
+\caption{Level-1 data flow diagram: corpus to deployed translation}
+\label{fig:dfd}
+\end{figure}
 
 \subsection{Entity-Relationship Model}
 \label{subsec:er}
@@ -365,31 +419,40 @@ and the language registry as YAML.
 
 \begin{figure}[H]
 \centering
-\begin{tikzpicture}[node distance=13mm and 20mm]
-  \node[ent, minimum width=30mm] (lang) {\textbf{Language}\\\scriptsize iso, flores, script, endonym};
-  \node[ent, below=22mm of lang, minimum width=32mm] (pair) {\textbf{LanguagePair}\\\scriptsize src\_flores, tgt\_flores};
-  \node[ent, left=of pair, minimum width=30mm] (sent) {\textbf{SentencePair}\\\scriptsize src\_text, tgt\_text, source};
-  \node[ent, right=of pair, minimum width=32mm] (mv) {\textbf{ModelVersion}\\\scriptsize params, quant\_bits, size\_mb};
-  \node[ent, below=20mm of sent, minimum width=32mm] (ev) {\textbf{EvalReport}\\\scriptsize bleu, chrf, teacher\_bleu, ratio};
-  \node[ent, below=20mm of mv, minimum width=32mm] (tr) {\textbf{TranslationResult}\\\scriptsize text, latency\_ms, pivot};
+% Laid out as a tree rather than one wide row: the previous single row put the
+% relationship diamonds only 6 mm from their entities, so the SentencePair box
+% and the "contains" diamond overlapped.
+\begin{tikzpicture}[node distance=9mm and 26mm,
+  ent/.append style={minimum width=38mm, minimum height=11mm, font=\small},
+  dec/.append style={font=\scriptsize, inner sep=2pt}]
 
-  \node[dec, above=7mm of pair, text width=20mm] (has) {defines};
-  \node[dec, left=6mm of pair, text width=18mm, xshift=-2mm] (cont) {contains};
-  \node[dec, right=6mm of pair, text width=18mm, xshift=2mm] (trained) {trains};
-  \node[dec, below=6mm of sent, text width=18mm] (scored) {scored by};
-  \node[dec, below=6mm of mv, text width=18mm] (prod) {produces};
+  \node[ent] (lang) {\textbf{Language}\\[1pt]\scriptsize iso, flores, script, endonym};
+  \node[dec, below=8mm of lang, text width=18mm] (defines) {defines};
+  \node[ent, below=8mm of defines] (pair) {\textbf{LanguagePair}\\[1pt]\scriptsize src\_flores, tgt\_flores};
 
-  \draw[-] (lang) -- node[lbl,right]{2} (has);
-  \draw[-] (has)  -- node[lbl,right]{1} (pair);
-  \draw[-] (pair) -- node[lbl,above]{N} (cont);
-  \draw[-] (cont) -- node[lbl,above]{1} (sent);
-  \draw[-] (pair) -- node[lbl,above]{1} (trained);
-  \draw[-] (trained) -- node[lbl,above]{N} (mv);
-  \draw[-] (sent) -- node[lbl,right]{N} (scored);
-  \draw[-] (scored) -- node[lbl,right]{1} (ev);
-  \draw[-] (mv)   -- node[lbl,right]{1} (prod);
-  \draw[-] (prod) -- node[lbl,right]{N} (tr);
-  \draw[-, dashed, black!55] (mv) -- node[lbl,above,pos=0.5]{evaluated by} (ev);
+  \node[dec, below left=10mm and 12mm of pair, text width=19mm] (contains) {contains};
+  \node[dec, below right=10mm and 12mm of pair, text width=17mm] (trains) {trains};
+
+  \node[ent, below=10mm of contains] (sent) {\textbf{SentencePair}\\[1pt]\scriptsize src\_text, tgt\_text, source};
+  \node[ent, below=10mm of trains]   (mv)   {\textbf{ModelVersion}\\[1pt]\scriptsize params, quant\_bits, size\_mb};
+
+  \node[dec, below=9mm of sent, text width=20mm] (scored)  {scored by};
+  \node[dec, below=9mm of mv,   text width=20mm] (produces){produces};
+
+  \node[ent, below=9mm of scored]   (ev) {\textbf{EvalReport}\\[1pt]\scriptsize bleu, chrf, teacher\_bleu, ratio};
+  \node[ent, below=9mm of produces] (tr) {\textbf{TranslationResult}\\[1pt]\scriptsize text, latency\_ms, pivot};
+
+  \draw[-] (lang)     -- node[lbl,right]{2} (defines);
+  \draw[-] (defines)  -- node[lbl,right]{1} (pair);
+  \draw[-] (pair)     -- node[lbl,above left,pos=0.55]{N} (contains);
+  \draw[-] (contains) -- node[lbl,right]{1} (sent);
+  \draw[-] (pair)     -- node[lbl,above right,pos=0.55]{1} (trains);
+  \draw[-] (trains)   -- node[lbl,right]{N} (mv);
+  \draw[-] (sent)     -- node[lbl,right]{N} (scored);
+  \draw[-] (scored)   -- node[lbl,right]{1} (ev);
+  \draw[-] (mv)       -- node[lbl,right]{1} (produces);
+  \draw[-] (produces) -- node[lbl,right]{N} (tr);
+  \draw[-, dashed, black!55] (mv.west) -- node[lbl,above,pos=0.5]{evaluated by} (ev.east);
 \end{tikzpicture}
 \caption{Entity-relationship model of \setu{}'s persistent artifacts}
 \label{fig:er}

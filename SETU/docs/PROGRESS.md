@@ -352,6 +352,28 @@ balancing, EWC anti-forgetting, device resolution, scorecard.
 
 ## 10. Session changelog
 
+- **2026-09-30 (cont.) (four diagrams redrawn as vector TikZ))** - The user reported that
+  the diagrams on printed pages 34, 44 and 51 were unreadable and that the ER diagram
+  overlapped. Root cause for the three: they were Mermaid PNG exports with extreme aspect
+  ratios (data flow 2163x222 = 9.74, Gantt 2384x460 = 5.18, system architecture
+  2384x489 = 4.88), so at any page width they rendered as 2.4-4.9 cm strips. No amount of
+  scaling fixes that, so all three were **redrawn natively in TikZ**, keeping the same
+  content from `docs/DIAGRAMS.md`: the data flow and the architecture pipeline wrap onto
+  three rows on a portrait page (with the evaluator feeds and the serving fan-out routed
+  through clear corridors), and the Gantt became a real TikZ chart with a month axis, a
+  colour-coded legend and milestone diamonds, still landscape. Text is now vector at full
+  point size rather than a raster strip. The **ER diagram** overlap was the relationship
+  diamonds sitting only 6 mm from their entities in one wide row; it is now a tree
+  (Language -> LanguagePair -> SentencePair / ModelVersion -> EvalReport /
+  TranslationResult) with cardinalities and no collisions. Added `shapes.symbols` for the
+  `signal` shape. Verified nothing else moved: still **129 pages**, every figure on the same
+  printed page as before (3.5 on 34, 3.6 on 35, 4.1 on 44, 5.1 on 51), all chapter starts
+  unchanged, figure numbering and the List of Figures intact, no LaTeX warnings and only
+  the pre-existing 3.5 pt overfull hbox. Dropping three raster PNGs also cut the PDF from
+  851 KB to 703 KB and the colour print split from 492 KB to 345 KB. The three source PNGs
+  and the now-unused `\widefigure` macro were left in place, since removing them changes
+  no page. Regenerated the PDF, the zip and both print splits (26 colour, 103 mono).
+
 - **2026-09-30 (cont.) (page-break fixes: stranded headings and half-empty pages)** -
   The user flagged four spots where a heading or paragraph was left hanging because the
   table after it could not fit. Loaded `needspace` and guarded the three headings that

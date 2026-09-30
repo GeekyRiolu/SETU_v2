@@ -85,10 +85,79 @@ mid-August 2026 and delivered the pipeline, the empirical finding and eleven
 languages. Phase~2 runs from August to the end of October 2026 and covers the
 remaining languages, benchmark rescoring, edge packaging and the final report.
 
-% Aspect ratio 5.18: at text width this collapses to a 2.9 cm strip, so it goes
-% on its own sideways page and uses the full text height instead.
-\widefigure{width=\linewidth, keepaspectratio}{figures/gantt.png}%
-  {Gantt chart: Phase 1 complete, Phase 2 to the final presentation}{fig:gantt}
+% Redrawn in TikZ. The exported PNG was 2384x460 px, so even on a sideways page
+% it rendered 4.6 cm tall with unreadable task labels. Drawn natively the task
+% names sit at full size and the month axis is explicit.
+\begin{landscape}
+\vspace*{\fill}
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[x=1.75cm, y=-0.62cm,
+   bar/.style   = {draw=black!65, fill=blue!25, minimum height=3.4mm, inner sep=0pt},
+   act/.style   = {draw=black!65, fill=orange!35, minimum height=3.4mm, inner sep=0pt},
+   todo/.style  = {draw=black!65, fill=black!10, minimum height=3.4mm, inner sep=0pt},
+   lab/.style   = {font=\small, anchor=east},
+   sec/.style   = {font=\small\bfseries, anchor=west},
+   ax/.style    = {font=\scriptsize, anchor=south}]
+
+  \def\L{-0.15}                                  % right edge of the label column
+  % month grid and axis
+  \foreach \m/\n in {0/Jan,1/Feb,2/Mar,3/Apr,4/May,5/Jun,6/Jul,7/Aug,8/Sep,9/Oct,10/{}} {
+     \draw[black!18] (\m,0.3) -- (\m,18.1);
+     \node[ax] at (\m,0.15) {\n};
+  }
+  \draw[black!55] (0,0.3)  -- (10,0.3);
+  \draw[black!55] (0,18.1) -- (10,18.1);
+  \node[font=\small\itshape, anchor=south] at (5,-0.75) {2026};
+
+  % ---- Phase 1 -------------------------------------------------------------
+  \node[sec] at (\L-3.05,1) {Phase 1 (complete)};
+  \foreach \r/\a/\b/\name in {%
+      2/0.45/1.96/{Literature survey and requirements},
+      3/2.00/3.97/{System design and pipeline build},
+      4/3.47/4.97/{Data and corpus preparation},
+      5/4.45/5.97/{Teacher distillation (1-best)},
+      6/5.47/7.13/{SeqKD student training (52\,M)},
+      7/6.29/7.13/{Quantisation and ONNX export},
+      8/6.45/7.23/{Interfaces: API, Web, PWA, CLI}} {
+     \node[lab] at (\L,\r) {\name};
+     \node[bar, anchor=west, minimum width={(\b-\a)*1.75cm}] at (\a,\r) {};
+  }
+  \node[lab] at (\L,9) {Phase 1 languages (11 of 22)};
+  \node[act, anchor=west, minimum width={(7.61-5.47)*1.75cm}] at (5.47,9) {};
+  \node[lab] at (\L,10) {\textit{Interim presentation}};
+  \node[diamond, draw=black!70, fill=red!55, minimum size=2.6mm, inner sep=0pt] at (7.35,10) {};
+
+  % ---- Phase 2 -------------------------------------------------------------
+  \node[sec] at (\L-3.05,11.6) {Phase 2 (in progress)};
+  \node[lab] at (\L,12.6) {Assamese and Punjabi finish};
+  \node[act, anchor=west, minimum width={(7.97-7.29)*1.75cm}] at (7.29,12.6) {};
+  \foreach \r/\a/\b/\name in {%
+      13.6/8.00/9.45/{Remaining 11 languages},
+      14.6/8.47/9.61/{FLORES and COMET benchmarking},
+      15.6/8.63/9.68/{Mobile and edge packaging},
+      16.6/9.00/9.77/{Final report and paper write-up}} {
+     \node[lab] at (\L,\r) {\name};
+     \node[todo, anchor=west, minimum width={(\b-\a)*1.75cm}] at (\a,\r) {};
+  }
+  \node[lab] at (\L,17.4) {\textit{Final presentation}};
+  \node[diamond, draw=black!70, fill=red!55, minimum size=2.6mm, inner sep=0pt] at (9.87,17.4) {};
+
+  % ---- legend --------------------------------------------------------------
+  \node[bar,  anchor=west, minimum width=7mm] at (0.0,19.2) {};
+  \node[font=\scriptsize, anchor=west] at (0.45,19.2) {complete};
+  \node[act,  anchor=west, minimum width=7mm] at (2.0,19.2) {};
+  \node[font=\scriptsize, anchor=west] at (2.45,19.2) {in progress};
+  \node[todo, anchor=west, minimum width=7mm] at (4.2,19.2) {};
+  \node[font=\scriptsize, anchor=west] at (4.65,19.2) {planned};
+  \node[diamond, draw=black!70, fill=red!55, minimum size=2.6mm, inner sep=0pt] at (6.3,19.2) {};
+  \node[font=\scriptsize, anchor=west] at (6.45,19.2) {milestone};
+\end{tikzpicture}
+\caption{Gantt chart: Phase 1 complete, Phase 2 to the final presentation}
+\label{fig:gantt}
+\end{figure}
+\vspace*{\fill}
+\end{landscape}
 
 \begin{longtable}{@{}L{5.4cm} L{2.4cm} L{2.4cm} C{1.3cm} L{2.0cm}@{}}
 \caption{Schedule of activities with durations}
