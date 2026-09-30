@@ -338,6 +338,10 @@ achieved by retraining at a lower learning rate on the same distilled corpus.
 \subsection{Data Flow Diagram}
 \label{subsec:dfd}
 
+% \begin{landscape} forces a page break, and the last line of this paragraph was
+% spilling onto an otherwise blank page ahead of it. One extra line on the
+% previous page keeps the paragraph whole.
+\enlargethispage{\baselineskip}
 Figure~\ref{fig:dfd} gives the level-1 data flow. The corpus is an external
 data source; the teacher is a transformation that produces the distilled data
 store; the trainer consumes that store and produces a student; the quantiser
@@ -454,6 +458,7 @@ no training dependencies at all.
 \label{fig:class}
 \end{figure}
 
+\needspace{16\baselineskip}
 \section{Software Requirements Specification}
 \label{sec:srs}
 

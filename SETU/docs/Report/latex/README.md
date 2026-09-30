@@ -1,6 +1,6 @@
 # SETU — Project Phase-II Report (LaTeX source)
 
-Built PDF: `../SETU_Project_Phase-II_Report.pdf` (130 pages, A4).
+Built PDF: `../SETU_Project_Phase-II_Report.pdf` (129 pages, A4).
 
 ## Build
 

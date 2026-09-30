@@ -18,9 +18,13 @@ reach at least 80\,\% of their teacher's BLEU; the remaining eight fall between
 
 \begin{table}[H]
 \centering
+% Slightly tighter rows than the report default of 1.25, purely so that this
+% table fits under the chapter opening rather than pushing itself and its
+% heading to the next page and leaving half of this one blank.
+\renewcommand{\arraystretch}{1.05}
 \caption{Outcome against each stated objective}
 \label{tab:objoutcome}
-\begin{tabular}{@{}L{1.0cm} L{3.3cm} L{5.8cm} L{3.3cm}@{}}
+\begin{tabular}{@{}L{0.9cm} L{3.1cm} J{7.1cm} L{2.9cm}@{}}
 \toprule
 \rowcolor{headblue}
 \textbf{Obj.} & \textbf{Target} & \textbf{Outcome} & \textbf{Verdict} \\

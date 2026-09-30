@@ -97,7 +97,7 @@
 %   L{w}  ragged right-- narrow prose cells, where justifying opens ugly gaps
 %   C{w}  centred     -- short labels
 %   R{w}  flush right -- numeric
-\newcolumntype{J}[1]{>{\justifying\arraybackslash}p{#1}}
+\newcolumntype{J}[1]{>{\justifying\setlength{\parindent}{0pt}\arraybackslash}p{#1}}
 \newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
 \newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
 \newcolumntype{R}[1]{>{\raggedleft\arraybackslash}p{#1}}
@@ -120,6 +120,9 @@
 
 % ---------- headings -------------------------------------------------------
 \usepackage{titlesec}
+% Keeps a heading from stranding at the foot of a page when the table that
+% follows it cannot fit: the heading moves to the next page with its table.
+\usepackage{needspace}
 
 \titleformat{\chapter}[display]
   {\normalfont\bfseries}

@@ -352,6 +352,27 @@ balancing, EWC anti-forgetting, device resolution, scorecard.
 
 ## 10. Session changelog
 
+- **2026-09-30 (cont.) (page-break fixes: stranded headings and half-empty pages)** -
+  The user flagged four spots where a heading or paragraph was left hanging because the
+  table after it could not fit. Loaded `needspace` and guarded the three headings that
+  stranded: **3.3 Software Requirements Specification**, **5.3 Interface Design** (the
+  guard belongs on the section, not on 5.3.1, or 5.3 strands alone once 5.3.1 moves) and
+  **7.1.6 Test Execution Summary**. Each now moves to the next page with its table. The
+  fourth, the **Chapter 9 opening**, was different: heading plus Table 9.1 needed 61.0 % of
+  the text block but only 57.6 % was left under the chapter title, so both moved and left
+  the page 57.6 % empty. Rebalancing the columns got it to 58.4 %, still short, so the
+  table also takes a locally tighter `arraystretch` of 1.05; the gap is now 0.4 % and the
+  table sits where it belongs. While checking, found and fixed two more defects: the `J{}`
+  justified column type inherited the body's 0.5 in first-line indent (ragged2e's
+  `\justifying` restores `\parindent`, unlike `\raggedright`, which zeroes it), so justified
+  cells were indented; and a **97 % blank page** before the landscape data-flow figure,
+  where one spilled line sat alone ahead of the forced page break, fixed with
+  `\enlargethispage`. A scripted sweep of every page now reports **zero orphaned headings**
+  and **zero unintended near-blank pages** (the two remaining are ordinary chapter ends).
+  The report is **129 pages**, one shorter than before; build still clean with no LaTeX
+  warnings, no anchor clashes and one pre-existing 3.5 pt overfull hbox in a TikZ diagram.
+  Regenerated the PDF, the zip and both print splits, which are now 26 colour and 103 mono.
+
 - **2026-09-30 (split the report into mono and colour print sets)** - Added
   `docs/Report/make_print_pdfs.py`, which measures each page's saturated-colour
   coverage (chroma = max RGB minus min RGB, threshold 60, so the pale `headblue`
