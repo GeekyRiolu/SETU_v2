@@ -33,24 +33,12 @@ training sentences, identical Hindi\arrowto{}English direction, and,
 critically, evaluation on \emph{real human references} held out from
 training, which makes the comparison fair no matter what each system trained on.
 
-\begin{table}[H]
-\centering
-\caption{The four systems compared}
-\label{tab:systems}
-\begin{tabular}{@{}l L{4.6cm} c L{5.0cm}@{}}
-\toprule
-\rowcolor{headblue}
-\textbf{System} & \textbf{SFT targets} & \textbf{DPO?} & \textbf{Rationale} \\
-\midrule
-S0 & Human references & No  & Naive baseline: train on the data as given \\
-\rowcolor{rowgrey}
-S1 & Teacher one-best  & No  & The standard strong baseline \cite{ref:seqkd} \\
-S2 & Human references  & Yes & The project's original proposal \\
-\rowcolor{rowgrey}
-S3 & Teacher one-best  & Yes & Does preference learning help on top of strong distillation? \\
-\bottomrule
-\end{tabular}
-\end{table}
+\begin{bullets}
+\item \textbf{S0.} Supervised targets: human references; DPO: no. Naive baseline: train on the data as given.
+\item \textbf{S1.} Supervised targets: teacher one-best; DPO: no. The standard strong baseline \cite{ref:seqkd}.
+\item \textbf{S2.} Supervised targets: human references; DPO: yes. The project's original proposal.
+\item \textbf{S3.} Supervised targets: teacher one-best; DPO: yes. Does preference learning help on top of strong distillation?.
+\end{bullets}
 
 \subsection{Result}
 \label{subsec:h2hresult}
@@ -185,34 +173,15 @@ Three distinct failure modes were encountered before the first successful
 training run. Each is reported because each was diagnosed to a root cause and
 fixed, and because all three produce output that looks superficially reasonable.
 
-\begin{longtable}{@{}L{1.1cm} L{3.4cm} L{4.3cm} L{4.6cm}@{}}
-\caption{Training run history: failures, diagnoses and fixes}
-\label{tab:runhistory}\\
-\toprule
-\rowcolor{headblue}
-\textbf{Run} & \textbf{Outcome} & \textbf{Symptom} & \textbf{Root cause and fix} \\
-\midrule
-\endfirsthead
-\toprule
-\rowcolor{headblue}
-\textbf{Run} & \textbf{Outcome} & \textbf{Symptom} & \textbf{Root cause and fix} \\
-\midrule
-\endhead
-\bottomrule
-\endlastfoot
-
-\#1 & Out of memory & Training died on the first CUDA allocation & Teacher remained resident on the GPU from the BLEU step while the student allocated. Fix: free the teacher first; reduce batch size from 64 to 32 \\
-\rowcolor{rowgrey}
-\#1b & Empty output & BLEU and chrF exactly 0.0; every translation the empty string & Three causes: a leading BOS in the labels created a train/generate mismatch; a 32{,}000-token vocabulary left most tokens undertrained; warmup was silently ignored. All three fixed, plus generation safeguards that make empty output impossible \\
-\#2 & Source-agnostic output & Fluent English, but \textit{``The police are investigating the case.''} for every input; loss an implausible 0.274 & Padding was not masked in the loss, so the model earned free credit for predicting PAD. Fix: $-100$ at pad positions, plus label smoothing, dropout and more data \\
-\rowcolor{rowgrey}
-\#3 & \textbf{First success} & BLEU 13.42, chrF 37.85, ratio 0.438; correct idiomatic output & The pad-loss fix plus scaling to 120{,}000 sentences. Loss an honest 3.39 \\
-\#4 & Collapse & BLEU 0.03; \textit{``What is the''} for every input, at 200{,}000 sentences on the same code that worked at 120{,}000 & No gradient clipping. More data means more steps and more chances to hit a gradient spike; run \#3 was lucky. Fix: clip gradient norm at 1.0 \\
-\rowcolor{rowgrey}
-\#5 & Stable & BLEU 18.60, chrF 45.40, ratio 0.654 & Clipping resolved the collapse, the last major training bug \\
-\#6 & Plateau & BLEU 18.64, ratio 0.657 at 250{,}000 sentences: flat against \#5 & Data volume had saturated for reference targets. This is what motivated the \seqkd{} comparison, and it is a reportable result in its own right \\
-
-\end{longtable}
+\begin{bullets}
+\item \textbf{\#1, out of memory.} \emph{Symptom:} Training died on the first CUDA allocation. \emph{Root cause and fix:} Teacher remained resident on the GPU from the BLEU step while the student allocated. Fix: free the teacher first; reduce batch size from 64 to 32.
+\item \textbf{\#1b, empty output.} \emph{Symptom:} BLEU and chrF exactly 0.0; every translation the empty string. \emph{Root cause and fix:} Three causes: a leading BOS in the labels created a train/generate mismatch; a 32{,}000-token vocabulary left most tokens undertrained; warmup was silently ignored. All three fixed, plus generation safeguards that make empty output impossible.
+\item \textbf{\#2, source-agnostic output.} \emph{Symptom:} Fluent English, but \textit{``The police are investigating the case.''} for every input; loss an implausible 0.274. \emph{Root cause and fix:} Padding was not masked in the loss, so the model earned free credit for predicting PAD. Fix: $-100$ at pad positions, plus label smoothing, dropout and more data.
+\item \textbf{\#3, \textbf{First success}.} \emph{Symptom:} BLEU 13.42, chrF 37.85, ratio 0.438; correct idiomatic output. \emph{Root cause and fix:} The pad-loss fix plus scaling to 120{,}000 sentences. Loss an honest 3.39.
+\item \textbf{\#4, collapse.} \emph{Symptom:} BLEU 0.03; \textit{``What is the''} for every input, at 200{,}000 sentences on the same code that worked at 120{,}000. \emph{Root cause and fix:} No gradient clipping. More data means more steps and more chances to hit a gradient spike; run \#3 was lucky. Fix: clip gradient norm at 1.0.
+\item \textbf{\#5, stable.} \emph{Symptom:} BLEU 18.60, chrF 45.40, ratio 0.654. \emph{Root cause and fix:} Clipping resolved the collapse, the last major training bug.
+\item \textbf{\#6, plateau.} \emph{Symptom:} BLEU 18.64, ratio 0.657 at 250{,}000 sentences: flat against \#5. \emph{Root cause and fix:} Data volume had saturated for reference targets. This is what motivated the \seqkd{} comparison, and it is a reportable result in its own right.
+\end{bullets}
 
 Run \#2 is the most instructive failure in the project. A training loss of 0.274
 corresponds to a perplexity of about 1.3, which for a from-scratch translation
@@ -230,22 +199,11 @@ the same characteristic pathology: fluent, grammatical, entirely
 source-independent output, a ``stock news sentence'' returned regardless of
 input.
 
-\begin{table}[H]
-\centering
-\caption{The two training collapses and their recovery}
-\label{tab:collapse}
-\begin{tabular}{@{}L{3.5cm} c c c c c@{}}
-\toprule
-\rowcolor{headblue}
-\textbf{Direction} & \textbf{LR} & \textbf{SFT loss} & \textbf{Ratio} & \textbf{LR (retry)} & \textbf{Ratio (retry)} \\
-\midrule
-Telugu\arrowto{}English   & $5\times10^{-4}$ & 3.13 & 0.036 & $3\times10^{-4}$ & \textbf{0.817} \\
-\rowcolor{rowgrey}
-Malayalam\arrowto{}English & $5\times10^{-4}$ & 3.96 & 0.013 & $3\times10^{-4}$ & \textbf{0.898} \\
-English\arrowto{}Malayalam & $5\times10^{-4}$ & n/a & 0.570 & $3\times10^{-4}$ & \textbf{0.863} \\
-\bottomrule
-\end{tabular}
-\end{table}
+\begin{bullets}
+\item \textbf{Telugu\arrowto{}English.} At a learning rate of $5\times10^{-4}$ the supervised loss was 3.13 and the ratio 0.036; retrained at $3\times10^{-4}$ the ratio reached \textbf{0.817}.
+\item \textbf{Malayalam\arrowto{}English.} At a learning rate of $5\times10^{-4}$ the supervised loss was 3.96 and the ratio 0.013; retrained at $3\times10^{-4}$ the ratio reached \textbf{0.898}.
+\item \textbf{English\arrowto{}Malayalam.} At a learning rate of $5\times10^{-4}$ the supervised loss was n/a and the ratio 0.570; retrained at $3\times10^{-4}$ the ratio reached \textbf{0.863}.
+\end{bullets}
 
 The diagnosis rests on a controlled observation: Tamil\arrowto{}English
 and Kannada\arrowto{}English trained at the same learning rate, on the same amount
@@ -304,33 +262,18 @@ dashed line marks the threshold}
 \label{fig:scorecard}
 \end{figure}
 
-\begin{table}[H]
-\centering
-\caption{Aggregate statistics across all 22 directions}
-\label{tab:aggregates}
-\begin{tabular}{@{}J{7.0cm} J{6.6cm}@{}}
-\toprule
-\rowcolor{headblue}
-\textbf{Metric} & \textbf{Value} \\
-\midrule
-Directions trained                     & 22 (11 languages, both ways) \\
-\rowcolor{rowgrey}
-Meeting the $\geq 0.80$ target         & \textbf{14 of 22 (64\,\%)} \\
-Mean ratio                             & \textbf{0.838} \\
-\rowcolor{rowgrey}
-Median ratio                           & \textbf{0.855} \\
-Best direction                         & Marathi \arrowto{} English, 0.955 \\
-\rowcolor{rowgrey}
-Weakest direction                      & English \arrowto{} Tamil, 0.755 \\
-Collapsed directions remaining         & \textbf{0} (both recovered) \\
-\rowcolor{rowgrey}
-Artifact size                          & 103.9\,MB, every direction \\
-Mean latency range                     & 105--202\,ms \\
-\rowcolor{rowgrey}
-Offline operation                      & Verified for every direction \\
-\bottomrule
-\end{tabular}
-\end{table}
+\begin{bullets}
+\item \textbf{Directions trained:} 22 (11 languages, both ways).
+\item \textbf{Meeting the $\geq 0.80$ target:} \textbf{14 of 22 (64\,\%)}.
+\item \textbf{Mean ratio:} \textbf{0.838}.
+\item \textbf{Median ratio:} \textbf{0.855}.
+\item \textbf{Best direction:} Marathi \arrowto{} English, 0.955.
+\item \textbf{Weakest direction:} English \arrowto{} Tamil, 0.755.
+\item \textbf{Collapsed directions remaining:} \textbf{0} (both recovered).
+\item \textbf{Artifact size:} 103.9\,MB, every direction.
+\item \textbf{Mean latency range:} 105--202\,ms.
+\item \textbf{Offline operation:} Verified for every direction.
+\end{bullets}
 
 \subsection{Per-Language Rollup and Quality Tiers}
 \label{subsec:rollup}
@@ -427,24 +370,12 @@ near-miss rather than discounted.
 \subsection{Definition-of-Done Scorecard}
 \label{subsec:dod}
 
-\begin{table}[H]
-\centering
-\caption{Final scorecard against the four project targets}
-\label{tab:dod}
-\begin{tabular}{@{}L{2.3cm} L{3.2cm} L{3.4cm} L{2.3cm} c@{}}
-\toprule
-\rowcolor{headblue}
-\textbf{Target} & \textbf{Metric} & \textbf{Result} & \textbf{Threshold} & \textbf{Status} \\
-\midrule
-Quality  & Student / teacher BLEU ratio & 14 of 22 directions; mean 0.838, median 0.855, best 0.955 & $\geq 0.80$ & Partial \\
-\rowcolor{rowgrey}
-Latency  & Milliseconds per sentence, quantised & Mean 105--202\,ms; p90 141--541\,ms & $<500$\,ms & \pass \\
-Size     & Quantised artifact, INT4 & 103.9\,MB, every direction & $\leq 200$\,MB & \pass \\
-\rowcolor{rowgrey}
-Offline  & Inference with networking disabled & Succeeds for every direction & Zero network calls & \pass \\
-\bottomrule
-\end{tabular}
-\end{table}
+\begin{bullets}
+\item \textbf{Quality.} Student / teacher BLEU ratio, against a threshold of $\geq 0.80$. \emph{Result:} 14 of 22 directions; mean 0.838, median 0.855, best 0.955. \emph{Status: partial.}
+\item \textbf{Latency.} Milliseconds per sentence, quantised, against a threshold of $<500$\,ms. \emph{Result:} Mean 105--202\,ms; p90 141--541\,ms. \emph{Status: met.}
+\item \textbf{Size.} Quantised artifact, INT4, against a threshold of $\leq 200$\,MB. \emph{Result:} 103.9\,MB, every direction. \emph{Status: met.}
+\item \textbf{Offline.} Inference with networking disabled, against a threshold of zero network calls. \emph{Result:} Succeeds for every direction. \emph{Status: met.}
+\end{bullets}
 
 Three of the four targets pass without exception across all 22 directions.
 Quality is met on 14 of 22. On the primary development pair,
@@ -460,33 +391,19 @@ This section examines what the models actually produce.
 \subsection{Simple Sentences}
 \label{subsec:simplesentences}
 
-\begin{table}[H]
-\centering
-\caption{Representative simple-sentence translations across directions}
-\label{tab:simple}
-\begin{tabular}{@{}L{1.7cm} L{5.8cm} L{5.8cm}@{}}
-\toprule
-\rowcolor{headblue}
-\textbf{Direction} & \textbf{Input} & \textbf{Output} \\
-\midrule
-hi \arrowto{} en & \dev{भारत एक विशाल देश है।} & India is a vast country. \\
-\rowcolor{rowgrey}
-hi \arrowto{} en & \dev{मुझे किताबें पढ़ना पसंद है।} & I love reading books. \\
-hi \arrowto{} en & \dev{आपकी मदद के लिए बहुत धन्यवाद।} & Thank you so much for your help. \\
-\rowcolor{rowgrey}
-en \arrowto{} hi & Water is essential for life. & \dev{जीवन के लिए पानी आवश्यक है।} \\
-en \arrowto{} hi & This is a very beautiful garden. & \dev{यह एक बहुत ही सुंदर उद्यान है।} \\
-\rowcolor{rowgrey}
-bn \arrowto{} en & \ben{ভারত একটি বড় দেশ।} & India is a big country. \\
-mr \arrowto{} en & \dev{मला पुस्तके वाचायला आवडतात।} & I love reading books. \\
-\rowcolor{rowgrey}
-ml \arrowto{} en & \mal{ഇന്ത്യ ഒരു വലിയ രാജ്യമാണ്.} & India is a big country. \\
-te \arrowto{} en & \tel{భారతదేశం ఒక పెద్ద దేశం.} & India is a big country. \\
-\rowcolor{rowgrey}
-en \arrowto{} ml & Water is essential for life. & \mal{ജീവിതത്തിന് വെള്ളം അത്യന്താപേക്ഷിതമാണ്.} \\
-\bottomrule
-\end{tabular}
-\end{table}
+\begin{bullets}
+\item \textbf{hi \arrowto{} en.} \dev{भारत एक विशाल देश है।} $\rightarrow$ India is a vast country.
+\item \textbf{hi \arrowto{} en.} \dev{मुझे किताबें पढ़ना पसंद है।} $\rightarrow$ I love reading books.
+\item \textbf{hi \arrowto{} en.} \dev{आपकी मदद के लिए बहुत धन्यवाद।} $\rightarrow$ Thank you so much for your help.
+\item \textbf{en \arrowto{} hi.} Water is essential for life $\rightarrow$ \dev{जीवन के लिए पानी आवश्यक है।}
+\item \textbf{en \arrowto{} hi.} This is a very beautiful garden $\rightarrow$ \dev{यह एक बहुत ही सुंदर उद्यान है।}
+\item \textbf{bn \arrowto{} en.} \ben{ভারত একটি বড় দেশ।} $\rightarrow$ India is a big country.
+\item \textbf{mr \arrowto{} en.} \dev{मला पुस्तके वाचायला आवडतात।} $\rightarrow$ I love reading books.
+\item \textbf{ml \arrowto{} en.} \mal{ഇന്ത്യ ഒരു വലിയ രാജ്യമാണ്.} $\rightarrow$ India is a big country.
+\item \textbf{te \arrowto{} en.} \tel{భారతదేశం ఒక పెద్ద దేశం.} $\rightarrow$ India is a big country.
+\item \textbf{en \arrowto{} ml.} Water is essential for life $\rightarrow$\newline
+\mal{ജീവിതത്തിന് വെള്ളം അത്യന്താപേക്ഷിതമാണ്.}
+\end{bullets}
 
 Output on simple sentences is idiomatic rather than merely literal. The Hindi
 model renders \dev{विशाल} as ``vast'' and \dev{पसंद है} as ``love reading''
@@ -501,52 +418,27 @@ recovery was genuine and not merely a better score.
 The harder probe used subordinate clauses, reported speech, counterfactual
 conditionals, percentages and named entities.
 
-\begin{table}[H]
-\centering
-\caption{Complex-sentence probe: \textit{``Although the weather was terrible, the farmers kept working in the fields until sunset.''}}
-\label{tab:complex1}
-\begin{tabular}{@{}L{1.5cm} J{12.3cm}@{}}
-\toprule
-\rowcolor{headblue}
-\textbf{Lang} & \textbf{Translation} \\
-\midrule
-hi & \dev{हालांकि मौसम भयानक था, लेकिन किसान सूर्यास्त तक खेतों में काम करते रहे।} \\
-\rowcolor{rowgrey}
-mr & \dev{हवामान भयंकर असले तरी शेतकरी सूर्यास्तापर्यंत शेतात काम करत राहिले.} \\
-gu & \guj{હવામાન ભયાનક હોવા છતાં, ખેડૂતો સૂર્યાસ્ત સુધી ખેતરોમાં કામ કરતા રહ્યા.} \\
-\rowcolor{rowgrey}
-kn & \kan{ಹವಾಮಾನ ಭಯಾನಕವಾಗಿದ್ದರೂ, ರೈತರು ಹೊಲಗಳಲ್ಲಿ ಸೂರ್ಯಾಸ್ತದವರೆಗೂ ಕೆಲಸ ಮಾಡುತ್ತಲೇ ಇದ್ದರು.} \\
-te & \tel{వాతావరణం భయంకరంగా ఉన్నప్పటికీ సూర్యాస్తమయం వరకు పొలాల్లో రైతులు పని చేస్తూనే ఉన్నారు.} \\
-\rowcolor{rowgrey}
-ml & \mal{കാലാവസ്ഥ ഭയാനകമായിരുന്നെങ്കിലും സൂര്യാസ്തമയുന്നതുവരെ കർഷകർ വയലുകളിൽ ജോലി തുടർന്നു.} \\
-\bottomrule
-\end{tabular}
-\end{table}
+\begin{bullets}
+\item \textbf{hi:} \dev{हालांकि मौसम भयानक था, लेकिन किसान सूर्यास्त तक खेतों में काम करते रहे।}
+\item \textbf{mr:} \dev{हवामान भयंकर असले तरी शेतकरी सूर्यास्तापर्यंत शेतात काम करत राहिले.}
+\item \textbf{gu:} \guj{હવામાન ભયાનક હોવા છતાં, ખેડૂતો સૂર્યાસ્ત સુધી ખેતરોમાં કામ કરતા રહ્યા.}
+\item \textbf{kn:} \kan{ಹವಾಮಾನ ಭಯಾನಕವಾಗಿದ್ದರೂ, ರೈತರು ಹೊಲಗಳಲ್ಲಿ ಸೂರ್ಯಾಸ್ತದವರೆಗೂ ಕೆಲಸ ಮಾಡುತ್ತಲೇ ಇದ್ದರು.}
+\item \textbf{te:} \tel{వాతావరణం భయంకరంగా ఉన్నప్పటికీ సూర్యాస్తమయం వరకు పొలాల్లో రైతులు పని చేస్తూనే ఉన్నారు.}
+\item \textbf{ml:} \mal{കാലാവസ്ഥ ഭയാനകമായിരുന്നെങ്കിലും സൂര്യാസ്തമയുന്നതുവരെ കർഷകർ വയലുകളിൽ ജോലി തുടർന്നു.}
+\end{bullets}
 
 The concessive clause survives in every language, each using its own idiomatic
 construction: \dev{हालांकि}, \guj{હોવા છતાં}, \kan{ಆಗಿದ್ದರೂ},
 \tel{ఉన్నప్పటికీ}. The models are not transliterating an English structure;
 they are producing target-language syntax.
 
-\begin{table}[H]
-\centering
-\caption{Counterfactual conditional probe: \textit{``If you had told me earlier, I would have booked the tickets for the evening train.''}}
-\label{tab:complex2}
-\begin{tabular}{@{}L{1.5cm} J{12.3cm}@{}}
-\toprule
-\rowcolor{headblue}
-\textbf{Lang} & \textbf{Translation} \\
-\midrule
-hi & \dev{अगर आपने पहले मुझे बताया होता तो मैं शाम की ट्रेन के लिए टिकट बुक कर लेता।} \\
-\rowcolor{rowgrey}
-mr & \dev{तुम्ही मला आधी सांगितले असते तर मी संध्याकाळच्या ट्रेनसाठी तिकिटे बुक केली असती.} \\
-gu & \guj{જો તમે મને અગાઉ કહ્યું હોત, તો મેં સાંજની ટ્રેન માટે ટિકિટ બુક કરી હોત.} \\
-\rowcolor{rowgrey}
-ta & \tam{நீங்கள் என்னை முன்பே சொன்னிருந்தால், மாலை ரயிலில் டிக்கெட்டுகளை முன்பதிவு செய்திருப்பேன்.} \\
-ml & \mal{നിങ്ങൾ എന്നോട് നേരത്തെ പറഞ്ഞിരുന്നെങ്കിൽ വൈകുന്നേരത്തെ ട്രെയിനിനായി ടിക്കറ്റ് ബുക്ക് ചെയ്യുമായിരുന്നു.} \\
-\bottomrule
-\end{tabular}
-\end{table}
+\begin{bullets}
+\item \textbf{hi:} \dev{अगर आपने पहले मुझे बताया होता तो मैं शाम की ट्रेन के लिए टिकट बुक कर लेता।}
+\item \textbf{mr:} \dev{तुम्ही मला आधी सांगितले असते तर मी संध्याकाळच्या ट्रेनसाठी तिकिटे बुक केली असती.}
+\item \textbf{gu:} \guj{જો તમે મને અગાઉ કહ્યું હોત, તો મેં સાંજની ટ્રેન માટે ટિકિટ બુક કરી હોત.}
+\item \textbf{ta:} \tam{நீங்கள் என்னை முன்பே சொன்னிருந்தால், மாலை ரயிலில் டிக்கெட்டுகளை முன்பதிவு செய்திருப்பேன்.}
+\item \textbf{ml:} \mal{നിങ്ങൾ എന്നോട് നേരത്തെ പറഞ്ഞിരുന്നെങ്കിൽ വൈകുന്നേരത്തെ ട്രെയിനിനായി ടിക്കറ്റ് ബുക്ക് ചെയ്യുമായിരുന്നു.}
+\end{bullets}
 
 Counterfactual conditionals are a demanding test because they require the
 correct irrealis mood in the main clause. Hindi, Marathi and Gujarati all
@@ -558,24 +450,12 @@ sense. This is a genuine error and matches Telugu's position in the scorecard.
 \subsection{Recurring Error Patterns}
 \label{subsec:errors}
 
-\begin{table}[H]
-\centering
-\caption{Recurring error patterns, observed in near-miss directions}
-\label{tab:errors}
-\begin{tabular}{@{}L{3.1cm} L{5.4cm} L{5.4cm}@{}}
-\toprule
-\rowcolor{headblue}
-\textbf{Pattern} & \textbf{Example} & \textbf{Interpretation} \\
-\midrule
-Repetition & \textit{``India is a country that is a big country''} (or\arrowto{}en); \textit{``life of life''} (gu\arrowto{}en) & The decoder re-enters a high-probability phrase. The 3-gram repetition block catches the worst cases but not all \\
-\rowcolor{rowgrey}
-Untranslated idiom & \textit{o'clock} transliterated as \ory{ନଅ ଓକ୍ଲାରେ} (or), \kan{ಒಂಬತ್ತು ಓಕ್ಲಾಕ್ಗೆ} (kn) & The token is rare in the distilled corpus, so the student falls back to transliteration \\
-Lexical slip & hi\arrowto{}en renders \dev{ढलना} as ``collapsed'' instead of ``set''; a Marathi round trip turns \textit{sunset} into \textit{sunrise} & Polysemy resolved incorrectly; a 52\,M student has limited lexical disambiguation capacity \\
-\rowcolor{rowgrey}
-Dropped modifier & Kannada omits ``fifteen percent'' in a reported-speech sentence & Information loss under a long dependency; the weakest Kannada behaviour, matching its 0.763 ratio \\
-\bottomrule
-\end{tabular}
-\end{table}
+\begin{bullets}
+\item \textbf{Repetition.} \textit{``India is a country that is a big country''} (or\arrowto{}en); \textit{``life of life''} (gu\arrowto{}en). \emph{Interpretation:} The decoder re-enters a high-probability phrase. The 3-gram repetition block catches the worst cases but not all.
+\item \textbf{Untranslated idiom.} \textit{o'clock} transliterated as \ory{ନଅ ଓକ୍ଲାରେ} (or), \kan{ಒಂಬತ್ತು ಓಕ್ಲಾಕ್ಗೆ} (kn). \emph{Interpretation:} The token is rare in the distilled corpus, so the student falls back to transliteration.
+\item \textbf{Lexical slip.} hi\arrowto{}en renders \dev{ढलना} as ``collapsed'' instead of ``set''; a Marathi round trip turns \textit{sunset} into \textit{sunrise}. \emph{Interpretation:} Polysemy resolved incorrectly; a 52\,M student has limited lexical disambiguation capacity.
+\item \textbf{Dropped modifier.} Kannada omits ``fifteen percent'' in a reported-speech sentence. \emph{Interpretation:} Information loss under a long dependency; the weakest Kannada behaviour, matching its 0.763 ratio.
+\end{bullets}
 
 A round-trip test (English to the target language and back) was also run.
 Hindi and Marathi round-trip almost perfectly. Kannada drifts noticeably, again
@@ -636,24 +516,12 @@ cd frontend && npm install && npm run dev      # http://localhost:3000
 \subsection{Interface Reference}
 \label{subsec:apiref}
 
-\begin{table}[H]
-\centering
-\caption{REST API reference}
-\label{tab:apiref}
-\begin{tabular}{@{}L{3.6cm} L{4.0cm} J{6.2cm}@{}}
-\toprule
-\rowcolor{headblue}
-\textbf{Endpoint} & \textbf{Request} & \textbf{Response} \\
-\midrule
-\texttt{POST /translate} & \texttt{\{source\_lang, target\_lang, text\}} & \texttt{\{translated\_text, latency\_ms, pivot, stub\}}. \texttt{pivot} is \texttt{"en"} for a chained translation; \texttt{stub} true means passthrough \\
-\rowcolor{rowgrey}
-\texttt{GET /languages} & n/a & 23 entries: ISO code, FLORES code, script, endonym \\
-\texttt{GET /models} & n/a & \texttt{\{count, models: [\{pair, variant, size\_mb\}]\}} \\
-\rowcolor{rowgrey}
-\texttt{GET /health} & n/a & \texttt{\{status, stub\}} \\
-\bottomrule
-\end{tabular}
-\end{table}
+\begin{bullets}
+\item \texttt{POST /translate}. \emph{Request:} \texttt{\{source\_lang, target\_lang, text\}}. \emph{Response:} \texttt{\{translated\_text, latency\_ms, pivot, stub\}}. \texttt{pivot} is \texttt{"en"} for a chained translation; \texttt{stub} true means passthrough.
+\item \texttt{GET /languages}. \emph{Request:} no body. \emph{Response:} 23 entries: ISO code, FLORES code, script, endonym.
+\item \texttt{GET /models}. \emph{Request:} no body. \emph{Response:} \texttt{\{count, models: [\{pair, variant, size\_mb\}]\}}.
+\item \texttt{GET /health}. \emph{Request:} no body. \emph{Response:} \texttt{\{status, stub\}}.
+\end{bullets}
 
 \subsection{Supported Languages}
 \label{subsec:supportedlangs}

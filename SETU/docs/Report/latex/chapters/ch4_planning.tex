@@ -26,60 +26,41 @@ responsibility within the team.
 The project decomposes into nine engineering milestones, M0 through M8, followed
 by a hardening and delivery milestone. Each milestone is a single commit with a
 defined completion criterion, so that progress is verifiable rather than
-self-reported. Table~\ref{tab:wbs} gives the breakdown together with the
-evidence required to close each item.
+self-reported. The breakdown below gives, for each item, the work it covers and the
+evidence required to close it.
 
-\begin{longtable}{@{}L{1.1cm} L{3.5cm} L{5.4cm} L{4.1cm}@{}}
-\caption{Work breakdown structure with completion evidence}
-\label{tab:wbs}\\
-\toprule
-\rowcolor{headblue}
-\textbf{ID} & \textbf{Task} & \textbf{Description} & \textbf{Completion evidence} \\
-\midrule
-\endfirsthead
-\multicolumn{4}{c}{\textit{Table \thetable{} (continued)}}\\
-\toprule
-\rowcolor{headblue}
-\textbf{ID} & \textbf{Task} & \textbf{Description} & \textbf{Completion evidence} \\
-\midrule
-\endhead
-\midrule
-\multicolumn{4}{r}{\textit{continued on next page}}\\
-\endfoot
-\bottomrule
-\endlastfoot
+The Phase~1 milestones are as follows.
 
-M0 & Scaffold & Package layout, four core data objects, YAML configuration with the 22-language registry, CLI, passthrough stub engine & 7 tests green; CLI runs end to end \\
-\rowcolor{rowgrey}
-M1 & Data pipeline & Corpus loading, script normalisation, length and script filtering, deduplication, JSONL output & 50{,}000 pairs in, 49{,}520 clean pairs out, with a filter breakdown report \\
-M2 & Teacher integration & IndicTrans2 behind an abstract interface; a test forbids any other module importing the teacher's dependencies & Real smoke test producing fluent candidate translations \\
-\rowcolor{rowgrey}
-M3 & Preference generation & Teacher $n$-best candidates plus $k$-NN retrieved neighbours, chrF ranking, pair validation & 500 entries $\rightarrow$ 3{,}494 candidates $\rightarrow$ 2{,}074 validated pairs \\
-M4 & SFT and DPO training & SentencePiece tokenizer, student model, supervised fine-tuning, DPO with a frozen reference, evaluation harness & DPO measurably outperforms SFT; test enforces the reference stays frozen \\
-\rowcolor{rowgrey}
-M5 & Quantisation and offline inference & ONNX export, progressive INT8 and INT4 quantisation, ONNX inference engine, socket-disabling offline assertion & Size, latency and offline targets all pass \\
-M6 & Interfaces & FastAPI REST service, CLI, offline PWA, mobile SDK stubs, all sharing one engine & 15 interface tests green \\
-\rowcolor{rowgrey}
-M7 & All-in-One KD & Temperature-sampled cross-lingual balancing with a coverage report & Mechanism proven by test \\
-M8 & Elastic Weight Consolidation & Diagonal-Fisher penalty, old-task snapshot, EWC training step & Measured retention of the old task above naive fine-tuning \\
-\rowcolor{rowgrey}
-M9 & Hardening and delivery & Scorecard generator, benchmarks, documentation, dead-code removal & Full suite green; scorecard reports \textsc{unverified} when evidence is absent \\
-\midrule
-P2-A & \seqkd{} baseline and head-to-head & Distiller CLI, \texttt{-{}-train-corpus} switch, S0/S1/S2/S3 comparison & Figure~\ref{fig:h1} filled \\
-\rowcolor{rowgrey}
-P2-B & GPU campaign & Environment fixes, resumable runners, 22 directions trained bidirectionally & 22 per-direction reports \\
-P2-C & Collapse diagnosis and recovery & Root-cause the two degenerate students and retrain & Both recovered to passing ratios \\
-\rowcolor{rowgrey}
-P2-D & English-pivot routing & Shared router used by REST and CLI alike & Verified on Hindi--Bengali, Tamil--Telugu, Assamese--Bengali \\
-P2-E & Frontend and release & Next.js client, offline PWA, public model release, quick-start documentation & Live demo; models downloadable without login \\
-\rowcolor{rowgrey}
-P2-F & Report and paper & This report; paper plan with filled result tables & Submitted \\
+\begin{bullets}
+\item \textbf{M0, scaffold.} Package layout, four core data objects, YAML configuration with the 22-language registry, CLI, passthrough stub engine. \emph{Evidence:} 7 tests green; CLI runs end to end.
+\item \textbf{M1, data pipeline.} Corpus loading, script normalisation, length and script filtering, deduplication, JSONL output. \emph{Evidence:} 50{,}000 pairs in, 49{,}520 clean pairs out, with a filter breakdown report.
+\item \textbf{M2, teacher integration.} IndicTrans2 behind an abstract interface; a test forbids any other module importing the teacher's dependencies. \emph{Evidence:} Real smoke test producing fluent candidate translations.
+\item \textbf{M3, preference generation.} Teacher $n$-best candidates plus $k$-NN retrieved neighbours, chrF ranking, pair validation. \emph{Evidence:} 500 entries $\rightarrow$ 3{,}494 candidates $\rightarrow$ 2{,}074 validated pairs.
+\item \textbf{M4, sFT and DPO training.} SentencePiece tokenizer, student model, supervised fine-tuning, DPO with a frozen reference, evaluation harness. \emph{Evidence:} DPO measurably outperforms SFT; test enforces the reference stays frozen.
+\item \textbf{M5, quantisation and offline inference.} ONNX export, progressive INT8 and INT4 quantisation, ONNX inference engine, socket-disabling offline assertion. \emph{Evidence:} Size, latency and offline targets all pass.
+\item \textbf{M6, interfaces.} FastAPI REST service, CLI, offline PWA, mobile SDK stubs, all sharing one engine. \emph{Evidence:} 15 interface tests green.
+\item \textbf{M7, all-in-One KD.} Temperature-sampled cross-lingual balancing with a coverage report. \emph{Evidence:} Mechanism proven by test.
+\item \textbf{M8, elastic Weight Consolidation.} Diagonal-Fisher penalty, old-task snapshot, EWC training step. \emph{Evidence:} Measured retention of the old task above naive fine-tuning.
+\item \textbf{M9, hardening and delivery.} Scorecard generator, benchmarks, documentation, dead-code removal. \emph{Evidence:} Full suite green; scorecard reports \textsc{unverified} when evidence is absent.
+\end{bullets}
 
-\end{longtable}
+Phase~2 continued with the following work packages.
+
+\begin{bullets}
+\item \textbf{P2-A, \seqkd{} baseline and head-to-head.} Distiller CLI, \texttt{-{}-train-corpus} switch, S0/S1/S2/S3 comparison. \emph{Evidence:} Figure~\ref{fig:h1} filled.
+\item \textbf{P2-B, gPU campaign.} Environment fixes, resumable runners, 22 directions trained bidirectionally. \emph{Evidence:} 22 per-direction reports.
+\item \textbf{P2-C, collapse diagnosis and recovery.} Root-cause the two degenerate students and retrain. \emph{Evidence:} Both recovered to passing ratios.
+\item \textbf{P2-D, english-pivot routing.} Shared router used by REST and CLI alike. \emph{Evidence:} Verified on Hindi--Bengali, Tamil--Telugu, Assamese--Bengali.
+\item \textbf{P2-E, frontend and release.} Next.js client, offline PWA, public model release, quick-start documentation. \emph{Evidence:} Live demo; models downloadable without login.
+\item \textbf{P2-F, report and paper.} This report; paper plan with filled result tables. \emph{Evidence:} Submitted.
+\end{bullets}
 
 \subsection{Gantt Chart}
 \label{subsec:gantt}
 
+%% The last line of this paragraph was spilling onto a page of its own ahead
+%% of the landscape Gantt; the extra line of depth keeps it with its paragraph.
+\enlargethispage{\baselineskip}
 Figure~\ref{fig:gantt} gives the schedule. Phase~1 ran from January to
 mid-August 2026 and delivered the pipeline, the empirical finding and the first
 eleven languages. Phase~2 ran from August to the end of October 2026 and
@@ -156,49 +137,30 @@ and the final report. Both phases are complete.
 \vspace*{\fill}
 \end{landscape}
 
-\begin{longtable}{@{}L{5.4cm} L{2.4cm} L{2.4cm} C{1.3cm} L{2.0cm}@{}}
-\caption{Schedule of activities with durations}
-\label{tab:schedule}\\
-\toprule
-\rowcolor{headblue}
-\textbf{Activity} & \textbf{Start} & \textbf{Finish} & \textbf{Weeks} & \textbf{Status} \\
-\midrule
-\endfirsthead
-\toprule
-\rowcolor{headblue}
-\textbf{Activity} & \textbf{Start} & \textbf{Finish} & \textbf{Weeks} & \textbf{Status} \\
-\midrule
-\endhead
-\bottomrule
-\endlastfoot
+Phase~1 ran as follows.
 
-\multicolumn{5}{@{}l}{\textbf{Phase 1}}\\
-Literature survey and requirements     & 15 Jan 2026 & 28 Feb 2026 & 6.5 & Complete \\
-\rowcolor{rowgrey}
-System design and pipeline build       & 01 Mar 2026 & 30 Apr 2026 & 8.5 & Complete \\
-Corpus preparation (Samanantar)        & 15 Apr 2026 & 31 May 2026 & 6.5 & Complete \\
-\rowcolor{rowgrey}
-Teacher distillation (one-best)        & 15 May 2026 & 30 Jun 2026 & 6.5 & Complete \\
-\seqkd{} student training (52\,M)      & 15 Jun 2026 & 05 Aug 2026 & 7.0 & Complete \\
-\rowcolor{rowgrey}
-Quantisation and ONNX export           & 10 Jul 2026 & 05 Aug 2026 & 3.5 & Complete \\
-Interfaces: API, web, PWA, CLI, pivot  & 15 Jul 2026 & 08 Aug 2026 & 3.5 & Complete \\
-\rowcolor{rowgrey}
-Language coverage, first eleven        & 15 Jun 2026 & 20 Aug 2026 & 9.5 & Complete \\
-\textit{Interim presentation}          & \multicolumn{2}{l}{\textit{12 Aug 2026}} & n/a & Milestone \\
-\midrule
-\multicolumn{5}{@{}l}{\textbf{Phase 2}}\\
-\rowcolor{rowgrey}
-Assamese and Punjabi completion        & 10 Aug 2026 & 31 Aug 2026 & 3.0 & Complete \\
-Language coverage, all 22 delivered    & 01 Sep 2026 & 15 Oct 2026 & 6.5 & Complete \\
-\rowcolor{rowgrey}
-FLORES-200 and COMET benchmarking      & 15 Sep 2026 & 20 Oct 2026 & 5.0 & Complete \\
-Mobile and edge packaging              & 20 Sep 2026 & 22 Oct 2026 & 4.5 & Complete \\
-\rowcolor{rowgrey}
-Final report and paper write-up        & 01 Oct 2026 & 25 Oct 2026 & 3.5 & Complete \\
-\textit{Final presentation}            & \multicolumn{2}{l}{\textit{28 Oct 2026}} & n/a & Milestone \\
+\begin{bullets}
+\item \textbf{Literature survey and requirements:} 15 Jan 2026 to 28 Feb 2026, 6.5 weeks, complete.
+\item \textbf{System design and pipeline build:} 01 Mar 2026 to 30 Apr 2026, 8.5 weeks, complete.
+\item \textbf{Corpus preparation (Samanantar):} 15 Apr 2026 to 31 May 2026, 6.5 weeks, complete.
+\item \textbf{Teacher distillation (one-best):} 15 May 2026 to 30 Jun 2026, 6.5 weeks, complete.
+\item \textbf{\seqkd{} student training (52\,M):} 15 Jun 2026 to 05 Aug 2026, 7.0 weeks, complete.
+\item \textbf{Quantisation and ONNX export:} 10 Jul 2026 to 05 Aug 2026, 3.5 weeks, complete.
+\item \textbf{Interfaces: API, web, PWA, CLI, pivot:} 15 Jul 2026 to 08 Aug 2026, 3.5 weeks, complete.
+\item \textbf{Language coverage, first eleven:} 15 Jun 2026 to 20 Aug 2026, 9.5 weeks, complete.
+\item \textbf{Interim presentation:} 12 Aug 2026.
+\end{bullets}
 
-\end{longtable}
+Phase~2 ran as follows.
+
+\begin{bullets}
+\item \textbf{Assamese and Punjabi completion:} 10 Aug 2026 to 31 Aug 2026, 3.0 weeks, complete.
+\item \textbf{Language coverage, all 22 delivered:} 01 Sep 2026 to 15 Oct 2026, 6.5 weeks, complete.
+\item \textbf{FLORES-200 and COMET benchmarking:} 15 Sep 2026 to 20 Oct 2026, 5.0 weeks, complete.
+\item \textbf{Mobile and edge packaging:} 20 Sep 2026 to 22 Oct 2026, 4.5 weeks, complete.
+\item \textbf{Final report and paper write-up:} 01 Oct 2026 to 25 Oct 2026, 3.5 weeks, complete.
+\item \textbf{Final presentation:} 28 Oct 2026.
+\end{bullets}
 
 \subsection{PERT Analysis}
 \label{subsec:pert}
@@ -214,34 +176,21 @@ t_e = \frac{a + 4m + b}{6}, \qquad
 \sigma^2 = \left(\frac{b-a}{6}\right)^{\!2}.
 \end{equation}
 
-\begin{table}[H]
-\centering
-\caption{PERT duration estimates for Phase 1 activities (weeks)}
-\label{tab:pert}
-\begin{tabular}{@{}c L{4.6cm} c c c c c c@{}}
-\toprule
-\rowcolor{headblue}
-\textbf{ID} & \textbf{Activity} & \textbf{Pred.} & \textbf{$a$} & \textbf{$m$} & \textbf{$b$} & \textbf{$t_e$} & \textbf{$\sigma^2$} \\
-\midrule
-A & Literature survey \& requirements & n/a    & 4 & 6  & 9  & 6.17  & 0.69 \\
-\rowcolor{rowgrey}
-B & System design                     & A      & 3 & 4  & 7  & 4.33  & 0.44 \\
-C & Pipeline implementation (M0--M4)  & B      & 6 & 8  & 13 & 8.50  & 1.36 \\
-\rowcolor{rowgrey}
-D & Corpus preparation                & B      & 3 & 4  & 8  & 4.50  & 0.69 \\
-E & Teacher distillation              & C, D   & 4 & 6  & 10 & 6.33  & 1.00 \\
-\rowcolor{rowgrey}
-F & Student training (\seqkd{})       & E      & 5 & 7  & 12 & 7.50  & 1.36 \\
-G & Collapse diagnosis \& retraining  & F      & 0 & 2  & 5  & 2.17  & 0.69 \\
-\rowcolor{rowgrey}
-H & Quantisation \& ONNX export       & F      & 2 & 3  & 5  & 3.17  & 0.25 \\
-I & Interfaces \& pivot routing       & H      & 2 & 3  & 6  & 3.33  & 0.44 \\
-\rowcolor{rowgrey}
-J & Evaluation \& scorecard           & G, H   & 1 & 2  & 4  & 2.17  & 0.25 \\
-K & Documentation \& report           & I, J   & 2 & 3  & 5  & 3.17  & 0.25 \\
-\bottomrule
-\end{tabular}
-\end{table}
+The estimates and the resulting expected durations are as follows.
+
+\begin{bullets}
+\item \textbf{A, literature survey and requirements.} No predecessor; $a=4$, $m=6$, $b=9$, giving $t_e=6.17$ weeks and $\sigma^2=0.69$.
+\item \textbf{B, system design.} Follows A; $a=3$, $m=4$, $b=7$, giving $t_e=4.33$ weeks and $\sigma^2=0.44$.
+\item \textbf{C, pipeline implementation (M0--M4).} Follows B; $a=6$, $m=8$, $b=13$, giving $t_e=8.50$ weeks and $\sigma^2=1.36$.
+\item \textbf{D, corpus preparation.} Follows B; $a=3$, $m=4$, $b=8$, giving $t_e=4.50$ weeks and $\sigma^2=0.69$.
+\item \textbf{E, teacher distillation.} Follows C, D; $a=4$, $m=6$, $b=10$, giving $t_e=6.33$ weeks and $\sigma^2=1.00$.
+\item \textbf{F, student training (\seqkd{}).} Follows E; $a=5$, $m=7$, $b=12$, giving $t_e=7.50$ weeks and $\sigma^2=1.36$.
+\item \textbf{G, collapse diagnosis \& retraining.} Follows F; $a=0$, $m=2$, $b=5$, giving $t_e=2.17$ weeks and $\sigma^2=0.69$.
+\item \textbf{H, quantisation \& ONNX export.} Follows F; $a=2$, $m=3$, $b=5$, giving $t_e=3.17$ weeks and $\sigma^2=0.25$.
+\item \textbf{I, interfaces \& pivot routing.} Follows H; $a=2$, $m=3$, $b=6$, giving $t_e=3.33$ weeks and $\sigma^2=0.44$.
+\item \textbf{J, evaluation \& scorecard.} Follows G, H; $a=1$, $m=2$, $b=4$, giving $t_e=2.17$ weeks and $\sigma^2=0.25$.
+\item \textbf{K, documentation \& report.} Follows I, J; $a=2$, $m=3$, $b=5$, giving $t_e=3.17$ weeks and $\sigma^2=0.25$.
+\end{bullets}
 
 Figure~\ref{fig:pert} shows the activity network. The critical path is
 \textbf{A \arrowto{} B \arrowto{} C \arrowto{} E \arrowto{} F \arrowto{} G
@@ -316,41 +265,20 @@ was allotted.
 \subsection{Risk Management}
 \label{subsec:risk}
 
-Table~\ref{tab:risk} records the risks identified at planning time, together
-with the mitigation applied and (where the risk materialised) what
-actually happened. Five of the nine anticipated risks occurred.
+The risks identified at planning time are recorded below, together with the
+mitigation applied and, where the risk materialised, what actually happened. Five of the nine anticipated risks occurred.
 
-\begin{longtable}{@{}L{1.0cm} L{3.3cm} C{1.6cm} C{1.6cm} L{5.6cm}@{}}
-\caption{Risk register with outcomes}
-\label{tab:risk}\\
-\toprule
-\rowcolor{headblue}
-\textbf{ID} & \textbf{Risk} & \textbf{Prob.} & \textbf{Impact} & \textbf{Mitigation and outcome} \\
-\midrule
-\endfirsthead
-\toprule
-\rowcolor{headblue}
-\textbf{ID} & \textbf{Risk} & \textbf{Prob.} & \textbf{Impact} & \textbf{Mitigation and outcome} \\
-\midrule
-\endhead
-\bottomrule
-\endlastfoot
-
-R1 & Gated access to the teacher checkpoints and the BPCC corpus & High & High & Fall back to ungated rotary checkpoints and the Samanantar corpus. \textbf{Occurred.} Mitigation applied; the cost is a lower quality ceiling, reported explicitly \\
-\rowcolor{rowgrey}
-R2 & No GPU available locally & High & High & Use a cloud GPU (Kaggle, Colab) and later a dedicated A40 VM. \textbf{Occurred.} All final training ran on the A40 VM \\
-R3 & Student fails to reach the quality target & Medium & High & Treat data volume, teacher strength and student width as independent levers; report shortfall honestly. \textbf{Partially occurred:} 14 of 22 directions pass \\
-\rowcolor{rowgrey}
-R4 & Training instability or divergence & Medium & High & Gradient clipping, learning-rate warmup, label smoothing; monitor training loss as a collapse indicator. \textbf{Occurred twice}; both recovered (Section~\ref{sec:collapse}) \\
-R5 & Cloud session time limits kill long runs & High & Medium & Resumable runners with per-stage completion markers; persist artifacts outside the session. \textbf{Occurred} on Kaggle's 12-hour cap; resumability absorbed it \\
-\rowcolor{rowgrey}
-R6 & Quantised model exceeds the size budget & Low & High & Progressive INT8 then INT4 with per-stage measurement. \textbf{Did not occur:} 103.9\,MB against a 200\,MB budget \\
-R7 & Inference too slow on CPU & Medium & High & ONNX Runtime with greedy decoding at deployment; beam search only offline. \textbf{Did not occur:} mean 105--202\,ms \\
-\rowcolor{rowgrey}
-R8 & Dependency and environment conflicts & Medium & Medium & Pin versions; audit the environment before each run. \textbf{Occurred} four times on the VM (Section~\ref{subsec:sw}); each fix folded into the runner \\
-R9 & Insufficient corpus for low-resource languages & High & Medium & Prioritise languages with ungated data and widen the corpus for the lower-resource tail. \textbf{Resolved:} all 22 languages delivered \\
-
-\end{longtable}
+\begin{bullets}
+\item \textbf{R1, gated access to the teacher checkpoints and the BPCC corpus.} Probability high, impact high. Fall back to ungated rotary checkpoints and the Samanantar corpus. \textbf{Occurred.} Mitigation applied; the cost is a lower quality ceiling, reported explicitly.
+\item \textbf{R2, no GPU available locally.} Probability high, impact high. Use a cloud GPU (Kaggle, Colab) and later a dedicated A40 VM. \textbf{Occurred.} All final training ran on the A40 VM.
+\item \textbf{R3, student fails to reach the quality target.} Probability medium, impact high. Treat data volume, teacher strength and student width as independent levers; report shortfall honestly. \textbf{Partially occurred:} 14 of 22 directions pass.
+\item \textbf{R4, training instability or divergence.} Probability medium, impact high. Gradient clipping, learning-rate warmup, label smoothing; monitor training loss as a collapse indicator. \textbf{Occurred twice}; both recovered (Section~\ref{sec:collapse}).
+\item \textbf{R5, cloud session time limits kill long runs.} Probability high, impact medium. Resumable runners with per-stage completion markers; persist artifacts outside the session. \textbf{Occurred} on Kaggle's 12-hour cap; resumability absorbed it.
+\item \textbf{R6, quantised model exceeds the size budget.} Probability low, impact high. Progressive INT8 then INT4 with per-stage measurement. \textbf{Did not occur:} 103.9\,MB against a 200\,MB budget.
+\item \textbf{R7, inference too slow on CPU.} Probability medium, impact high. ONNX Runtime with greedy decoding at deployment; beam search only offline. \textbf{Did not occur:} mean 105--202\,ms.
+\item \textbf{R8, dependency and environment conflicts.} Probability medium, impact medium. Pin versions; audit the environment before each run. \textbf{Occurred} four times on the VM (Section~\ref{subsec:sw}); each fix folded into the runner.
+\item \textbf{R9, insufficient corpus for low-resource languages.} Probability high, impact medium. Prioritise languages with ungated data and widen the corpus for the lower-resource tail. \textbf{Resolved:} all 22 languages delivered.
+\end{bullets}
 
 \subsection{Team Organisation and Responsibilities}
 \label{subsec:team}
@@ -360,24 +288,12 @@ responsible for the tests covering their own modules. Integration was
 continuous: a milestone was not considered closed until the full test suite
 passed, which forced interfaces to be agreed early rather than reconciled late.
 
-\begin{table}[H]
-\centering
-\caption{Division of responsibility}
-\label{tab:team}
-\begin{tabular}{@{}L{3.3cm} L{2.4cm} J{8.2cm}@{}}
-\toprule
-\rowcolor{headblue}
-\textbf{Member} & \textbf{USN} & \textbf{Primary responsibility} \\
-\midrule
-Jannat Zafrin & 1BI23AI017 & Literature survey; corpus pipeline (loading, normalisation, filtering, deduplication); evaluation harness and scorecard generation \\
-\rowcolor{rowgrey}
-Prabhav Sharma & 1BI23AI040 & Teacher integration and the abstraction wall; preference generation ($k$-NN retrieval, chrF ranking, validation); DPO trainer \\
-Rishabh Sharma & 1BI23AI047 & \seqkd{} distiller and student trainer; GPU training campaign and runners; quantisation and ONNX export; collapse diagnosis and recovery \\
-\rowcolor{rowgrey}
-Sindhuja Tiwari & 1BI23AI054 & Inference engine and pivot router; REST API; Next.js client and offline PWA; CLI; test suite and documentation \\
-\bottomrule
-\end{tabular}
-\end{table}
+\begin{bullets}
+\item \textbf{Jannat Zafrin} (1BI23AI017). Literature survey; corpus pipeline (loading, normalisation, filtering, deduplication); evaluation harness and scorecard generation.
+\item \textbf{Prabhav Sharma} (1BI23AI040). Teacher integration and the abstraction wall; preference generation ($k$-NN retrieval, chrF ranking, validation); DPO trainer.
+\item \textbf{Rishabh Sharma} (1BI23AI047). \seqkd{} distiller and student trainer; GPU training campaign and runners; quantisation and ONNX export; collapse diagnosis and recovery.
+\item \textbf{Sindhuja Tiwari} (1BI23AI054). Inference engine and pivot router; REST API; Next.js client and offline PWA; CLI; test suite and documentation.
+\end{bullets}
 
 All four members contributed to system design, to the analysis of experimental
 results, and to this report. Weekly review meetings with the guide governed

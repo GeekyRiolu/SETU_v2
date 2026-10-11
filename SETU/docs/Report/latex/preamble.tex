@@ -364,10 +364,25 @@
   \par\medskip\needspace{5\baselineskip}%
   \noindent\textbf{#1}\par\nopagebreak\vspace{2pt}}
 
-% One specification, requirement or use case as a run-in headed paragraph.
-\newcommand{\spec}[1]{%
-  \par\medskip\needspace{3\baselineskip}%
-  \noindent\textbf{#1}\hspace{0.5em}\ignorespaces}
+% General-purpose bullet list: specifications, requirements, findings, results.
+\newlist{bullets}{itemize}{1}
+\setlist[bullets]{label=\textbullet, leftmargin=0.42in,
+                  topsep=3pt, itemsep=3.5pt, parsep=0pt}
+
+% Term-and-meaning list, used for the glossary and for data structures.
+\newlist{terms}{description}{1}
+\setlist[terms]{style=unboxed, leftmargin=0.3in, labelsep=0.5em,
+                topsep=3pt, itemsep=3.5pt, parsep=0pt,
+                font=\normalfont\bfseries}
+
+% A named algorithm: a bold title line, then numbered steps.
+\newcommand{\algtitle}[1]{%
+  \par\medskip\needspace{7\baselineskip}%
+  \noindent\textbf{#1}\par\nopagebreak\vspace{3pt}}
+\newlist{algsteps}{enumerate}{1}
+\setlist[algsteps]{label=\bfseries\arabic*., leftmargin=0.5in,
+                   topsep=2pt, itemsep=1pt, parsep=0pt}
+\newcommand{\algind}{\hspace*{1.2em}}
 
 % Class-box separator usable inside a TikZ node (\hrule is illegal there)
 \newcommand{\clsrule}{\\[1pt]\rule{\linewidth}{0.3pt}\\[1pt]}

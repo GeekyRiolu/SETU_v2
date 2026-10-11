@@ -8,7 +8,7 @@
 \addcontentsline{toc}{section}{A. Paper and Publication Details}
 
 The empirical work reported in Chapter~\ref{ch:results} is being prepared for
-submission. The paper's structure and the tables it fills are given below; every
+submission. The paper's structure and the results it reports are given below; every
 number in Tables A.1 and A.2 is drawn from the runs reported in this document.
 
 \vspace{6pt}
@@ -34,44 +34,25 @@ Preference Distillation for Compact On-Device Indic Machine Translation}
 \end{enumerate}
 
 \vspace{6pt}
-\noindent\textbf{Table A.1: Main comparison (Hindi\arrowto{}English, 100k sentences, matched 52.6\,M student)}
+\noindent\textbf{Main comparison (Hindi\arrowto{}English, 100k sentences, matched 52.6\,M student)}
 \vspace{3pt}
 
-\begin{table}[H]
-\centering
-\begin{tabular}{@{}l l r r@{}}
-\toprule
-\rowcolor{headblue}
-\textbf{System} & \textbf{Training signal} & \textbf{BLEU} & \textbf{\% of teacher} \\
-\midrule
-Teacher (IndicTrans2 dist-200M) & n/a                    & 28.16 & 100.0 \\
-\rowcolor{rowgrey}
-S0: SFT on references           & Human references       & 10.95 & 38.9 \\
-\textbf{S1: \seqkd{}}           & \textbf{Teacher 1-best} & \textbf{17.09} & \textbf{60.7} \\
-\rowcolor{rowgrey}
-S2: DPO-distill                 & References, then DPO   & 11.10 & 39.4 \\
-S3: \seqkd{} + DPO              & Teacher 1-best, then DPO & \multicolumn{2}{l}{\textit{designed; not run at scale}} \\
-\bottomrule
-\end{tabular}
-\end{table}
+\begin{bullets}
+\item \textbf{Teacher (IndicTrans2 dist-200M)} (n/a). BLEU 28.16, 100.0\,\% of the teacher.
+\item \textbf{S0: SFT on references} (Human references). BLEU 10.95, 38.9\,\% of the teacher.
+\item \textbf{\textbf{S1: \seqkd{}}} (\textbf{Teacher 1-best}). BLEU \textbf{17.09}, \textbf{60.7}\,\% of the teacher.
+\item \textbf{S2: DPO-distill} (References, then DPO). BLEU 11.10, 39.4\,\% of the teacher.
+\item \textbf{S3: \seqkd{} + DPO} (Teacher 1-best, then DPO). \textit{designed; not run at scale}.
+\end{bullets}
 
-\noindent\textbf{Table A.2: Quantisation (Hindi\arrowto{}English student)}
+\noindent\textbf{Quantisation (Hindi\arrowto{}English student)}
 \vspace{3pt}
 
-\begin{table}[H]
-\centering
-\begin{tabular}{@{}l r r r@{}}
-\toprule
-\rowcolor{headblue}
-\textbf{Precision} & \textbf{Size (MB)} & \textbf{BLEU} & \textbf{p90 latency} \\
-\midrule
-FP32 ONNX & 410.9 & n/a & n/a \\
-\rowcolor{rowgrey}
-INT8      & 104.6 & 18.3 & 335\,ms \\
-INT4      & \textbf{103.9} & \textbf{19.3} & \textbf{191\,ms} \\
-\bottomrule
-\end{tabular}
-\end{table}
+\begin{bullets}
+\item \textbf{FP32 ONNX.} 410.9\,MB.
+\item \textbf{INT8.} 104.6\,MB, 18.3 BLEU, p90 335\,ms.
+\item \textbf{INT4.} \textbf{103.9}\,MB, \textbf{19.3} BLEU, p90 \textbf{191\,ms}.
+\end{bullets}
 
 \noindent\textbf{Target venues.} ACL / EMNLP / NAACL (main or Findings);
 WMT; IJCNLP-AACL; or a workshop on efficient NLP or multilingual NLP.
@@ -133,46 +114,32 @@ every case, enforced by the pipeline.
 
 \subsection*{B.3 Key Configuration Values}
 
-\begin{table}[H]
-\centering
-\caption*{\textbf{Table B.1:} Configuration used for the shipped models}
-\begin{tabular}{@{}L{4.4cm} L{3.4cm} L{5.8cm}@{}}
-\toprule
-\rowcolor{headblue}
-\textbf{Parameter} & \textbf{Value} & \textbf{Note} \\
-\midrule
-Encoder / decoder layers & 6 / 6 & Marian encoder--decoder \\
-\rowcolor{rowgrey}
-Hidden size / FFN size & 512 / 2048 & 52.6\,M parameters total \\
-Attention heads & 8 & \\
-\rowcolor{rowgrey}
-Vocabulary size & 16{,}000 & 32{,}000 caused degenerate decoding at this data scale \\
-Maximum sequence length & 256 & Longer inputs are truncated, not rejected \\
-\rowcolor{rowgrey}
-Dropout & 0.2 & Raised after overfitting was observed \\
-Epochs & 6 & 10 epochs over less data memorised \\
-\rowcolor{rowgrey}
-Batch size (SFT / DPO) & 32 / 16 & DPO holds policy and reference simultaneously \\
-Learning rate (SFT) & $3\times10^{-4}$ & \textbf{Lowered from $5\times10^{-4}$ after two collapses} \\
-\rowcolor{rowgrey}
-Warmup steps & 4000 & Capped at 10\,\% of the run \\
-Label smoothing & 0.1 & \\
-\rowcolor{rowgrey}
-Weight decay & 0.01 & \\
-Gradient clipping & 1.0 & The critical stabiliser \\
-\rowcolor{rowgrey}
-DPO $\beta$ & 0.1 & Reported baseline only; not used for shipped models \\
-Training sentences & $\approx$497{,}000 & From \texttt{LIMIT=500000} after cleaning \\
-\rowcolor{rowgrey}
-Development set & 500 sentences & Held out, real human references \\
-\bottomrule
-\end{tabular}
-\end{table}
+\begin{bullets}
+\item \textbf{Encoder / decoder layers:} 6 / 6. Marian encoder--decoder.
+\item \textbf{Hidden size / FFN size:} 512 / 2048. 52.6\,M parameters total.
+\item \textbf{Attention heads:} 8.
+\item \textbf{Vocabulary size:} 16{,}000. 32{,}000 caused degenerate decoding at this data scale.
+\item \textbf{Maximum sequence length:} 256. Longer inputs are truncated, not rejected.
+\item \textbf{Dropout:} 0.2. Raised after overfitting was observed.
+\item \textbf{Epochs:} 6. 10 epochs over less data memorised.
+\item \textbf{Batch size (SFT / DPO):} 32 / 16. DPO holds policy and reference simultaneously.
+\item \textbf{Learning rate (SFT):} $3\times10^{-4}$. \textbf{Lowered from $5\times10^{-4}$ after two collapses}.
+\item \textbf{Warmup steps:} 4000. Capped at 10\,\% of the run.
+\item \textbf{Label smoothing:} 0.1.
+\item \textbf{Weight decay:} 0.01.
+\item \textbf{Gradient clipping:} 1.0. The critical stabiliser.
+\item \textbf{DPO $\beta$:} 0.1. Reported baseline only; not used for shipped models.
+\item \textbf{Training sentences:} $\approx$497{,}000. From \texttt{LIMIT=500000} after cleaning.
+\item \textbf{Development set:} 500 sentences. Held out, real human references.
+\end{bullets}
 
 \subsection*{B.4 Published Artifacts}
 
 \begin{itemize}
   \item \textbf{Source code:} \texttt{https://github.com/GeekyRiolu/SETU\_v2}
+%% The final line of this list was spilling onto a page of its own ahead of
+%% the glossary; the extra line of depth keeps it with the list.
+\enlargethispage{\baselineskip}
   \item \textbf{Trained models:} the \texttt{phase1-models} GitHub release:
         two archives of approximately 897\,MB each, public, no login required,
         fetched by \texttt{scripts/fetch\_models.sh}.

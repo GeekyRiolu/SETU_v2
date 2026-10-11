@@ -47,69 +47,34 @@ The deployment target is deliberately modest. The constraint that matters is
 that inference must complete within 500\,ms on a CPU with no accelerator, using
 an artifact no larger than 200\,MB.
 
-\spec{Processor.} ARM Cortex-A55 class or better. A commodity x86-64 CPU is
-also supported.
-
-\spec{Accelerator.} None. Inference uses the ONNX Runtime CPU execution
-provider exclusively.
-
-\spec{Memory.} Approximately 512\,MB of working memory per loaded direction.
-
-\spec{Storage.} 104\,MB per translation direction, plus roughly 2\,MB for the
-SentencePiece tokenizer.
-
-\spec{Network.} Required only for the initial one-time model download, and not
-used thereafter.
+\begin{bullets}
+\item \textbf{Processor:} ARM Cortex-A55 class or better. A commodity x86-64 CPU is also supported.
+\item \textbf{Accelerator:} None. Inference uses the ONNX Runtime CPU execution provider exclusively.
+\item \textbf{Memory:} Approximately 512\,MB of working memory per loaded direction.
+\item \textbf{Storage:} 104\,MB per translation direction, plus roughly 2\,MB for the SentencePiece tokenizer.
+\item \textbf{Network:} Required only for the initial one-time model download, and not used thereafter.
+\end{bullets}
 
 \subsection{Software Tools Used}
 \label{subsec:sw}
 
 The software stack is described below, stage by stage through the pipeline.
 
-\spec{Language.} Python 3.11 or 3.12 implements the entire pipeline. Python
-3.14 was abandoned because the teacher's rotary remote modelling code requires
-\texttt{transformers} below 4.54.
-
-\spec{Data.} Hugging Face \texttt{datasets} streams the Samanantar corpus into
-the cleaning stage.
-
-\spec{Teacher.} \texttt{transformers} ($\geq$4.42, $<$4.54),
-\texttt{IndicTransToolkit}, \texttt{einops} and \texttt{sentencepiece} load and
-run the IndicTrans2 distilled-200M teacher; \texttt{IndicProcessor} handles
-script normalisation and entity placeholders.
-
-\spec{Training.} PyTorch $\geq$2.6 (CUDA 12.4) with \texttt{torchvision} 0.21
-trains the student. Torch 2.6 is a hard floor: the CVE-2025-32434 guard in
-newer \texttt{transformers} refuses to \texttt{torch.load} the teacher's
-non-safetensors weights on older versions.
-
-\spec{Tokenizer.} SentencePiece builds a 16{,}000-token unigram vocabulary per
-direction, with 23 FLORES language tags reserved so that token identifiers stay
-stable as languages are added.
-
-\spec{Quantisation.} \texttt{optimum}, ONNX and ONNX Runtime handle FP32 ONNX
-export, ORT validation and progressive INT8 and INT4 quantisation.
-
-\spec{Inference.} ONNX Runtime, CPU execution provider, executes the quantised
-student on device.
-
-\spec{Evaluation.} \texttt{sacrebleu} reports BLEU and chrF with reproducible
-signatures; COMET is available for languages where n-gram overlap understates
-quality.
-
-\spec{API.} FastAPI, Uvicorn and Pydantic provide the REST service with typed
-request and response models.
-
-\spec{Frontend.} Next.js (App Router), TypeScript and React provide the browser
-client and the offline progressive web application.
-
-\spec{Testing.} \texttt{pytest} runs 85 automated tests across all modules.
-
-\spec{Tooling.} Git for version control, and tmux to keep multi-hour training
-alive across SSH disconnections, with Conda or venv for environments.
-
-\spec{Operating systems.} Debian for training; Ubuntu 22.04 LTS and Android
-11+ for deployment.
+\begin{bullets}
+\item \textbf{Language:} Python 3.11 or 3.12 implements the entire pipeline. Python 3.14 was abandoned because the teacher's rotary remote modelling code requires \texttt{transformers} below 4.54.
+\item \textbf{Data:} Hugging Face \texttt{datasets} streams the Samanantar corpus into the cleaning stage.
+\item \textbf{Teacher:} \texttt{transformers} ($\geq$4.42, $<$4.54), \texttt{IndicTransToolkit}, \texttt{einops} and \texttt{sentencepiece} load and run the IndicTrans2 distilled-200M teacher; \texttt{IndicProcessor} handles script normalisation and entity placeholders.
+\item \textbf{Training:} PyTorch $\geq$2.6 (CUDA 12.4) with \texttt{torchvision} 0.21 trains the student. Torch 2.6 is a hard floor: the CVE-2025-32434 guard in newer \texttt{transformers} refuses to \texttt{torch.load} the teacher's non-safetensors weights on older versions.
+\item \textbf{Tokenizer:} SentencePiece builds a 16{,}000-token unigram vocabulary per direction, with 23 FLORES language tags reserved so that token identifiers stay stable as languages are added.
+\item \textbf{Quantisation:} \texttt{optimum}, ONNX and ONNX Runtime handle FP32 ONNX export, ORT validation and progressive INT8 and INT4 quantisation.
+\item \textbf{Inference:} ONNX Runtime, CPU execution provider, executes the quantised student on device.
+\item \textbf{Evaluation:} \texttt{sacrebleu} reports BLEU and chrF with reproducible signatures; COMET is available for languages where n-gram overlap understates quality.
+\item \textbf{API:} FastAPI, Uvicorn and Pydantic provide the REST service with typed request and response models.
+\item \textbf{Frontend:} Next.js (App Router), TypeScript and React provide the browser client and the offline progressive web application.
+\item \textbf{Testing:} \texttt{pytest} runs 85 automated tests across all modules.
+\item \textbf{Tooling:} Git for version control, and tmux to keep multi-hour training alive across SSH disconnections, with Conda or venv for environments.
+\item \textbf{Operating systems:} Debian for training; Ubuntu 22.04 LTS and Android 11+ for deployment.
+\end{bullets}
 
 \subsubsection{Environment Constraints Discovered During Development}
 
@@ -185,37 +150,16 @@ a secondary actor that hosts the quantised model and executes inference.
 Each use case is specified below by its actor, its precondition and its
 postcondition.
 
-\spec{Translate Text (End User).} Precondition: a trained model exists for the
-requested direction. Postcondition: translated text is returned with measured
-latency.
-
-\spec{Pivot Translate (End User).} Precondition: no direct model exists, but
-both source\arrowto{}English and English\arrowto{}target models do.
-Postcondition: translated text is returned, flagged \texttt{pivot="en"}.
-
-\spec{List Languages (End User).} Precondition: the language registry is
-loaded. Postcondition: the 22 scheduled languages plus English are returned,
-with the trained ones marked.
-
-\spec{Distil Teacher Targets (ML Engineer).} Precondition: a cleaned corpus is
-available and the teacher checkpoint is reachable. Postcondition: a distilled
-corpus of teacher one-best targets is written.
-
-\spec{Train Student (ML Engineer).} Precondition: a distilled corpus is
-available and a GPU is available. Postcondition: a trained checkpoint and a
-training report are written.
-
-\spec{Quantise and Export (ML Engineer).} Precondition: a trained checkpoint
-exists. Postcondition: INT8 and INT4 ONNX artifacts are written with a
-quantisation report.
-
-\spec{Evaluate (ML Engineer).} Precondition: student and teacher are both
-available. Postcondition: BLEU, chrF and the student/teacher ratio are
-recorded.
-
-\spec{Execute Inference (Edge Device).} Precondition: the quantised model and
-tokenizer are present locally. Postcondition: a translation is produced with
-zero network calls.
+\begin{bullets}
+\item \textbf{Translate Text (End User):} Precondition: a trained model exists for the requested direction. Postcondition: translated text is returned with measured latency.
+\item \textbf{Pivot Translate (End User):} Precondition: no direct model exists, but both source\arrowto{}English and English\arrowto{}target models do. Postcondition: translated text is returned, flagged \texttt{pivot="en"}.
+\item \textbf{List Languages (End User):} Precondition: the language registry is loaded. Postcondition: the 22 scheduled languages plus English are returned, with the trained ones marked.
+\item \textbf{Distil Teacher Targets (ML Engineer):} Precondition: a cleaned corpus is available and the teacher checkpoint is reachable. Postcondition: a distilled corpus of teacher one-best targets is written.
+\item \textbf{Train Student (ML Engineer):} Precondition: a distilled corpus is available and a GPU is available. Postcondition: a trained checkpoint and a training report are written.
+\item \textbf{Quantise and Export (ML Engineer):} Precondition: a trained checkpoint exists. Postcondition: INT8 and INT4 ONNX artifacts are written with a quantisation report.
+\item \textbf{Evaluate (ML Engineer):} Precondition: student and teacher are both available. Postcondition: BLEU, chrF and the student/teacher ratio are recorded.
+\item \textbf{Execute Inference (Edge Device):} Precondition: the quantised model and tokenizer are present locally. Postcondition: a translation is produced with zero network calls.
+\end{bullets}
 
 \subsection{Sequence Diagram}
 \label{subsec:sequence}
@@ -528,31 +472,17 @@ This section states what the system must do, independently of how it does it.
 \subsection{User Requirements}
 \label{subsec:userreq}
 
-\spec{UR-1 (End user).} Translate text between any two supported languages
-without an internet connection.
-
-\spec{UR-2 (End user).} See the full list of supported languages, each named in
-its own script, before choosing a direction.
-
-\spec{UR-3 (End user).} Receive a translation quickly enough for conversational
-use.
-
-\spec{UR-4 (End user).} Be assured that the text typed never leaves the device.
-
-\spec{UR-5 (End user).} Use the system from a browser, a mobile application, a
-command line or a programmatic API, with identical behaviour.
-
-\spec{UR-6 (ML engineer).} Train a model for any language pair by changing
-configuration, without modifying source code.
-
-\spec{UR-7 (ML engineer).} Resume a multi-hour training run after a
-disconnection without repeating completed stages.
-
-\spec{UR-8 (ML engineer).} Obtain an honest quality report, including failure,
-rather than an optimistic one.
-
-\spec{UR-9 (Deployer).} Install models on a fresh machine and run the system
-without training anything.
+\begin{bullets}
+\item \textbf{UR-1 (End user):} Translate text between any two supported languages without an internet connection.
+\item \textbf{UR-2 (End user):} See the full list of supported languages, each named in its own script, before choosing a direction.
+\item \textbf{UR-3 (End user):} Receive a translation quickly enough for conversational use.
+\item \textbf{UR-4 (End user):} Be assured that the text typed never leaves the device.
+\item \textbf{UR-5 (End user):} Use the system from a browser, a mobile application, a command line or a programmatic API, with identical behaviour.
+\item \textbf{UR-6 (ML engineer):} Train a model for any language pair by changing configuration, without modifying source code.
+\item \textbf{UR-7 (ML engineer):} Resume a multi-hour training run after a disconnection without repeating completed stages.
+\item \textbf{UR-8 (ML engineer):} Obtain an honest quality report, including failure, rather than an optimistic one.
+\item \textbf{UR-9 (Deployer):} Install models on a fresh machine and run the system without training anything.
+\end{bullets}
 
 \subsection{System Requirements}
 \label{subsec:sysreq}
@@ -580,43 +510,20 @@ without training anything.
 
 Each requirement below names the section or test that verifies it.
 
-\spec{FR-1.} Translate text between supported Indian languages and English in
-both directions, fully offline. \emph{Verified by}
-\S\ref{subsec:unittest} and \S\ref{sec:testreports}.
-
-\spec{FR-2.} Accept plain-text input of up to 512 tokens per request.
-\emph{Verified by} \S\ref{subsec:unittest}.
-
-\spec{FR-3.} Reject a request whose source and target language are identical.
-\emph{Verified by} UT-2.
-
-\spec{FR-4.} Reject a request containing an unknown language code.
-\emph{Verified by} UT-3.
-
-\spec{FR-5.} Route Indic-to-Indic pairs through English when no direct model
-exists, and report that it did so. \emph{Verified by} IT-1 to IT-3.
-
-\spec{FR-6.} Expose \texttt{POST /translate}, \texttt{GET /languages},
-\texttt{GET /models} and \texttt{GET /health}. \emph{Verified by}
-\S\ref{sec:interface} and IT-4.
-
-\spec{FR-7.} Discover every model present on disk at start-up and report its
-variant and size. \emph{Verified by} IT-4.
-
-\spec{FR-8.} Generate teacher one-best targets for an arbitrary corpus slice.
-\emph{Verified by} \S\ref{subsec:mod2}.
-
-\spec{FR-9.} Train a student on either distilled or reference targets,
-selectable at run time. \emph{Verified by} \S\ref{subsec:mod3}.
-
-\spec{FR-10.} Quantise a trained student to INT8 and INT4 ONNX with a per-stage
-benchmark. \emph{Verified by} \S\ref{subsec:mod4}.
-
-\spec{FR-11.} Report BLEU, chrF and the student/teacher ratio per direction.
-\emph{Verified by} \S\ref{sec:testreports}.
-
-\spec{FR-12.} Support incremental addition of a language by configuration
-alone. \emph{Verified by} \S\ref{subsec:mod8}.
+\begin{bullets}
+\item \textbf{FR-1:} Translate text between supported Indian languages and English in both directions, fully offline. \emph{Verified by} \S\ref{subsec:unittest} and \S\ref{sec:testreports}.
+\item \textbf{FR-2:} Accept plain-text input of up to 512 tokens per request. \emph{Verified by} \S\ref{subsec:unittest}.
+\item \textbf{FR-3:} Reject a request whose source and target language are identical. \emph{Verified by} UT-2.
+\item \textbf{FR-4:} Reject a request containing an unknown language code. \emph{Verified by} UT-3.
+\item \textbf{FR-5:} Route Indic-to-Indic pairs through English when no direct model exists, and report that it did so. \emph{Verified by} IT-1 to IT-3.
+\item \textbf{FR-6:} Expose \texttt{POST /translate}, \texttt{GET /languages}, \texttt{GET /models} and \texttt{GET /health}. \emph{Verified by} \S\ref{sec:interface} and IT-4.
+\item \textbf{FR-7:} Discover every model present on disk at start-up and report its variant and size. \emph{Verified by} IT-4.
+\item \textbf{FR-8:} Generate teacher one-best targets for an arbitrary corpus slice. \emph{Verified by} \S\ref{subsec:mod2}.
+\item \textbf{FR-9:} Train a student on either distilled or reference targets, selectable at run time. \emph{Verified by} \S\ref{subsec:mod3}.
+\item \textbf{FR-10:} Quantise a trained student to INT8 and INT4 ONNX with a per-stage benchmark. \emph{Verified by} \S\ref{subsec:mod4}.
+\item \textbf{FR-11:} Report BLEU, chrF and the student/teacher ratio per direction. \emph{Verified by} \S\ref{sec:testreports}.
+\item \textbf{FR-12:} Support incremental addition of a language by configuration alone. \emph{Verified by} \S\ref{subsec:mod8}.
+\end{bullets}
 
 \subsection{Non-Functional Requirements}
 \label{subsec:nonfuncreq}
@@ -624,33 +531,17 @@ alone. \emph{Verified by} \S\ref{subsec:mod8}.
 Each attribute below states the requirement and the outcome actually measured
 against it.
 
-\spec{NFR-1, performance.} Under 500\,ms per sentence on an ARM-class CPU.
-\emph{Measured:} mean 105--202\,ms; p90 141--541\,ms, with one outlier.
-
-\spec{NFR-2, size.} At most 200\,MB per direction after quantisation.
-\emph{Measured:} 103.9\,MB for every direction.
-
-\spec{NFR-3, accuracy.} At least 80\,\% of teacher BLEU. \emph{Measured:} 14 of
-22 directions, mean ratio 0.838.
-
-\spec{NFR-4, availability.} Fully functional offline after initial setup.
-\emph{Measured:} verified with all sockets disabled.
-
-\spec{NFR-5, privacy.} No user text transmitted during inference.
-\emph{Measured:} verified by code audit and the offline test.
-
-\spec{NFR-6, portability.} Runs on x86-64 and ARM, Linux and Android.
-\emph{Measured:} ONNX Runtime CPU provider on both.
-
-\spec{NFR-7, maintainability.} A single shared engine behind every interface.
-\emph{Measured:} \texttt{setu.inference.router}.
-
-\spec{NFR-8, testability.} An automated suite covering every module.
-\emph{Measured:} 85 tests.
-
-\spec{NFR-9, reliability.} Degrade explicitly, never silently.
-\emph{Measured:} the stub engine reports \texttt{stub:true}, and the scorecard
-reports \textsc{unverified} without evidence.
+\begin{bullets}
+\item \textbf{NFR-1, performance:} Under 500\,ms per sentence on an ARM-class CPU. \emph{Measured:} mean 105--202\,ms; p90 141--541\,ms, with one outlier.
+\item \textbf{NFR-2, size:} At most 200\,MB per direction after quantisation. \emph{Measured:} 103.9\,MB for every direction.
+\item \textbf{NFR-3, accuracy:} At least 80\,\% of teacher BLEU. \emph{Measured:} 14 of 22 directions, mean ratio 0.838.
+\item \textbf{NFR-4, availability:} Fully functional offline after initial setup. \emph{Measured:} verified with all sockets disabled.
+\item \textbf{NFR-5, privacy:} No user text transmitted during inference. \emph{Measured:} verified by code audit and the offline test.
+\item \textbf{NFR-6, portability:} Runs on x86-64 and ARM, Linux and Android. \emph{Measured:} ONNX Runtime CPU provider on both.
+\item \textbf{NFR-7, maintainability:} A single shared engine behind every interface. \emph{Measured:} \texttt{setu.inference.router}.
+\item \textbf{NFR-8, testability:} An automated suite covering every module. \emph{Measured:} 85 tests.
+\item \textbf{NFR-9, reliability:} Degrade explicitly, never silently. \emph{Measured:} the stub engine reports \texttt{stub:true}, and the scorecard reports \textsc{unverified} without evidence.
+\end{bullets}
 
 \subsection{Domain Requirements}
 \label{subsec:domainreq}

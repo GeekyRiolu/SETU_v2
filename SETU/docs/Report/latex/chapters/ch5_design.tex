@@ -335,37 +335,19 @@ conflicting new task.
 \subsection{External Interfaces}
 \label{subsec:extinterface}
 
-\begin{longtable}{@{}L{2.5cm} L{4.2cm} J{7.4cm}@{}}
-\caption{External interface specification}
-\label{tab:interfaces}\\
-\toprule
-\rowcolor{headblue}
-\textbf{Component} & \textbf{Description} & \textbf{Details and example} \\
-\midrule
-\endfirsthead
-\toprule
-\rowcolor{headblue}
-\textbf{Component} & \textbf{Description} & \textbf{Details and example} \\
-\midrule
-\endhead
-\bottomrule
-\endlastfoot
+The system exposes the following external interfaces.
 
-REST: translate & Primary translation endpoint & \texttt{POST /translate} with body \texttt{\{source\_lang, target\_lang, text\}}; returns \texttt{\{translated\_text, latency\_ms, pivot, stub\}}. Example request: \texttt{\{"source\_lang":"hi", "target\_lang":"en", "text":"..."\}} \\
-\rowcolor{rowgrey}
-REST: languages & Language registry & \texttt{GET /languages} $\rightarrow$ 22 scheduled languages plus English, each with ISO code, FLORES code, script and endonym \\
-REST: models & Model discovery & \texttt{GET /models} $\rightarrow$ \texttt{\{"count": 22, "models": [\{pair, variant, size\_mb\}, ...]\}} \\
-\rowcolor{rowgrey}
-REST: health & Readiness probe & \texttt{GET /health} $\rightarrow$ \texttt{\{"status":"ok", "stub": false\}} \\
-CLI & Command-line translation & \texttt{python setu\_cli.py -{}-src hi -{}-tgt en -{}-text "..."}; also \texttt{-{}-file} and standard input, with \texttt{-{}-json} output \\
-\rowcolor{rowgrey}
-Web client & Browser translator console & Language pickers grouped into available and not-yet-trained, swap control, live latency, on-device badge, curated Indic-to-Indic examples \\
-Offline PWA & Installable offline client & Service-worker shell caching; functions with no network after first load \\
-\rowcolor{rowgrey}
-Mobile SDK & Android and iOS wrapper & \texttt{translate(text, srcLang, tgtLang)} over the same engine \\
-Training CLI & Pipeline entry points & \texttt{setu-data}, \texttt{setu-distill}, \texttt{setu-quantize}, \texttt{setu-eval}, \texttt{setu-report}, and \texttt{scripts/train\_full.py} \\
-
-\end{longtable}
+\begin{bullets}
+\item \textbf{REST: translate.} Primary translation endpoint. \texttt{POST /translate} with body \texttt{\{source\_lang, target\_lang, text\}}; returns \texttt{\{translated\_text, latency\_ms, pivot, stub\}}. Example request: \texttt{\{"source\_lang":"hi", "target\_lang":"en", "text":"..."\}}.
+\item \textbf{REST: languages.} Language registry. \texttt{GET /languages} $\rightarrow$ 22 scheduled languages plus English, each with ISO code, FLORES code, script and endonym.
+\item \textbf{REST: models.} Model discovery. \texttt{GET /models} $\rightarrow$ \texttt{\{"count": 22, "models": [\{pair, variant, size\_mb\}, ...]\}}.
+\item \textbf{REST: health.} Readiness probe. \texttt{GET /health} $\rightarrow$ \texttt{\{"status":"ok", "stub": false\}}.
+\item \textbf{CLI.} Command-line translation. \texttt{python setu\_cli.py -{}-src hi -{}-tgt en -{}-text "..."}; also \texttt{-{}-file} and standard input, with \texttt{-{}-json} output.
+\item \textbf{Web client.} Browser translator console. Language pickers grouped into available and not-yet-trained, swap control, live latency, on-device badge, curated Indic-to-Indic examples.
+\item \textbf{Offline PWA.} Installable offline client. Service-worker shell caching; functions with no network after first load.
+\item \textbf{Mobile SDK.} Android and iOS wrapper. \texttt{translate(text, srcLang, tgtLang)} over the same engine.
+\item \textbf{Training CLI.} Pipeline entry points. \texttt{setu-data}, \texttt{setu-distill}, \texttt{setu-quantize}, \texttt{setu-eval}, \texttt{setu-report}, and \texttt{scripts/train\_full.py}.
+\end{bullets}
 
 \subsection{User Interface Design}
 \label{subsec:uidesign}
@@ -401,24 +383,12 @@ Four data objects carry all information between modules. Their field names are
 stable across the entire codebase, which is what allows modules to be developed
 and tested independently.
 
-\begin{table}[H]
-\centering
-\caption{Core data structures}
-\label{tab:datastructures}
-\begin{tabular}{@{}L{4.0cm} L{4.1cm} J{6.0cm}@{}}
-\toprule
-\rowcolor{headblue}
-\textbf{Structure} & \textbf{Fields} & \textbf{Purpose} \\
-\midrule
-\texttt{CorpusEntry} & \texttt{src\_lang}, \texttt{tgt\_lang}, \texttt{src\_text}, \texttt{tgt\_text}, \texttt{source} & One parallel sentence pair. The \texttt{source} tag distinguishes a human reference from a \texttt{seqkd} teacher target, so the two corpora never mix \\
-\rowcolor{rowgrey}
-\texttt{PreferencePair} & \texttt{src\_text}, \texttt{preferred\_tgt}, \texttt{dispreferred\_tgt}, \texttt{quality\_delta} & One DPO training example. \texttt{quality\_delta} is the chrF gap; pairs below a threshold are discarded as too noisy to teach from \\
-\texttt{ModelConfig} & \texttt{language\_pair}, \texttt{params}, \texttt{quantization} & Full student specification: architecture, layer counts, hidden size, vocabulary size, sequence length, quantisation mode \\
-\rowcolor{rowgrey}
-\texttt{TranslationResult} & \texttt{translated\_text}, \texttt{src\_lang}, \texttt{tgt\_lang}, \texttt{latency\_ms}, \texttt{pivot} & One translation with its provenance. \texttt{pivot} is \texttt{None} for direct translation and \texttt{"en"} for a chained one \\
-\bottomrule
-\end{tabular}
-\end{table}
+\begin{terms}
+\item[\texttt{CorpusEntry}] Fields \texttt{src\_lang}, \texttt{tgt\_lang}, \texttt{src\_text}, \texttt{tgt\_text}, \texttt{source}. One parallel sentence pair. The \texttt{source} tag distinguishes a human reference from a \texttt{seqkd} teacher target, so the two corpora never mix.
+\item[\texttt{PreferencePair}] Fields \texttt{src\_text}, \texttt{preferred\_tgt}, \texttt{dispreferred\_tgt}, \texttt{quality\_delta}. One DPO training example. \texttt{quality\_delta} is the chrF gap; pairs below a threshold are discarded as too noisy to teach from.
+\item[\texttt{ModelConfig}] Fields \texttt{language\_pair}, \texttt{params}, \texttt{quantization}. Full student specification: architecture, layer counts, hidden size, vocabulary size, sequence length, quantisation mode.
+\item[\texttt{TranslationResult}] Fields \texttt{translated\_text}, \texttt{src\_lang}, \texttt{tgt\_lang}, \texttt{latency\_ms}, \texttt{pivot}. One translation with its provenance. \texttt{pivot} is \texttt{None} for direct translation and \texttt{"en"} for a chained one.
+\end{terms}
 
 \subsection{On-Disk Layout}
 \label{subsec:ondisk}
@@ -454,51 +424,33 @@ models remain valid and no re-tokenisation is ever required.
 \section{Algorithm Design}
 \label{sec:algorithms}
 
+\needspace{9\baselineskip}
 \subsection{Algorithm 1: Sequence-Level Knowledge Distillation}
 \label{subsec:alg1}
 
 This is the core training algorithm and the one the empirical comparison
 selected.
 
-\begin{longtable}{@{}L{14.0cm}@{}}
-\caption{Algorithm 1: \seqkd{} training of one direction}
-\label{tab:alg1}\\
-\toprule
-\rowcolor{headblue}
-\textbf{Input:} cleaned corpus $C = \{(x_i, y_i)\}_{i=1}^{N}$; teacher $T$; student architecture $\theta$ \\
-\rowcolor{headblue}
-\textbf{Output:} trained student parameters $\theta^{*}$ \\
-\midrule
-\endfirsthead
-\multicolumn{1}{c}{\textit{Table \thetable{} (continued)}}\\
-\toprule
-\rowcolor{headblue}
-\textbf{Input:} cleaned corpus $C = \{(x_i, y_i)\}_{i=1}^{N}$; teacher $T$; student architecture $\theta$ \\
-\rowcolor{headblue}
-\textbf{Output:} trained student parameters $\theta^{*}$ \\
-\midrule
-\endhead
-\midrule
-\multicolumn{1}{r}{\textit{continued on next page}}\\
-\endfoot
-\bottomrule
-\endlastfoot
-
-\textbf{1.} \textbf{for} each batch $B \subseteq C$ \textbf{do} \\
-\textbf{2.} \quad $\hat{y}_i \leftarrow T.\textsc{decode}(x_i)$ \quad \textit{// greedy one-best; discard the human $y_i$} \\
-\textbf{3.} \quad \textbf{if} $\hat{y}_i$ is empty \textbf{then} $\hat{y}_i \leftarrow y_i$ \quad \textit{// safe fallback, counted} \\
-\textbf{4.} \quad append $(x_i, \hat{y}_i)$ to the distilled corpus $D$ \\
-\textbf{5.} \textbf{end for} \\
-\textbf{6.} initialise $\theta$ randomly; initialise AdamW with linear warmup then decay \\
-\textbf{7.} \textbf{for} epoch $= 1 \ldots E$ \textbf{do} \\
-\textbf{8.} \quad \textbf{for} each batch $(x, \hat{y}) \subseteq D$ \textbf{do} \\
-\textbf{9.} \quad\quad $\ell \leftarrow \textsc{CrossEntropy}(\theta(x), \hat{y})$ with pad labels set to $-100$ and label smoothing $0.1$ \\
-\textbf{10.} \quad\quad backpropagate; $\textsc{ClipGradNorm}(\theta, 1.0)$; optimiser step; scheduler step \\
-\textbf{11.} \quad \textbf{end for} \\
-\textbf{12.} \quad evaluate on held-out \emph{human} references; record BLEU, chrF and the teacher ratio \\
-\textbf{13.} \textbf{end for} \\
-\textbf{14.} \textbf{return} $\theta^{*}$ \\
-\end{longtable}
+\algtitle{Algorithm 1: \seqkd{} training of one direction}
+\noindent \textbf{Input:} cleaned corpus $C = \{(x_i, y_i)\}_{i=1}^{N}$; teacher $T$; student architecture $\theta$\par\nopagebreak
+\noindent \textbf{Output:} trained student parameters $\theta^{*}$\par\nopagebreak
+\vspace{2pt}
+\begin{algsteps}
+\item \textbf{for} each batch $B \subseteq C$ \textbf{do}
+\item \algind $\hat{y}_i \leftarrow T.\textsc{decode}(x_i)$ \quad \textit{// greedy one-best; discard the human $y_i$}
+\item \algind \textbf{if} $\hat{y}_i$ is empty \textbf{then} $\hat{y}_i \leftarrow y_i$ \quad \textit{// safe fallback, counted}
+\item \algind append $(x_i, \hat{y}_i)$ to the distilled corpus $D$
+\item \textbf{end for}
+\item initialise $\theta$ randomly; initialise AdamW with linear warmup then decay
+\item \textbf{for} epoch $= 1 \ldots E$ \textbf{do}
+\item \algind \textbf{for} each batch $(x, \hat{y}) \subseteq D$ \textbf{do}
+\item \algind \algind $\ell \leftarrow \textsc{CrossEntropy}(\theta(x), \hat{y})$ with pad labels set to $-100$ and label smoothing $0.1$
+\item \algind \algind backpropagate; $\textsc{ClipGradNorm}(\theta, 1.0)$; optimiser step; scheduler step
+\item \algind \textbf{end for}
+\item \algind evaluate on held-out \emph{human} references; record BLEU, chrF and the teacher ratio
+\item \textbf{end for}
+\item \textbf{return} $\theta^{*}$
+\end{algsteps}
 
 Three details carry the algorithm's correctness. Line~2 discards the human
 target; that is the whole method, and it is what breaks the reference-noise
@@ -506,79 +458,55 @@ ceiling. Line~9's $-100$ masking is what keeps the loss honest. Line~12
 evaluates on human references even though training used teacher targets, which
 is what makes the numbers comparable with a reference-trained baseline.
 
+\needspace{9\baselineskip}
 \subsection{Algorithm 2: English-Pivot Routing}
 \label{subsec:alg2}
 
-\begin{longtable}{@{}L{14.0cm}@{}}
-\caption{Algorithm 2: routing a translation request}
-\label{tab:alg2}\\
-\toprule
-\rowcolor{headblue}
-\textbf{Input:} text $t$; source language $s$; target language $g$ \\
-\rowcolor{headblue}
-\textbf{Output:} translation, pivot flag, stub flag \\
-\midrule
-\endfirsthead
-\multicolumn{1}{c}{\textit{Table \thetable{} (continued)}}\\
-\toprule
-\rowcolor{headblue}
-\textbf{Input:} text $t$; source language $s$; target language $g$ \\
-\rowcolor{headblue}
-\textbf{Output:} translation, pivot flag, stub flag \\
-\midrule
-\endhead
-\midrule
-\multicolumn{1}{r}{\textit{continued on next page}}\\
-\endfoot
-\bottomrule
-\endlastfoot
-
-\textbf{1.} $s \leftarrow \textsc{ResolveFlores}(s)$; \ $g \leftarrow \textsc{ResolveFlores}(g)$ \quad \textit{// raises on an unknown code} \\
-\textbf{2.} \textbf{if} $s = g$ \textbf{then raise} \textsc{ValueError} \quad \textit{// identical source and target} \\
-\textbf{3.} $d \leftarrow$ \texttt{"}$s$\texttt{-}$g$\texttt{"} \\
-\textbf{4.} \textbf{if} \textsc{ModelExists}($d$) \textbf{then return} $(\textsc{Engine}(d).\textsc{translate}(t),\ \textsc{None},\ \textsc{False})$ \\
-\textbf{5.} \textbf{if} $s \neq$ \texttt{eng\_Latn} \textbf{and} $g \neq$ \texttt{eng\_Latn} \textbf{then} \\
-\textbf{6.} \quad $h_1 \leftarrow$ \texttt{"}$s$\texttt{-eng\_Latn"}; \ $h_2 \leftarrow$ \texttt{"eng\_Latn-}$g$\texttt{"} \\
-\textbf{7.} \quad \textbf{if} \textsc{ModelExists}($h_1$) \textbf{and} \textsc{ModelExists}($h_2$) \textbf{then} \\
-\textbf{8.} \quad\quad $r_1 \leftarrow \textsc{Engine}(h_1).\textsc{translate}(t)$ \quad \textit{// source to English} \\
-\textbf{9.} \quad\quad $r_2 \leftarrow \textsc{Engine}(h_2).\textsc{translate}(r_1.\text{text})$ \quad \textit{// English to target} \\
-\textbf{10.} \quad\quad \textbf{return} $(r_2 \text{ with latency } r_1.\text{ms} + r_2.\text{ms},\ \texttt{"en"},\ \textsc{False})$ \\
-\textbf{11.} \quad \textbf{end if} \\
-\textbf{12.} \textbf{end if} \\
-\textbf{13.} \textbf{return} $(t,\ \textsc{None},\ \textsc{True})$ \quad \textit{// passthrough, explicitly flagged as a stub} \\
-\end{longtable}
+\algtitle{Algorithm 2: routing a translation request}
+\noindent \textbf{Input:} text $t$; source language $s$; target language $g$\par\nopagebreak
+\noindent \textbf{Output:} translation, pivot flag, stub flag\par\nopagebreak
+\vspace{2pt}
+\begin{algsteps}
+\item $s \leftarrow \textsc{ResolveFlores}(s)$; \ $g \leftarrow \textsc{ResolveFlores}(g)$ \quad \textit{// raises on an unknown code}
+\item \textbf{if} $s = g$ \textbf{then raise} \textsc{ValueError} \quad \textit{// identical source and target}
+\item $d \leftarrow$ \texttt{"}$s$\texttt{-}$g$\texttt{"}
+\item \textbf{if} \textsc{ModelExists}($d$) \textbf{then return} $(\textsc{Engine}(d).\textsc{translate}(t),\ \textsc{None},\ \textsc{False})$
+\item \textbf{if} $s \neq$ \texttt{eng\_Latn} \textbf{and} $g \neq$ \texttt{eng\_Latn} \textbf{then}
+\item \algind $h_1 \leftarrow$ \texttt{"}$s$\texttt{-eng\_Latn"}; \ $h_2 \leftarrow$ \texttt{"eng\_Latn-}$g$\texttt{"}
+\item \algind \textbf{if} \textsc{ModelExists}($h_1$) \textbf{and} \textsc{ModelExists}($h_2$) \textbf{then}
+\item \algind \algind $r_1 \leftarrow \textsc{Engine}(h_1).\textsc{translate}(t)$ \quad \textit{// source to English}
+\item \algind \algind $r_2 \leftarrow \textsc{Engine}(h_2).\textsc{translate}(r_1.\text{text})$ \quad \textit{// English to target}
+\item \algind \algind \textbf{return} $(r_2 \text{ with latency } r_1.\text{ms} + r_2.\text{ms},\ \texttt{"en"},\ \textsc{False})$
+\item \algind \textbf{end if}
+\item \textbf{end if}
+\item \textbf{return} $(t,\ \textsc{None},\ \textsc{True})$ \quad \textit{// passthrough, explicitly flagged as a stub}
+\end{algsteps}
 
 Engines are memoised per pair, so the model-existence checks on lines 4 and 7
 are cheap after the first call. Line~13 is the honesty guarantee: when nothing
 can translate the request the input is returned unchanged and explicitly marked,
 never presented as a translation.
 
+\needspace{9\baselineskip}
 \subsection{Algorithm 3: Progressive Quantisation}
 \label{subsec:alg3}
 
-\begin{table}[H]
-\centering
-\caption{Algorithm 3: export and progressive quantisation}
-\label{tab:alg3}
-\begin{tabular}{@{}L{14.0cm}@{}}
-\toprule
-\rowcolor{headblue}
-\textbf{Input:} trained checkpoint $\theta^{*}$; benchmark sentence set $S$ \\
-\rowcolor{headblue}
-\textbf{Output:} INT8 and INT4 ONNX artifacts with a size and latency report \\
-\midrule
-\textbf{1.} export $\theta^{*}$ to FP32 ONNX; \textbf{assert} the checkpoint path exists (fail clearly, not as a remote identifier) \\
-\textbf{2.} validate: run the ONNX graph through ONNX Runtime and compare against the PyTorch output \\
-\textbf{3.} $m_{32} \leftarrow \textsc{SizeMB}$; \ $(p_{50}, p_{90}, p_{\max}) \leftarrow \textsc{Benchmark}(S)$ \\
-\textbf{4.} apply dynamic INT8 quantisation; re-measure size and latency \\
-\textbf{5.} apply INT4 quantisation; re-measure size and latency \\
-\textbf{6.} \textbf{for} each variant \textbf{do assert} $\text{size} \leq 200$\,MB \textbf{and} $p_{90} < 500$\,ms \\
-\textbf{7.} verify translation succeeds with all network sockets disabled \\
-\textbf{8.} write \texttt{quantize\_report.json}; package the chosen variant with its tokenizer \\
-\bottomrule
-\end{tabular}
-\end{table}
+\algtitle{Algorithm 3: export and progressive quantisation}
+\noindent \textbf{Input:} trained checkpoint $\theta^{*}$; benchmark sentence set $S$\par\nopagebreak
+\noindent \textbf{Output:} INT8 and INT4 ONNX artifacts with a size and latency report\par\nopagebreak
+\vspace{2pt}
+\begin{algsteps}
+\item export $\theta^{*}$ to FP32 ONNX; \textbf{assert} the checkpoint path exists (fail clearly, not as a remote identifier)
+\item validate: run the ONNX graph through ONNX Runtime and compare against the PyTorch output
+\item $m_{32} \leftarrow \textsc{SizeMB}$; \ $(p_{50}, p_{90}, p_{\max}) \leftarrow \textsc{Benchmark}(S)$
+\item apply dynamic INT8 quantisation; re-measure size and latency
+\item apply INT4 quantisation; re-measure size and latency
+\item \textbf{for} each variant \textbf{do assert} $\text{size} \leq 200$\,MB \textbf{and} $p_{90} < 500$\,ms
+\item verify translation succeeds with all network sockets disabled
+\item write \texttt{quantize\_report.json}; package the chosen variant with its tokenizer
+\end{algsteps}
 
+\needspace{9\baselineskip}
 \subsection{Algorithm 4: Preference Pair Generation (Reported Baseline)}
 \label{subsec:alg4}
 
@@ -587,31 +515,23 @@ Section~\ref{sec:headtohead}. It is retained in the system and documented here
 because the negative result it supports is one of the project's findings, but it
 is not used for the shipped models.
 
-\begin{table}[H]
-\centering
-\caption{Algorithm 4: chrF-ranked preference pair construction}
-\label{tab:alg4}
-\begin{tabular}{@{}L{14.0cm}@{}}
-\toprule
-\rowcolor{headblue}
-\textbf{Input:} corpus entries; teacher $T$; candidate count $n$; neighbour count $k$; minimum delta $\delta$ \\
-\rowcolor{headblue}
-\textbf{Output:} validated \texttt{PreferencePair} list \\
-\midrule
-\textbf{1.} \textbf{for} each entry $(x, y)$ \textbf{do} \\
-\textbf{2.} \quad $A \leftarrow T.\textsc{generateCandidates}(x, n)$ \quad \textit{// beam search, $n$ returned sequences} \\
-\textbf{3.} \quad $A \leftarrow A \cup \textsc{KnnNeighbourTranslations}(x, k)$ \quad \textit{// char n-gram TF-IDF retrieval} \\
-\textbf{4.} \quad score every $a \in A$ by sentence chrF against the human reference $y$ \\
-\textbf{5.} \quad $a^{+} \leftarrow \arg\max_a \textsc{chrF}(a, y)$ \\
-\textbf{6.} \quad \textbf{for} each $a^{-} \in A \setminus \{a^{+}\}$ \textbf{do} \\
-\textbf{7.} \quad\quad $\Delta \leftarrow \textsc{chrF}(a^{+}, y) - \textsc{chrF}(a^{-}, y)$ \\
-\textbf{8.} \quad\quad \textbf{if} $\Delta \geq \delta$ \textbf{then} emit $(x, a^{+}, a^{-}, \Delta)$ \quad \textit{// otherwise too noisy to teach from} \\
-\textbf{9.} \quad \textbf{end for} \\
-\textbf{10.} \textbf{end for} \\
-\textbf{11.} \textbf{assert} $\textsc{chrF}(a^{+}) > \textsc{chrF}(a^{-})$ for every emitted pair \quad \textit{// validation gate} \\
-\bottomrule
-\end{tabular}
-\end{table}
+\algtitle{Algorithm 4: chrF-ranked preference pair construction}
+\noindent \textbf{Input:} corpus entries; teacher $T$; candidate count $n$; neighbour count $k$; minimum delta $\delta$\par\nopagebreak
+\noindent \textbf{Output:} validated \texttt{PreferencePair} list\par\nopagebreak
+\vspace{2pt}
+\begin{algsteps}
+\item \textbf{for} each entry $(x, y)$ \textbf{do}
+\item \algind $A \leftarrow T.\textsc{generateCandidates}(x, n)$ \quad \textit{// beam search, $n$ returned sequences}
+\item \algind $A \leftarrow A \cup \textsc{KnnNeighbourTranslations}(x, k)$ \quad \textit{// char n-gram TF-IDF retrieval}
+\item \algind score every $a \in A$ by sentence chrF against the human reference $y$
+\item \algind $a^{+} \leftarrow \arg\max_a \textsc{chrF}(a, y)$
+\item \algind \textbf{for} each $a^{-} \in A \setminus \{a^{+}\}$ \textbf{do}
+\item \algind \algind $\Delta \leftarrow \textsc{chrF}(a^{+}, y) - \textsc{chrF}(a^{-}, y)$
+\item \algind \algind \textbf{if} $\Delta \geq \delta$ \textbf{then} emit $(x, a^{+}, a^{-}, \Delta)$ \quad \textit{// otherwise too noisy to teach from}
+\item \algind \textbf{end for}
+\item \textbf{end for}
+\item \textbf{assert} $\textsc{chrF}(a^{+}) > \textsc{chrF}(a^{-})$ for every emitted pair \quad \textit{// validation gate}
+\end{algsteps}
 
 A representative run turned 500 corpus entries into 3{,}494 candidates and
 2{,}074 validated pairs, discarding 920 for insufficient quality delta; the

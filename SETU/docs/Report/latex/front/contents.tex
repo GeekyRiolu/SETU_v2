@@ -2,16 +2,14 @@
 \cleardoublepage
 
 \renewcommand{\contentsname}{\normalfont\fontsize{18}{22}\selectfont\bfseries\hfill TABLE OF CONTENTS\hfill}
-\renewcommand{\listtablename}{\normalfont\fontsize{18}{22}\selectfont\bfseries\hfill LIST OF TABLES\hfill}
 \renewcommand{\listfigurename}{\normalfont\fontsize{18}{22}\selectfont\bfseries\hfill LIST OF FIGURES\hfill}
 
 {\setstretch{1.15}
 \tableofcontents
 \clearpage
 
-\addcontentsline{toc}{chapter}{List of Tables}
-\listoftables
-\clearpage
+%% The report carries no tables: every one was rewritten as prose or as a
+%% bullet list, so the List of Tables would be empty and is omitted.
 
 \addcontentsline{toc}{chapter}{List of Figures}
 \listoffigures

@@ -22,49 +22,24 @@ describes the approach and reports the test cases with their data and outcomes.
 \label{subsec:teststrategy}
 
 The suite comprises \textbf{85 automated tests} executed by \texttt{pytest},
-organised into the categories of Table~\ref{tab:testcategories}. They run on
+organised into the categories listed below. They run on
 every change and gate every milestone; a milestone is not closed while any test
 fails.
 
-\begin{longtable}{@{}L{3.4cm} L{4.0cm} J{6.6cm}@{}}
-\caption{Test suite organisation}
-\label{tab:testcategories}\\
-\toprule
-\rowcolor{headblue}
-\textbf{Category} & \textbf{Modules covered} & \textbf{What is asserted} \\
-\midrule
-\endfirsthead
-\multicolumn{3}{c}{\textit{Table \thetable{} (continued)}}\\
-\toprule
-\rowcolor{headblue}
-\textbf{Category} & \textbf{Modules covered} & \textbf{What is asserted} \\
-\midrule
-\endhead
-\midrule
-\multicolumn{3}{r}{\textit{continued on next page}}\\
-\endfoot
-\bottomrule
-\endlastfoot
-
-Configuration & \texttt{config}, registry & YAML loads; all 22 languages plus English present; ISO-to-FLORES mapping correct including dual-script entries \\
-\rowcolor{rowgrey}
-Corpus & \texttt{corpus/*} & Normalisation preserves ZWJ/ZWNJ; each filter removes what it should and nothing else; deduplication is exact \\
-Teacher & \texttt{teacher/*} & The abstraction wall holds; an optional smoke test runs the real teacher \\
-\rowcolor{rowgrey}
-Preference & \texttt{preference/*} & Every emitted pair has preferred chrF strictly greater than dispreferred; low-delta pairs are dropped \\
-Distillation & \texttt{distill/*} & Targets are replaced by teacher output; an empty candidate falls back to the reference and is counted \\
-\rowcolor{rowgrey}
-Training & \texttt{training/*} & Loss decreases; the DPO reference stays frozen; sequences beyond the limit are truncated rather than crashing \\
-Quantisation & \texttt{quantize/*} & ONNX export validates against ONNX Runtime; size and latency budgets hold; inference succeeds with sockets disabled \\
-\rowcolor{rowgrey}
-Inference & \texttt{inference/*} & Direct routing, pivot routing, stub behaviour, rejection of invalid requests \\
-Interfaces & \texttt{rest}, \texttt{cli}, \texttt{pwa} & Endpoint contracts, error codes, CORS, service-worker caching \\
-\rowcolor{rowgrey}
-Expansion & \texttt{aio\_kd}, \texttt{ewc} & Every direction is sampled; the EWC penalty is zero at the snapshot, positive away from it, and retains an old task better than plain fine-tuning \\
-Multi-pair & \texttt{test\_multipair} & The pipeline runs end to end on a pair other than the configured default \\
-\rowcolor{rowgrey}
-Reporting & \texttt{report} & The scorecard prints \textsc{unverified} rather than a pass when evidence is absent \\
-\end{longtable}
+\begin{bullets}
+\item \textbf{Configuration} (\texttt{config}, registry). YAML loads; all 22 languages plus English present; ISO-to-FLORES mapping correct including dual-script entries.
+\item \textbf{Corpus} (\texttt{corpus/*}). Normalisation preserves ZWJ/ZWNJ; each filter removes what it should and nothing else; deduplication is exact.
+\item \textbf{Teacher} (\texttt{teacher/*}). The abstraction wall holds; an optional smoke test runs the real teacher.
+\item \textbf{Preference} (\texttt{preference/*}). Every emitted pair has preferred chrF strictly greater than dispreferred; low-delta pairs are dropped.
+\item \textbf{Distillation} (\texttt{distill/*}). Targets are replaced by teacher output; an empty candidate falls back to the reference and is counted.
+\item \textbf{Training} (\texttt{training/*}). Loss decreases; the DPO reference stays frozen; sequences beyond the limit are truncated rather than crashing.
+\item \textbf{Quantisation} (\texttt{quantize/*}). ONNX export validates against ONNX Runtime; size and latency budgets hold; inference succeeds with sockets disabled.
+\item \textbf{Inference} (\texttt{inference/*}). Direct routing, pivot routing, stub behaviour, rejection of invalid requests.
+\item \textbf{Interfaces} (\texttt{rest}, \texttt{cli}, \texttt{pwa}). Endpoint contracts, error codes, CORS, service-worker caching.
+\item \textbf{Expansion} (\texttt{aio\_kd}, \texttt{ewc}). Every direction is sampled; the EWC penalty is zero at the snapshot, positive away from it, and retains an old task better than plain fine-tuning.
+\item \textbf{Multi-pair} (\texttt{test\_multipair}). The pipeline runs end to end on a pair other than the configured default.
+\item \textbf{Reporting} (\texttt{report}). The scorecard prints \textsc{unverified} rather than a pass when evidence is absent.
+\end{bullets}
 
 Two isolation devices were necessary. An autouse fixture sets
 \texttt{SETU\_MODELS\_ROOT} to a temporary directory so that tests never read
@@ -76,78 +51,42 @@ machine with no models installed.
 \subsection{Unit Testing}
 \label{subsec:unittest}
 
-Unit tests exercise one module in isolation. The tables below give the cases
+Unit tests exercise one module in isolation. The lists below give the cases
 for the components whose failure modes matter most, each with at least one valid
 and two invalid inputs.
 
 \subsubsection{Translation Engine}
 
-\begin{table}[H]
-\centering
-\caption{Unit test UT-1 to UT-5: translation engine, Hindi\arrowto{}English INT4 ONNX student}
-\label{tab:ut1}
-\begin{tabular}{@{}c L{3.9cm} L{3.6cm} L{3.9cm} c@{}}
-\toprule
-\rowcolor{headblue}
-\textbf{\#} & \textbf{Test data (input)} & \textbf{Expected result} & \textbf{Actual result} & \textbf{Verdict} \\
-\midrule
-UT-1 & \texttt{src=hi, tgt=en},\newline \dev{भारत एक विशाल देश है।} & Fluent English translation & \textit{``India is a vast country.''} & \pass \\
-\rowcolor{rowgrey}
-UT-2 & \texttt{src=hi, tgt=hi} (identical languages) & Rejected with HTTP 400 / \texttt{ValueError} & HTTP 400: \textit{source and target are both `hi'} & \pass \\
-UT-3 & \texttt{src=xx, tgt=en} (unknown language code) & Rejected: unknown language code & \texttt{ValueError} raised; request refused & \pass \\
-\rowcolor{rowgrey}
-UT-4 & Empty string input & Empty output, no exception & \texttt{""} returned; no exception & \pass \\
-UT-5 & Sentence exceeding \texttt{max\_seq\_len} & Truncated and translated, not crashed & Truncated to the limit; translation returned & \pass \\
-\bottomrule
-\end{tabular}
-\end{table}
+\begin{bullets}
+\item \textbf{UT-1.} \emph{Input:} \texttt{src=hi, tgt=en},\newline \dev{भारत एक विशाल देश है।}. \emph{Expected:} Fluent English translation. \emph{Actual:} \textit{``India is a vast country.''}. \emph{Verdict:} pass.
+\item \textbf{UT-2.} \emph{Input:} \texttt{src=hi, tgt=hi} (identical languages). \emph{Expected:} Rejected with HTTP 400 / \texttt{ValueError}. \emph{Actual:} HTTP 400: \textit{source and target are both `hi'}. \emph{Verdict:} pass.
+\item \textbf{UT-3.} \emph{Input:} \texttt{src=xx, tgt=en} (unknown language code). \emph{Expected:} Rejected: unknown language code. \emph{Actual:} \texttt{ValueError} raised; request refused. \emph{Verdict:} pass.
+\item \textbf{UT-4.} \emph{Input:} Empty string input. \emph{Expected:} Empty output, no exception. \emph{Actual:} \texttt{""} returned; no exception. \emph{Verdict:} pass.
+\item \textbf{UT-5.} \emph{Input:} Sentence exceeding \texttt{max\_seq\_len}. \emph{Expected:} Truncated and translated, not crashed. \emph{Actual:} Truncated to the limit; translation returned. \emph{Verdict:} pass.
+\end{bullets}
 
 \subsubsection{Corpus Pipeline}
 
-\begin{table}[H]
-\centering
-\caption{Unit tests UT-6 to UT-10: corpus cleaning filters}
-\label{tab:ut2}
-\begin{tabular}{@{}c L{4.0cm} L{3.6cm} L{3.4cm} c@{}}
-\toprule
-\rowcolor{headblue}
-\textbf{\#} & \textbf{Test data (input)} & \textbf{Expected result} & \textbf{Actual result} & \textbf{Verdict} \\
-\midrule
-UT-6 & Well-formed Hindi--English pair & Retained & Retained & \pass \\
-\rowcolor{rowgrey}
-UT-7 & Pair with length ratio 5:1 & Rejected (ratio $>3.0$) & Rejected, counted as \texttt{length\_ratio} & \pass \\
-UT-8 & Devanagari source paired with a Tamil ``English'' side & Rejected (script fraction below 0.5) & Rejected, counted as \texttt{wrong\_script} & \pass \\
-\rowcolor{rowgrey}
-UT-9 & Text containing ZWJ and ZWNJ & Both preserved through normalisation & Both preserved; NFC applied & \pass \\
-UT-10 & Duplicate of an earlier pair & Removed & Removed, counted as \texttt{duplicate} & \pass \\
-\bottomrule
-\end{tabular}
-\end{table}
+\begin{bullets}
+\item \textbf{UT-6.} \emph{Input:} Well-formed Hindi--English pair. \emph{Expected:} Retained. \emph{Actual:} Retained. \emph{Verdict:} pass.
+\item \textbf{UT-7.} \emph{Input:} Pair with length ratio 5:1. \emph{Expected:} Rejected (ratio $>3.0$). \emph{Actual:} Rejected, counted as \texttt{length\_ratio}. \emph{Verdict:} pass.
+\item \textbf{UT-8.} \emph{Input:} Devanagari source paired with a Tamil ``English'' side. \emph{Expected:} Rejected (script fraction below 0.5). \emph{Actual:} Rejected, counted as \texttt{wrong\_script}. \emph{Verdict:} pass.
+\item \textbf{UT-9.} \emph{Input:} Text containing ZWJ and ZWNJ. \emph{Expected:} Both preserved through normalisation. \emph{Actual:} Both preserved; NFC applied. \emph{Verdict:} pass.
+\item \textbf{UT-10.} \emph{Input:} Duplicate of an earlier pair. \emph{Expected:} Removed. \emph{Actual:} Removed, counted as \texttt{duplicate}. \emph{Verdict:} pass.
+\end{bullets}
 
 \subsubsection{Training Mechanics}
 
 These are the property tests. Each asserts something that cannot be verified by
 reading the output of a training run.
 
-\begin{table}[H]
-\centering
-\caption{Unit tests UT-11 to UT-15: training mechanics}
-\label{tab:ut3}
-\begin{tabular}{@{}c L{3.9cm} L{3.9cm} L{3.3cm} c@{}}
-\toprule
-\rowcolor{headblue}
-\textbf{\#} & \textbf{Property under test} & \textbf{Expected result} & \textbf{Actual result} & \textbf{Verdict} \\
-\midrule
-UT-11 & DPO reference model is frozen & No parameter of the reference receives a gradient & All reference gradients \texttt{None} & \pass \\
-\rowcolor{rowgrey}
-UT-12 & Training loss decreases over a short run & Final loss below initial & Loss decreased monotonically & \pass \\
-UT-13 & Padding is excluded from the loss & Label tensor contains $-100$ at every pad position & Verified for every batch & \pass \\
-\rowcolor{rowgrey}
-UT-14 & EWC penalty is zero at the snapshot & Penalty $= 0$ at $\theta^{*}$, $>0$ away from it & $0.0$ at snapshot; grows with distance & \pass \\
-UT-15 & AIO-KD samples every direction & Coverage report lists all configured directions & All directions sampled & \pass \\
-\bottomrule
-\end{tabular}
-\end{table}
+\begin{bullets}
+\item \textbf{UT-11.} \emph{Input:} DPO reference model is frozen. \emph{Expected:} No parameter of the reference receives a gradient. \emph{Actual:} All reference gradients \texttt{None}. \emph{Verdict:} pass.
+\item \textbf{UT-12.} \emph{Input:} Training loss decreases over a short run. \emph{Expected:} Final loss below initial. \emph{Actual:} Loss decreased monotonically. \emph{Verdict:} pass.
+\item \textbf{UT-13.} \emph{Input:} Padding is excluded from the loss. \emph{Expected:} Label tensor contains $-100$ at every pad position. \emph{Actual:} Verified for every batch. \emph{Verdict:} pass.
+\item \textbf{UT-14.} \emph{Input:} EWC penalty is zero at the snapshot. \emph{Expected:} Penalty $= 0$ at $\theta^{*}$, $>0$ away from it. \emph{Actual:} $0.0$ at snapshot; grows with distance. \emph{Verdict:} pass.
+\item \textbf{UT-15.} \emph{Input:} AIO-KD samples every direction. \emph{Expected:} Coverage report lists all configured directions. \emph{Actual:} All directions sampled. \emph{Verdict:} pass.
+\end{bullets}
 
 \subsection{Integration Testing}
 \label{subsec:integrationtest}
@@ -158,67 +97,31 @@ of one model becomes the input of another.
 
 \subsubsection{Inference Engine and Pivot Router}
 
-\begin{table}[H]
-\centering
-\caption{Integration tests IT-1 to IT-4: English-pivot chaining for Indic-to-Indic pairs}
-\label{tab:it1}
-\begin{tabular}{@{}c L{3.6cm} L{3.2cm} L{4.2cm} c@{}}
-\toprule
-\rowcolor{headblue}
-\textbf{\#} & \textbf{Test data (input)} & \textbf{Expected result} & \textbf{Actual result} & \textbf{Verdict} \\
-\midrule
-IT-1 & \texttt{src=hi, tgt=bn},\newline \dev{भारत एक विशाल देश है।}\newline (no direct model) & Route via English; return Bengali & \ben{ভারত একটি বিশাল দেশ।}\newline (\texttt{pivot="en"}, $\approx$57\,ms) & \pass \\
-\rowcolor{rowgrey}
-IT-2 & \texttt{src=ta, tgt=te},\newline \tam{இந்தியா ஒரு பெரிய நாடு.} & Route via English; return Telugu & \tel{భారతదేశం ఒక పెద్ద దేశం.}\newline (\texttt{pivot="en"}) & \pass \\
-IT-3 & \texttt{src=as, tgt=bn},\newline \ben{ভাৰত এখন ডাঙৰ দেশ।} & Route via English; return Bengali & \ben{ভারত একটি বড় দেশ।}\newline (\texttt{pivot="en"}) & \pass \\
-\rowcolor{rowgrey}
-IT-4 & \texttt{src=mr, tgt=kn} & Route via English; return Kannada & Correct Kannada returned, $\approx$50--65\,ms & \pass \\
-\bottomrule
-\end{tabular}
-\end{table}
+\begin{bullets}
+\item \textbf{IT-1.} \emph{Input:} \texttt{src=hi, tgt=bn},\newline \dev{भारत एक विशाल देश है।}\newline (no direct model). \emph{Expected:} Route via English; return Bengali. \emph{Actual:} \ben{ভারত একটি বিশাল দেশ।}\newline (\texttt{pivot="en"}, $\approx$57\,ms). \emph{Verdict:} pass.
+\item \textbf{IT-2.} \emph{Input:} \texttt{src=ta, tgt=te},\newline \tam{இந்தியா ஒரு பெரிய நாடு.}. \emph{Expected:} Route via English; return Telugu. \emph{Actual:} \tel{భారతదేశం ఒక పెద్ద దేశం.}\newline (\texttt{pivot="en"}). \emph{Verdict:} pass.
+\item \textbf{IT-3.} \emph{Input:} \texttt{src=as, tgt=bn},\newline \ben{ভাৰত এখন ডাঙৰ দেশ।}. \emph{Expected:} Route via English; return Bengali. \emph{Actual:} \ben{ভারত একটি বড় দেশ।}\newline (\texttt{pivot="en"}). \emph{Verdict:} pass.
+\item \textbf{IT-4.} \emph{Input:} \texttt{src=mr, tgt=kn}. \emph{Expected:} Route via English; return Kannada. \emph{Actual:} Correct Kannada returned, $\approx$50--65\,ms. \emph{Verdict:} pass.
+\end{bullets}
 
 \subsubsection{REST API and Inference Engine}
 
-\begin{table}[H]
-\centering
-\caption{Integration tests IT-5 to IT-9: REST service against the routing layer}
-\label{tab:it2}
-\begin{tabular}{@{}c L{3.8cm} L{3.8cm} L{3.6cm} c@{}}
-\toprule
-\rowcolor{headblue}
-\textbf{\#} & \textbf{Request} & \textbf{Expected result} & \textbf{Actual result} & \textbf{Verdict} \\
-\midrule
-IT-5 & \texttt{GET /models} & All installed pairs with variant and size & \texttt{count: 22}, each \texttt{int4}, 103.9\,MB & \pass \\
-\rowcolor{rowgrey}
-IT-6 & \texttt{GET /languages} & 22 scheduled languages plus English & 23 entries with ISO, FLORES, script, endonym & \pass \\
-IT-7 & \texttt{POST /translate} with \texttt{ta}\arrowto{}\texttt{en} & Real translation, \texttt{stub:false} & Correct English, $\approx$40--60\,ms, \texttt{stub:false} & \pass \\
-\rowcolor{rowgrey}
-IT-8 & \texttt{POST /translate} with an unknown code & HTTP 400 with a descriptive message & HTTP 400 returned & \pass \\
-IT-9 & CORS preflight from the browser client & Preflight accepted & \texttt{OPTIONS} returns the expected headers & \pass \\
-\bottomrule
-\end{tabular}
-\end{table}
+\begin{bullets}
+\item \textbf{IT-5.} \emph{Input:} \texttt{GET /models}. \emph{Expected:} All installed pairs with variant and size. \emph{Actual:} \texttt{count: 22}, each \texttt{int4}, 103.9\,MB. \emph{Verdict:} pass.
+\item \textbf{IT-6.} \emph{Input:} \texttt{GET /languages}. \emph{Expected:} 22 scheduled languages plus English. \emph{Actual:} 23 entries with ISO, FLORES, script, endonym. \emph{Verdict:} pass.
+\item \textbf{IT-7.} \emph{Input:} \texttt{POST /translate} with \texttt{ta}\arrowto{}\texttt{en}. \emph{Expected:} Real translation, \texttt{stub:false}. \emph{Actual:} Correct English, $\approx$40--60\,ms, \texttt{stub:false}. \emph{Verdict:} pass.
+\item \textbf{IT-8.} \emph{Input:} \texttt{POST /translate} with an unknown code. \emph{Expected:} HTTP 400 with a descriptive message. \emph{Actual:} HTTP 400 returned. \emph{Verdict:} pass.
+\item \textbf{IT-9.} \emph{Input:} CORS preflight from the browser client. \emph{Expected:} Preflight accepted. \emph{Actual:} \texttt{OPTIONS} returns the expected headers. \emph{Verdict:} pass.
+\end{bullets}
 
 \subsubsection{Full Pipeline}
 
-\begin{table}[H]
-\centering
-\caption{Integration tests IT-10 to IT-13: end-to-end pipeline}
-\label{tab:it3}
-\begin{tabular}{@{}c L{4.2cm} L{4.1cm} L{2.8cm} c@{}}
-\toprule
-\rowcolor{headblue}
-\textbf{\#} & \textbf{Scenario} & \textbf{Expected result} & \textbf{Actual result} & \textbf{Verdict} \\
-\midrule
-IT-10 & Corpus \arrowto{} distil \arrowto{} train \arrowto{} evaluate on a small slice & Runs end to end; a training report is written & Report written with BLEU, chrF and ratio & \pass \\
-\rowcolor{rowgrey}
-IT-11 & Train \arrowto{} export \arrowto{} quantise \arrowto{} translate offline & Quantised model translates with sockets disabled & Translation returned; no network call & \pass \\
-IT-12 & Same pipeline on a non-default language pair & Pair-agnostic: succeeds without code change & Tamil\arrowto{}English and reverse both succeeded & \pass \\
-\rowcolor{rowgrey}
-IT-13 & CLI and REST for the same request & Identical output from both interfaces & Identical, since both call the same router & \pass \\
-\bottomrule
-\end{tabular}
-\end{table}
+\begin{bullets}
+\item \textbf{IT-10.} \emph{Input:} Corpus \arrowto{} distil \arrowto{} train \arrowto{} evaluate on a small slice. \emph{Expected:} Runs end to end; a training report is written. \emph{Actual:} Report written with BLEU, chrF and ratio. \emph{Verdict:} pass.
+\item \textbf{IT-11.} \emph{Input:} Train \arrowto{} export \arrowto{} quantise \arrowto{} translate offline. \emph{Expected:} Quantised model translates with sockets disabled. \emph{Actual:} Translation returned; no network call. \emph{Verdict:} pass.
+\item \textbf{IT-12.} \emph{Input:} Same pipeline on a non-default language pair. \emph{Expected:} Pair-agnostic: succeeds without code change. \emph{Actual:} Tamil\arrowto{}English and reverse both succeeded. \emph{Verdict:} pass.
+\item \textbf{IT-13.} \emph{Input:} CLI and REST for the same request. \emph{Expected:} Identical output from both interfaces. \emph{Actual:} Identical, since both call the same router. \emph{Verdict:} pass.
+\end{bullets}
 
 IT-13 deserves a note, because it was added in response to a genuine defect. The
 CLI originally constructed an \texttt{InferenceEngine} with the language pair
@@ -230,27 +133,14 @@ was wrong. The fix, routing both interfaces through
 \subsection{System and Non-Functional Testing}
 \label{subsec:systemtest}
 
-\begin{table}[H]
-\centering
-\caption{System tests ST-1 to ST-6: non-functional targets}
-\label{tab:st}
-\begin{tabular}{@{}c L{3.0cm} L{2.6cm} L{3.6cm} L{1.6cm}@{}}
-\toprule
-\rowcolor{headblue}
-\textbf{\#} & \textbf{Attribute} & \textbf{Target} & \textbf{Measured} & \textbf{Verdict} \\
-\midrule
-ST-1 & Artifact size & $\leq 200$\,MB per direction & 103.9\,MB for all 22 directions & \pass \\
-\rowcolor{rowgrey}
-ST-2 & Inference latency & $<500$\,ms per sentence & Mean 105--202\,ms; p90 141--541\,ms & \pass (one p90 outlier) \\
-ST-3 & Offline operation & No network call at inference & All sockets disabled; translation succeeded & \pass \\
-\rowcolor{rowgrey}
-ST-4 & Quality ratio & $\geq 0.80$ of teacher BLEU & 14 of 22 directions; mean 0.838 & Partial \\
-ST-5 & Model health across all directions & Every model produces non-degenerate output & 22 of 22 healthy; no empty, passthrough or collapsed output & \pass \\
-\rowcolor{rowgrey}
-ST-6 & Coverage & All pairs among supported languages reachable & 22 direct plus English-pivoted routes & \pass \\
-\bottomrule
-\end{tabular}
-\end{table}
+\begin{bullets}
+\item \textbf{ST-1, artifact size.} \emph{Target:} $\leq 200$\,MB per direction. \emph{Measured:} 103.9\,MB for all 22 directions. \emph{Verdict:} pass.
+\item \textbf{ST-2, inference latency.} \emph{Target:} $<500$\,ms per sentence. \emph{Measured:} Mean 105--202\,ms; p90 141--541\,ms. \emph{Verdict:} pass (one p90 outlier).
+\item \textbf{ST-3, offline operation.} \emph{Target:} No network call at inference. \emph{Measured:} All sockets disabled; translation succeeded. \emph{Verdict:} pass.
+\item \textbf{ST-4, quality ratio.} \emph{Target:} $\geq 0.80$ of teacher BLEU. \emph{Measured:} 14 of 22 directions; mean 0.838. \emph{Verdict:} Partial.
+\item \textbf{ST-5, model health across all directions.} \emph{Target:} Every model produces non-degenerate output. \emph{Measured:} 22 of 22 healthy; no empty, passthrough or collapsed output. \emph{Verdict:} pass.
+\item \textbf{ST-6, coverage.} \emph{Target:} All pairs among supported languages reachable. \emph{Measured:} 22 direct plus English-pivoted routes. \emph{Verdict:} pass.
+\end{bullets}
 
 ST-5 was implemented as a dedicated script, \texttt{scripts/translation\_suite.py},
 which loads each model in turn, translates a real source sentence in that
@@ -263,89 +153,43 @@ merely scoring better.
 \subsection{Defects Found by Testing}
 \label{subsec:defects}
 
-Table~\ref{tab:defects} lists the defects the suite caught, with the test that
-caught each. They are reported because the class of defect is instructive: most
+The defects the suite caught are listed below, with the test that caught
+each. They are reported because the class of defect is instructive: most
 were silent, producing plausible output rather than an error.
 
-\begin{longtable}{@{}L{1.2cm} L{4.6cm} L{4.2cm} L{3.6cm}@{}}
-\caption{Defects found during testing}
-\label{tab:defects}\\
-\toprule
-\rowcolor{headblue}
-\textbf{ID} & \textbf{Defect} & \textbf{Symptom} & \textbf{Caught by} \\
-\midrule
-\endfirsthead
-\toprule
-\rowcolor{headblue}
-\textbf{ID} & \textbf{Defect} & \textbf{Symptom} & \textbf{Caught by} \\
-\midrule
-\endhead
-\bottomrule
-\endlastfoot
-
-D1 & Padding counted in the training loss & Implausibly low loss (0.274); decoder ignored the source entirely & Loss-plausibility check plus UT-13 \\
-\rowcolor{rowgrey}
-D2 & Leading BOS added to labels & Empty translations; BLEU and chrF exactly 0.0 & End-to-end evaluation (IT-10) \\
-D3 & Learning-rate warmup silently ignored & Severe underfitting on a from-scratch model & Training-loss inspection \\
-\rowcolor{rowgrey}
-D4 & Missing gradient clipping & Collapse to a single repeated phrase at larger data volumes & Comparison of runs at 120k and 200k sentences \\
-D5 & Positional-embedding overflow & Crash on sentences longer than the limit & UT-5 (regression test added) \\
-\rowcolor{rowgrey}
-D6 & CLI ignored the requested language pair & Wrong model used; output looked valid & IT-13 \\
-D7 & Teacher post-processing deadlock & Generation hung indefinitely when decoding $n>1$ candidates & Teacher smoke test \\
-\rowcolor{rowgrey}
-D8 & Package shadowing (\texttt{setu.py} vs the \texttt{setu} package) & \texttt{python -m setu.\dots} failed on a clean machine & Module-import test \\
-D9 & Missing checkpoint treated as a remote identifier & Confusing download error instead of a clear failure & Quantisation test with an absent checkpoint \\
-\rowcolor{rowgrey}
-D10 & Stub and real engines leaked state between tests & Order-dependent test failures & Autouse isolation fixture \\
-
-\end{longtable}
+\begin{bullets}
+\item \textbf{D1, padding counted in the training loss.} \emph{Symptom:} Implausibly low loss (0.274); decoder ignored the source entirely. \emph{Caught by:} Loss-plausibility check plus UT-13.
+\item \textbf{D2, leading BOS added to labels.} \emph{Symptom:} Empty translations; BLEU and chrF exactly 0.0. \emph{Caught by:} End-to-end evaluation (IT-10).
+\item \textbf{D3, learning-rate warmup silently ignored.} \emph{Symptom:} Severe underfitting on a from-scratch model. \emph{Caught by:} Training-loss inspection.
+\item \textbf{D4, missing gradient clipping.} \emph{Symptom:} Collapse to a single repeated phrase at larger data volumes. \emph{Caught by:} Comparison of runs at 120k and 200k sentences.
+\item \textbf{D5, positional-embedding overflow.} \emph{Symptom:} Crash on sentences longer than the limit. \emph{Caught by:} UT-5 (regression test added).
+\item \textbf{D6, cLI ignored the requested language pair.} \emph{Symptom:} Wrong model used; output looked valid. \emph{Caught by:} IT-13.
+\item \textbf{D7, teacher post-processing deadlock.} \emph{Symptom:} Generation hung indefinitely when decoding $n>1$ candidates. \emph{Caught by:} Teacher smoke test.
+\item \textbf{D8, package shadowing (\texttt{setu.py} vs the \texttt{setu} package).} \emph{Symptom:} \texttt{python -m setu.\dots} failed on a clean machine. \emph{Caught by:} Module-import test.
+\item \textbf{D9, missing checkpoint treated as a remote identifier.} \emph{Symptom:} Confusing download error instead of a clear failure. \emph{Caught by:} Quantisation test with an absent checkpoint.
+\item \textbf{D10, stub and real engines leaked state between tests.} \emph{Symptom:} Order-dependent test failures. \emph{Caught by:} Autouse isolation fixture.
+\end{bullets}
 
 \needspace{10\baselineskip}
 \subsection{Test Execution Summary}
 \label{subsec:testsummary}
 
-\begin{longtable}{@{}J{6.6cm} c c c@{}}
-\caption{Final test execution summary}
-\label{tab:testsummary}\\
-\toprule
-\rowcolor{headblue}
-\textbf{Suite} & \textbf{Tests} & \textbf{Passed} & \textbf{Skipped} \\
-\midrule
-\endfirsthead
-\multicolumn{4}{c}{\textit{Table \thetable{} (continued)}}\\
-\toprule
-\rowcolor{headblue}
-\textbf{Suite} & \textbf{Tests} & \textbf{Passed} & \textbf{Skipped} \\
-\midrule
-\endhead
-\midrule
-\multicolumn{4}{r}{\textit{continued on next page}}\\
-\endfoot
-\bottomrule
-\endlastfoot
+\begin{bullets}
+\item \textbf{Configuration, registry and types:} 8 tests, all passed.
+\item \textbf{Corpus pipeline:} 9 tests, all passed.
+\item \textbf{Teacher abstraction and wall:} 5 tests, 4 passed, 1 (real-teacher smoke, opt-in) skipped.
+\item \textbf{Preference generation and validation:} 7 tests, all passed.
+\item \textbf{Distillation:} 4 tests, all passed.
+\item \textbf{Tokenizer:} 5 tests, all passed.
+\item \textbf{Training (SFT, DPO, pipeline):} 13 tests, all passed.
+\item \textbf{Quantisation, ONNX and offline:} 8 tests, all passed.
+\item \textbf{Inference, routing and multi-pair:} 7 tests, all passed.
+\item \textbf{Interfaces (REST, CLI, PWA):} 11 tests, all passed.
+\item \textbf{AIO-KD and EWC:} 5 tests, all passed.
+\item \textbf{Benchmark, device and reporting:} 3 tests, all passed.
+\end{bullets}
 
-Configuration, registry and types      & 8  & 8  & 0 \\
-\rowcolor{rowgrey}
-Corpus pipeline                        & 9  & 9  & 0 \\
-Teacher abstraction and wall           & 5  & 4  & 1 (real-teacher smoke, opt-in) \\
-\rowcolor{rowgrey}
-Preference generation and validation   & 7  & 7  & 0 \\
-Distillation                           & 4  & 4  & 0 \\
-\rowcolor{rowgrey}
-Tokenizer                              & 5  & 5  & 0 \\
-Training (SFT, DPO, pipeline)          & 13 & 13 & 0 \\
-\rowcolor{rowgrey}
-Quantisation, ONNX and offline         & 8  & 8  & 0 \\
-Inference, routing and multi-pair      & 7  & 7  & 0 \\
-\rowcolor{rowgrey}
-Interfaces (REST, CLI, PWA)            & 11 & 11 & 0 \\
-AIO-KD and EWC                         & 5  & 5  & 0 \\
-\rowcolor{rowgrey}
-Benchmark, device and reporting        & 3  & 3  & 0 \\
-\midrule
-\textbf{Total}                         & \textbf{85} & \textbf{85} & \textbf{1 opt-in} \\
-\end{longtable}
+In total the suite runs 85 tests: 85 pass and one is skipped by design, the opt-in real-teacher smoke test.
 
 The single skipped test runs the real IndicTrans2 teacher and is opt-in through
 the \texttt{SETU\_TEACHER\_SMOKE=1} environment variable, because it downloads

@@ -352,6 +352,31 @@ balancing, EWC anti-forgetting, device resolution, scorecard.
 
 ## 10. Session changelog
 
+- **2026-10-11 (cont.) (every table removed; requirements as bullets)** - Three
+  changes. **(1) The report now contains no tables at all.** All 37 remaining ones became
+  prose, bullet lists, description lists or numbered steps, whichever suited the content:
+  the work breakdown, schedule, PERT estimates, risk register and team split in Chapter 4;
+  the external interfaces and core data structures in Chapter 5, with the four algorithms
+  rewritten as `algsteps` numbered pseudo-code under a bold `\algtitle` rather than a
+  single-column table; the optimisation log in Chapter 6; all ten test tables in Chapter 7;
+  all ten result tables in Chapter 8, including the three translation probes; the objective
+  scorecard in Chapter 9; the three appendix tables; and the 46-entry glossary, now a
+  `terms` description list. Three new list environments carry it: `bullets`, `terms` and
+  `algsteps`. The List of Tables was dropped from the front matter because it would be
+  empty, and the five surviving `Table~\ref{}` sentences were rewritten.
+  **(2) The run-in `\spec` style is gone.** Requirements, use cases and specifications in
+  Chapter 3 are bullets with a bold label and a colon (for example "NFR-1, performance:"),
+  which is what the user asked for after seeing the paragraph form.
+  **(3) Three single-line orphan pages closed** with `\enlargethispage`: the end of
+  Chapter 2 (one line alone on a page), the lead-in before the landscape Gantt, and the end
+  of Appendix B before the glossary. A `\needspace` was added before each algorithm
+  subsection after one stranded.
+
+  The document is 20 pages shorter, at **107 pages**, with zero undefined references, zero
+  overfull boxes above 5 pt, no stranded headings, and every remaining part-empty page
+  being a chapter end, a list end or the deliberate break before section 5.3. Print split
+  regenerated at 83 mono / 24 colour.
+
 - **2026-10-11 (cont.) (paper entries on one line, Chapter 3 de-tabulated)** - Two
   follow-ups. **(1) Literature entries reformatted.** The `\paper` macro now sets the
   title, authors, venue and year on a single comma-separated line instead of two lines
