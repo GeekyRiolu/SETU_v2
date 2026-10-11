@@ -350,16 +350,24 @@
 % #1 number, #2 title, #3 authors, #4 venue and year. The commentary follows as
 % ordinary body text.
 \newcommand{\paper}[4]{%
-  \par\medskip\needspace{5\baselineskip}%
-  \noindent\textbf{[#1]\quad #2}\par
-  \nopagebreak
-  \noindent{\small\textit{#3}\quad\textbullet\quad #4}\par
-  \nopagebreak\vspace{2pt}}
+  \par\medskip\needspace{6\baselineskip}%
+  \noindent\textbf{[#1]\quad #2}, #3, #4\par
+  \nopagebreak\vspace{1pt}}
+
+% The findings under one surveyed paper, as a tight bullet list.
+\newlist{paperpoints}{itemize}{1}
+\setlist[paperpoints]{label=\textbullet, leftmargin=0.42in,
+                      topsep=2pt, itemsep=1.5pt, parsep=0pt}
 
 % One design decision from the comparative study, as a headed paragraph.
 \newcommand{\decision}[1]{%
   \par\medskip\needspace{5\baselineskip}%
   \noindent\textbf{#1}\par\nopagebreak\vspace{2pt}}
+
+% One specification, requirement or use case as a run-in headed paragraph.
+\newcommand{\spec}[1]{%
+  \par\medskip\needspace{3\baselineskip}%
+  \noindent\textbf{#1}\hspace{0.5em}\ignorespaces}
 
 % Class-box separator usable inside a TikZ node (\hrule is illegal there)
 \newcommand{\clsrule}{\\[1pt]\rule{\linewidth}{0.3pt}\\[1pt]}

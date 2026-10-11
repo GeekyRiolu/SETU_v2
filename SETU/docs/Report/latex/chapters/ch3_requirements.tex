@@ -18,32 +18,20 @@ of how they are satisfied.
 \subsection{Hardware Requirements}
 \label{subsec:hw}
 
-Table~\ref{tab:hwtrain} gives the training hardware. The primary training
+Two machines were used, and both shaped the design. The primary training
 platform was an NVIDIA A40-16Q (a 16\,GB vGPU slice of a 48\,GB A40, software
-partitioned rather than MIG partitioned) on a Debian host. A local CPU-only
-workstation was used for development, testing and the pipeline's smaller runs;
-its constraints are listed because they shaped several design decisions that
-survive into the final system.
+partitioned rather than MIG partitioned) on a Debian host, running on the host
+CPU with system memory sufficient to hold teacher and student concurrently and
+roughly 640\,GB of storage, 575\,GB of it free. That machine carried teacher
+distillation, student training, quantisation and evaluation.
 
-\begin{table}[H]
-\centering
-\caption{Hardware used for training and development}
-\label{tab:hwtrain}
-\begin{tabular}{@{}L{3.1cm} L{5.2cm} L{5.6cm}@{}}
-\toprule
-\rowcolor{headblue}
-\textbf{Component} & \textbf{Training platform (GPU VM)} & \textbf{Development platform (local)} \\
-\midrule
-Processor        & Host CPU, Debian & 8-core x86-64 \\
-\rowcolor{rowgrey}
-Accelerator      & NVIDIA A40-16Q, 16\,GB vGPU slice, Ampere cc 8.6, driver 535, CUDA 12.2 & None (CPU only) \\
-System memory    & Sufficient to hold teacher and student concurrently & 7.4\,GB \\
-\rowcolor{rowgrey}
-Storage          & $\approx$640\,GB, 575\,GB free & Standard SSD \\
-Purpose          & Teacher distillation, student training, quantisation, evaluation & Pipeline development, unit and integration testing, small-scale runs \\
-\bottomrule
-\end{tabular}
-\end{table}
+The development platform was a local CPU-only workstation: an 8-core x86-64
+processor, no accelerator of any kind, 7.4\,GB of system memory and a standard
+SSD. It carried pipeline development, unit and integration testing, and the
+pipeline's smaller runs. Its constraints are recorded here because they shaped
+several design decisions that survive into the final system.
+
+
 
 The 7.4\,GB ceiling on the development machine is worth recording, because it
 produced a real design constraint rather than a mere inconvenience. A
@@ -55,73 +43,73 @@ parallel configuration sets, \texttt{model.yaml}/\texttt{training.yaml} for CPU
 development and \texttt{model.gpu.yaml}/\texttt{training.gpu.yaml} for GPU
 training.
 
-Table~\ref{tab:hwdeploy} gives the deployment target. The constraint that
-matters is that inference must complete within 500\,ms on a CPU with no
-accelerator, using an artifact no larger than 200\,MB.
+The deployment target is deliberately modest. The constraint that matters is
+that inference must complete within 500\,ms on a CPU with no accelerator, using
+an artifact no larger than 200\,MB.
 
-\begin{table}[H]
-\centering
-\caption{Target deployment hardware}
-\label{tab:hwdeploy}
-\begin{tabular}{@{}L{3.6cm} J{10.3cm}@{}}
-\toprule
-\rowcolor{headblue}
-\textbf{Requirement} & \textbf{Specification} \\
-\midrule
-Processor   & ARM Cortex-A55 class or better; commodity x86-64 CPU also supported \\
-\rowcolor{rowgrey}
-Accelerator & None. Inference uses the ONNX Runtime CPU execution provider exclusively \\
-Memory      & Approximately 512\,MB of working memory per loaded direction \\
-\rowcolor{rowgrey}
-Storage     & 104\,MB per translation direction, plus roughly 2\,MB for the SentencePiece tokenizer \\
-Network     & Required only for the initial one-time model download; not used thereafter \\
-\bottomrule
-\end{tabular}
-\end{table}
+\spec{Processor.} ARM Cortex-A55 class or better. A commodity x86-64 CPU is
+also supported.
+
+\spec{Accelerator.} None. Inference uses the ONNX Runtime CPU execution
+provider exclusively.
+
+\spec{Memory.} Approximately 512\,MB of working memory per loaded direction.
+
+\spec{Storage.} 104\,MB per translation direction, plus roughly 2\,MB for the
+SentencePiece tokenizer.
+
+\spec{Network.} Required only for the initial one-time model download, and not
+used thereafter.
 
 \subsection{Software Tools Used}
 \label{subsec:sw}
 
-\begin{longtable}{@{}L{2.7cm} L{4.4cm} J{6.8cm}@{}}
-\caption{Software stack, by pipeline stage}
-\label{tab:swstack}\\
-\toprule
-\rowcolor{headblue}
-\textbf{Stage} & \textbf{Tool / library} & \textbf{Role in the system} \\
-\midrule
-\endfirsthead
-\multicolumn{3}{c}{\textit{Table \thetable{} (continued)}}\\
-\toprule
-\rowcolor{headblue}
-\textbf{Stage} & \textbf{Tool / library} & \textbf{Role in the system} \\
-\midrule
-\endhead
-\midrule
-\multicolumn{3}{r}{\textit{continued on next page}}\\
-\endfoot
-\bottomrule
-\endlastfoot
+The software stack is described below, stage by stage through the pipeline.
 
-Language     & Python 3.11 / 3.12 & Implementation language for the entire pipeline. Python 3.14 was abandoned because the teacher's rotary remote modelling code requires \texttt{transformers} below 4.54 \\
-\rowcolor{rowgrey}
-Data         & Hugging Face \texttt{datasets} & Streaming ingestion of the Samanantar corpus \\
-Teacher      & \texttt{transformers} ($\geq$4.42, $<$4.54), \texttt{IndicTransToolkit}, \texttt{einops}, \texttt{sentencepiece} & Loads and runs the IndicTrans2 distilled-200M teacher; \texttt{IndicProcessor} handles script normalisation and entity placeholders \\
-\rowcolor{rowgrey}
-Training     & PyTorch $\geq$2.6 (CUDA 12.4), \texttt{torchvision} 0.21 & Student training. Torch 2.6 is a hard floor: the CVE-2025-32434 guard in newer \texttt{transformers} refuses to \texttt{torch.load} the teacher's non-safetensors weights on older versions \\
-Tokenizer    & SentencePiece & 16{,}000-token unigram vocabulary trained per direction, with 23 FLORES language tags reserved so token identifiers stay stable as languages are added \\
-\rowcolor{rowgrey}
-Quantisation & \texttt{optimum}, ONNX, ONNX Runtime & FP32 ONNX export, ORT validation, progressive INT8 and INT4 quantisation \\
-Inference    & ONNX Runtime (CPU provider) & Executes the quantised student on device \\
-\rowcolor{rowgrey}
-Evaluation   & \texttt{sacrebleu}, COMET (optional) & BLEU and chrF with reproducible signatures; COMET for languages where n-gram overlap understates quality \\
-API          & FastAPI, Uvicorn, Pydantic & REST service with typed request and response models \\
-\rowcolor{rowgrey}
-Frontend     & Next.js (App Router), TypeScript, React & Browser client and offline progressive web application \\
-Testing      & \texttt{pytest} & 85 automated tests across all modules \\
-\rowcolor{rowgrey}
-Tooling      & Git, tmux, Conda/venv & Version control; tmux keeps multi-hour training alive across SSH disconnections \\
-OS           & Debian (training), Ubuntu 22.04 LTS, Android 11+ (deployment) & \\
-\end{longtable}
+\spec{Language.} Python 3.11 or 3.12 implements the entire pipeline. Python
+3.14 was abandoned because the teacher's rotary remote modelling code requires
+\texttt{transformers} below 4.54.
+
+\spec{Data.} Hugging Face \texttt{datasets} streams the Samanantar corpus into
+the cleaning stage.
+
+\spec{Teacher.} \texttt{transformers} ($\geq$4.42, $<$4.54),
+\texttt{IndicTransToolkit}, \texttt{einops} and \texttt{sentencepiece} load and
+run the IndicTrans2 distilled-200M teacher; \texttt{IndicProcessor} handles
+script normalisation and entity placeholders.
+
+\spec{Training.} PyTorch $\geq$2.6 (CUDA 12.4) with \texttt{torchvision} 0.21
+trains the student. Torch 2.6 is a hard floor: the CVE-2025-32434 guard in
+newer \texttt{transformers} refuses to \texttt{torch.load} the teacher's
+non-safetensors weights on older versions.
+
+\spec{Tokenizer.} SentencePiece builds a 16{,}000-token unigram vocabulary per
+direction, with 23 FLORES language tags reserved so that token identifiers stay
+stable as languages are added.
+
+\spec{Quantisation.} \texttt{optimum}, ONNX and ONNX Runtime handle FP32 ONNX
+export, ORT validation and progressive INT8 and INT4 quantisation.
+
+\spec{Inference.} ONNX Runtime, CPU execution provider, executes the quantised
+student on device.
+
+\spec{Evaluation.} \texttt{sacrebleu} reports BLEU and chrF with reproducible
+signatures; COMET is available for languages where n-gram overlap understates
+quality.
+
+\spec{API.} FastAPI, Uvicorn and Pydantic provide the REST service with typed
+request and response models.
+
+\spec{Frontend.} Next.js (App Router), TypeScript and React provide the browser
+client and the offline progressive web application.
+
+\spec{Testing.} \texttt{pytest} runs 85 automated tests across all modules.
+
+\spec{Tooling.} Git for version control, and tmux to keep multi-hour training
+alive across SSH disconnections, with Conda or venv for environments.
+
+\spec{Operating systems.} Debian for training; Ubuntu 22.04 LTS and Android
+11+ for deployment.
 
 \subsubsection{Environment Constraints Discovered During Development}
 
@@ -194,30 +182,40 @@ a secondary actor that hosts the quantised model and executes inference.
 \label{fig:usecase}
 \end{figure}
 
-\begin{table}[H]
-\centering
-\caption{Use case specifications}
-\label{tab:usecases}
-\begin{tabular}{@{}L{2.7cm} L{1.9cm} L{4.3cm} L{4.6cm}@{}}
-\toprule
-\rowcolor{headblue}
-\textbf{Use case} & \textbf{Actor} & \textbf{Precondition} & \textbf{Postcondition} \\
-\midrule
-Translate Text & End User & A trained model exists for the requested direction & Translated text returned with measured latency \\
-\rowcolor{rowgrey}
-Pivot Translate & End User & No direct model exists, but both source\arrowto{}English and English\arrowto{}target models exist & Translated text returned, flagged \texttt{pivot="en"} \\
-List Languages & End User & Language registry loaded & 22 scheduled languages plus English returned, trained ones marked \\
-\rowcolor{rowgrey}
-Distil Teacher Targets & ML Engineer & Cleaned corpus available; teacher checkpoint reachable & Distilled corpus of teacher one-best targets written \\
-Train Student & ML Engineer & Distilled corpus available; GPU available & Trained checkpoint plus a training report written \\
-\rowcolor{rowgrey}
-Quantise \& Export & ML Engineer & Trained checkpoint exists & INT8 and INT4 ONNX artifacts with a quantisation report \\
-Evaluate & ML Engineer & Student and teacher both available & BLEU, chrF and student/teacher ratio recorded \\
-\rowcolor{rowgrey}
-Execute Inference & Edge Device & Quantised model and tokenizer present locally & Translation produced with zero network calls \\
-\bottomrule
-\end{tabular}
-\end{table}
+Each use case is specified below by its actor, its precondition and its
+postcondition.
+
+\spec{Translate Text (End User).} Precondition: a trained model exists for the
+requested direction. Postcondition: translated text is returned with measured
+latency.
+
+\spec{Pivot Translate (End User).} Precondition: no direct model exists, but
+both source\arrowto{}English and English\arrowto{}target models do.
+Postcondition: translated text is returned, flagged \texttt{pivot="en"}.
+
+\spec{List Languages (End User).} Precondition: the language registry is
+loaded. Postcondition: the 22 scheduled languages plus English are returned,
+with the trained ones marked.
+
+\spec{Distil Teacher Targets (ML Engineer).} Precondition: a cleaned corpus is
+available and the teacher checkpoint is reachable. Postcondition: a distilled
+corpus of teacher one-best targets is written.
+
+\spec{Train Student (ML Engineer).} Precondition: a distilled corpus is
+available and a GPU is available. Postcondition: a trained checkpoint and a
+training report are written.
+
+\spec{Quantise and Export (ML Engineer).} Precondition: a trained checkpoint
+exists. Postcondition: INT8 and INT4 ONNX artifacts are written with a
+quantisation report.
+
+\spec{Evaluate (ML Engineer).} Precondition: student and teacher are both
+available. Postcondition: BLEU, chrF and the student/teacher ratio are
+recorded.
+
+\spec{Execute Inference (Edge Device).} Precondition: the quantised model and
+tokenizer are present locally. Postcondition: a translation is produced with
+zero network calls.
 
 \subsection{Sequence Diagram}
 \label{subsec:sequence}
@@ -245,7 +243,7 @@ everything below executes on the user's device. The two decision points are the
 quality gate (does the student reach 80\,\% of teacher BLEU) and the
 routing decision at inference time.
 
-\begin{figure}[H]
+\begin{figure}[t]
 \centering
 \scalebox{0.84}{%
 \begin{tikzpicture}[node distance=6.5mm and 9mm]
@@ -530,31 +528,31 @@ This section states what the system must do, independently of how it does it.
 \subsection{User Requirements}
 \label{subsec:userreq}
 
-\begin{table}[H]
-\centering
-\caption{User requirements}
-\label{tab:userreq}
-\begin{tabular}{@{}L{1.4cm} L{2.6cm} J{9.8cm}@{}}
-\toprule
-\rowcolor{headblue}
-\textbf{ID} & \textbf{User} & \textbf{Requirement} \\
-\midrule
-UR-1 & End user & Translate text between any two supported languages without an internet connection \\
-\rowcolor{rowgrey}
-UR-2 & End user & See the full list of supported languages, each named in its own script, before choosing a direction \\
-UR-3 & End user & Receive a translation quickly enough for conversational use \\
-\rowcolor{rowgrey}
-UR-4 & End user & Be assured that the text typed never leaves the device \\
-UR-5 & End user & Use the system from a browser, a mobile application, a command line or a programmatic API, with identical behaviour \\
-\rowcolor{rowgrey}
-UR-6 & ML engineer & Train a model for any language pair by changing configuration, without modifying source code \\
-UR-7 & ML engineer & Resume a multi-hour training run after a disconnection without repeating completed stages \\
-\rowcolor{rowgrey}
-UR-8 & ML engineer & Obtain an honest quality report, including failure, rather than an optimistic one \\
-UR-9 & Deployer & Install models on a fresh machine and run the system without training anything \\
-\bottomrule
-\end{tabular}
-\end{table}
+\spec{UR-1 (End user).} Translate text between any two supported languages
+without an internet connection.
+
+\spec{UR-2 (End user).} See the full list of supported languages, each named in
+its own script, before choosing a direction.
+
+\spec{UR-3 (End user).} Receive a translation quickly enough for conversational
+use.
+
+\spec{UR-4 (End user).} Be assured that the text typed never leaves the device.
+
+\spec{UR-5 (End user).} Use the system from a browser, a mobile application, a
+command line or a programmatic API, with identical behaviour.
+
+\spec{UR-6 (ML engineer).} Train a model for any language pair by changing
+configuration, without modifying source code.
+
+\spec{UR-7 (ML engineer).} Resume a multi-hour training run after a
+disconnection without repeating completed stages.
+
+\spec{UR-8 (ML engineer).} Obtain an honest quality report, including failure,
+rather than an optimistic one.
+
+\spec{UR-9 (Deployer).} Install models on a fresh machine and run the system
+without training anything.
 
 \subsection{System Requirements}
 \label{subsec:sysreq}
@@ -580,74 +578,79 @@ UR-9 & Deployer & Install models on a fresh machine and run the system without t
 \subsection{Functional Requirements}
 \label{subsec:funcreq}
 
-\begin{longtable}{@{}L{1.4cm} J{7.8cm} L{4.6cm}@{}}
-\caption{Functional requirements}
-\label{tab:funcreq}\\
-\toprule
-\rowcolor{headblue}
-\textbf{ID} & \textbf{Requirement} & \textbf{Verified by} \\
-\midrule
-\endfirsthead
-\multicolumn{3}{c}{\textit{Table \thetable{} (continued)}}\\
-\toprule
-\rowcolor{headblue}
-\textbf{ID} & \textbf{Requirement} & \textbf{Verified by} \\
-\midrule
-\endhead
-\midrule
-\multicolumn{3}{r}{\textit{continued on next page}}\\
-\endfoot
-\bottomrule
-\endlastfoot
+Each requirement below names the section or test that verifies it.
 
-FR-1 & Translate text between supported Indian languages and English in both directions, fully offline & \S\ref{subsec:unittest}, \S\ref{sec:testreports} \\
-\rowcolor{rowgrey}
-FR-2 & Accept plain-text input of up to 512 tokens per request & \S\ref{subsec:unittest} \\
-FR-3 & Reject a request whose source and target language are identical & UT-2 \\
-\rowcolor{rowgrey}
-FR-4 & Reject a request containing an unknown language code & UT-3 \\
-FR-5 & Route Indic-to-Indic pairs through English when no direct model exists, and report that it did so & IT-1 to IT-3 \\
-\rowcolor{rowgrey}
-FR-6 & Expose \texttt{POST /translate}, \texttt{GET /languages}, \texttt{GET /models} and \texttt{GET /health} & \S\ref{sec:interface}, IT-4 \\
-FR-7 & Discover every model present on disk at start-up and report its variant and size & IT-4 \\
-\rowcolor{rowgrey}
-FR-8 & Generate teacher one-best targets for an arbitrary corpus slice & \S\ref{subsec:mod2} \\
-FR-9 & Train a student on either distilled or reference targets, selectable at run time & \S\ref{subsec:mod3} \\
-\rowcolor{rowgrey}
-FR-10 & Quantise a trained student to INT8 and INT4 ONNX with a per-stage benchmark & \S\ref{subsec:mod4} \\
-FR-11 & Report BLEU, chrF and the student/teacher ratio per direction & \S\ref{sec:testreports} \\
-\rowcolor{rowgrey}
-FR-12 & Support incremental addition of a language by configuration alone & \S\ref{subsec:mod8} \\
-\end{longtable}
+\spec{FR-1.} Translate text between supported Indian languages and English in
+both directions, fully offline. \emph{Verified by}
+\S\ref{subsec:unittest} and \S\ref{sec:testreports}.
+
+\spec{FR-2.} Accept plain-text input of up to 512 tokens per request.
+\emph{Verified by} \S\ref{subsec:unittest}.
+
+\spec{FR-3.} Reject a request whose source and target language are identical.
+\emph{Verified by} UT-2.
+
+\spec{FR-4.} Reject a request containing an unknown language code.
+\emph{Verified by} UT-3.
+
+\spec{FR-5.} Route Indic-to-Indic pairs through English when no direct model
+exists, and report that it did so. \emph{Verified by} IT-1 to IT-3.
+
+\spec{FR-6.} Expose \texttt{POST /translate}, \texttt{GET /languages},
+\texttt{GET /models} and \texttt{GET /health}. \emph{Verified by}
+\S\ref{sec:interface} and IT-4.
+
+\spec{FR-7.} Discover every model present on disk at start-up and report its
+variant and size. \emph{Verified by} IT-4.
+
+\spec{FR-8.} Generate teacher one-best targets for an arbitrary corpus slice.
+\emph{Verified by} \S\ref{subsec:mod2}.
+
+\spec{FR-9.} Train a student on either distilled or reference targets,
+selectable at run time. \emph{Verified by} \S\ref{subsec:mod3}.
+
+\spec{FR-10.} Quantise a trained student to INT8 and INT4 ONNX with a per-stage
+benchmark. \emph{Verified by} \S\ref{subsec:mod4}.
+
+\spec{FR-11.} Report BLEU, chrF and the student/teacher ratio per direction.
+\emph{Verified by} \S\ref{sec:testreports}.
+
+\spec{FR-12.} Support incremental addition of a language by configuration
+alone. \emph{Verified by} \S\ref{subsec:mod8}.
 
 \subsection{Non-Functional Requirements}
 \label{subsec:nonfuncreq}
 
-\begin{table}[H]
-\centering
-\caption{Non-functional requirements and measured outcomes}
-\label{tab:nonfuncreq}
-\begin{tabular}{@{}L{1.3cm} L{3.0cm} L{4.4cm} L{5.0cm}@{}}
-\toprule
-\rowcolor{headblue}
-\textbf{ID} & \textbf{Attribute} & \textbf{Requirement} & \textbf{Measured outcome} \\
-\midrule
-NFR-1 & Performance & Under 500\,ms per sentence on ARM-class CPU & Mean 105--202\,ms; p90 141--541\,ms (one outlier) \\
-\rowcolor{rowgrey}
-NFR-2 & Size & At most 200\,MB per direction after quantisation & 103.9\,MB for every direction \\
-NFR-3 & Accuracy & At least 80\,\% of teacher BLEU & 14 of 22 directions; mean ratio 0.838 \\
-\rowcolor{rowgrey}
-NFR-4 & Availability & Fully functional offline after initial setup & Verified with all sockets disabled \\
-NFR-5 & Privacy & No user text transmitted during inference & Verified by code audit and the offline test \\
-\rowcolor{rowgrey}
-NFR-6 & Portability & Runs on x86-64 and ARM, Linux and Android & ONNX Runtime CPU provider on both \\
-NFR-7 & Maintainability & Single shared engine behind every interface & \texttt{setu.inference.router} \\
-\rowcolor{rowgrey}
-NFR-8 & Testability & Automated suite covering every module & 85 tests \\
-NFR-9 & Reliability & Degrade explicitly, never silently & Stub engine reports \texttt{stub:true}; scorecard reports \textsc{unverified} without evidence \\
-\bottomrule
-\end{tabular}
-\end{table}
+Each attribute below states the requirement and the outcome actually measured
+against it.
+
+\spec{NFR-1, performance.} Under 500\,ms per sentence on an ARM-class CPU.
+\emph{Measured:} mean 105--202\,ms; p90 141--541\,ms, with one outlier.
+
+\spec{NFR-2, size.} At most 200\,MB per direction after quantisation.
+\emph{Measured:} 103.9\,MB for every direction.
+
+\spec{NFR-3, accuracy.} At least 80\,\% of teacher BLEU. \emph{Measured:} 14 of
+22 directions, mean ratio 0.838.
+
+\spec{NFR-4, availability.} Fully functional offline after initial setup.
+\emph{Measured:} verified with all sockets disabled.
+
+\spec{NFR-5, privacy.} No user text transmitted during inference.
+\emph{Measured:} verified by code audit and the offline test.
+
+\spec{NFR-6, portability.} Runs on x86-64 and ARM, Linux and Android.
+\emph{Measured:} ONNX Runtime CPU provider on both.
+
+\spec{NFR-7, maintainability.} A single shared engine behind every interface.
+\emph{Measured:} \texttt{setu.inference.router}.
+
+\spec{NFR-8, testability.} An automated suite covering every module.
+\emph{Measured:} 85 tests.
+
+\spec{NFR-9, reliability.} Degrade explicitly, never silently.
+\emph{Measured:} the stub engine reports \texttt{stub:true}, and the scorecard
+reports \textsc{unverified} without evidence.
 
 \subsection{Domain Requirements}
 \label{subsec:domainreq}

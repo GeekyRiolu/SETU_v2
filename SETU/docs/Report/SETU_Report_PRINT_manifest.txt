@@ -1,52 +1,52 @@
 SETU Project Phase-II Report: printing split
 ============================================================
-Source                : SETU_Project_Phase-II_Report.pdf  (126 pages)
+Source                : SETU_Project_Phase-II_Report.pdf  (123 pages)
 Colour pages          : 31
-Black and white pages : 95
+Black and white pages : 92
 
-The two files are disjoint and together cover all 126 pages, so they
+The two files are disjoint and together cover all 123 pages, so they
 interleave back into one bound copy. The page numbers printed on the
 pages are unchanged.
 
 COLOUR  -> SETU_Report_PRINT_colour.pdf
-   pages: 30,38-43,48,52,55,59,74-81,85-90,94,96,100-103
+   pages: 30,36-40,44-45,49,52,56,71-78,82-87,91,93,97-100
 
 MONO    -> SETU_Report_PRINT_bw.pdf
-   pages: 1-29,31-37,44-47,49-51,53-54,56-58,60-73,82-84,91-93,95,97-99,104-126
+   pages: 1-29,31-35,41-43,46-48,50-51,53-55,57-70,79-81,88-90,92,94-96,101-123
 
 Why each colour page is in the set
 ------------------------------------------------------------
    p30   figure; saturated colour 0.923%
+   p36   figure
+   p37   figure
    p38   figure
    p39   figure
    p40   figure
-   p41   figure
-   p42   figure
-   p43   figure
-   p48   figure; saturated colour 0.043%
-   p52   figure; saturated colour 1.368%
-   p55   figure; saturated colour 0.135%
-   p59   figure
-   p74   saturated colour 0.084%
-   p75   saturated colour 0.098%
-   p76   saturated colour 0.055%
-   p77   saturated colour 0.043%
-   p78   saturated colour 0.046%
-   p79   saturated colour 0.027%
-   p80   saturated colour 0.026%
-   p81   figure; saturated colour 0.535%
-   p85   saturated colour 0.043%
-   p86   saturated colour 0.037%
-   p87   saturated colour 0.037%
-   p88   saturated colour 0.065%
-   p89   saturated colour 0.029%
-   p90   saturated colour 0.036%
-   p94   figure; saturated colour 0.932%
-   p96   figure; saturated colour 0.110%
-   p100  figure; saturated colour 2.369%
-   p101  figure; saturated colour 1.814%
-   p102  figure; saturated colour 1.819%
-   p103  saturated colour 0.021%
+   p44   figure; saturated colour 0.043%
+   p45   figure
+   p49   figure; saturated colour 1.368%
+   p52   figure; saturated colour 0.135%
+   p56   figure
+   p71   saturated colour 0.084%
+   p72   saturated colour 0.098%
+   p73   saturated colour 0.055%
+   p74   saturated colour 0.043%
+   p75   saturated colour 0.046%
+   p76   saturated colour 0.027%
+   p77   saturated colour 0.026%
+   p78   figure; saturated colour 0.535%
+   p82   saturated colour 0.043%
+   p83   saturated colour 0.037%
+   p84   saturated colour 0.037%
+   p85   saturated colour 0.065%
+   p86   saturated colour 0.029%
+   p87   saturated colour 0.036%
+   p91   figure; saturated colour 0.932%
+   p93   figure; saturated colour 0.110%
+   p97   figure; saturated colour 2.369%
+   p98   figure; saturated colour 1.814%
+   p99   figure; saturated colour 1.819%
+   p100  saturated colour 0.021%
 
 Regenerate after editing the report:
    python3 make_print_pdfs.py            # default threshold

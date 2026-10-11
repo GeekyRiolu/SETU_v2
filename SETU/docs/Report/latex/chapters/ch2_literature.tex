@@ -50,131 +50,113 @@ Each entry below gives the paper, its authors and where it appeared, followed
 by what it contributes and where it falls short for this project's purposes.
 
 \paper{1}{DistilBERT, a distilled version of BERT: smaller, faster, cheaper and lighter}{V. Sanh \textit{et al.}}{arXiv, 2019}
-Halves the layer count of BERT via distillation while retaining about 97\,\% of
-    language-understanding performance, and establishes triple-loss distillation
-    as a practical recipe. \textbf{Drawback:} demonstrated for encoders on
-    classification, not for autoregressive sequence generation, and a measurable
-    accuracy loss remains on complex tasks.
-
+\begin{paperpoints}
+\item Halves the layer count of BERT via distillation while retaining about 97\,\% of language-understanding performance, and establishes triple-loss distillation as a practical recipe.
+\item \textbf{Drawback:} demonstrated for encoders on classification, not for autoregressive sequence generation.
+\item A measurable accuracy loss remains on complex tasks.
+\end{paperpoints}
 \paper{2}{Neural Machine Translation on Mobile Devices}{B. Li \textit{et al.}}{IEEE, 2020}
-Compresses NMT models for mobile and edge deployment, cutting memory
-    footprint and inference latency to make real-time on-device translation
-    feasible. \textbf{Drawback:} the reduction techniques degrade translation
-    quality, and the degradation is most visible on long and syntactically
-    complex sentences.
-
+\begin{paperpoints}
+\item Compresses NMT models for mobile and edge deployment, cutting memory footprint and inference latency to make real-time on-device translation feasible.
+\item \textbf{Drawback:} the reduction techniques degrade translation quality.
+\item The degradation is most visible on long and syntactically complex sentences.
+\end{paperpoints}
 \paper{3}{SMaLL-100: Introducing Shallow Multilingual Machine Translation for Low-Resource Languages}{A. Mohammadshahi \textit{et al.}}{Springer, 2020}
-A compact multilingual translator covering many low-resource directions with
-    substantially lower memory use and faster inference than M2M-100.
-    \textbf{Drawback:} quality still trails the large model it compresses,
-    particularly on high-resource pairs where capacity matters.
-
+\begin{paperpoints}
+\item A compact multilingual translator covering many low-resource directions with substantially lower memory use and faster inference than M2M-100.
+\item \textbf{Drawback:} quality still trails the large model it compresses, particularly on high-resource pairs where capacity matters.
+\end{paperpoints}
 \paper{4}{The Tatoeba Translation Challenge -- Realistic Data Sets for Low Resource and Multilingual MT}{J. Tiedemann}{WMT, 2021}
-Releases a benchmark spanning 555 languages, enabling systematic evaluation
-    of low-resource, zero-shot and few-shot translation on realistic data.
-    \textbf{Drawback:} the data is noisy and inconsistent across languages, and
-    exploiting it fully still requires large-capacity models.
-
+\begin{paperpoints}
+\item Releases a benchmark spanning 555 languages, enabling systematic evaluation of low-resource, zero-shot and few-shot translation on realistic data.
+\item \textbf{Drawback:} the data is noisy and inconsistent across languages.
+\item Exploiting it fully still requires large-capacity models.
+\end{paperpoints}
 \paper{5}{Shallow-to-Deep Training for Neural Machine Translation}{B. Li \textit{et al.}}{ACL, 2021}
-Introduces incremental shallow-to-deep training, stacking Transformer layers
-    progressively to improve convergence speed and training stability at depth.
-    \textbf{Drawback:} the final models remain computationally heavy and the
-    staged schedule adds engineering complexity.
-
+\begin{paperpoints}
+\item Introduces incremental shallow-to-deep training, stacking Transformer layers progressively to improve convergence speed and training stability at depth.
+\item \textbf{Drawback:} the final models remain computationally heavy and the staged schedule adds engineering complexity.
+\end{paperpoints}
 \paper{6}{Nearest Neighbor Knowledge Distillation for Neural Machine Translation}{Z. Yang, R. Sun, X. Wan}{IEEE, 2022}
-Uses $k$-nearest-neighbour retrieval over the training set to supply
-    additional supervision, improving quality in low-resource conditions.
-    \textbf{Drawback:} the datastore is memory-intensive and retrieval slows both
-    training and inference, which is disqualifying for edge deployment.
-
+\begin{paperpoints}
+\item Uses $k$-nearest-neighbour retrieval over the training set to supply additional supervision, improving quality in low-resource conditions.
+\item \textbf{Drawback:} the datastore is memory-intensive and retrieval slows both training and inference, which is disqualifying for edge deployment.
+\end{paperpoints}
 \paper{7}{Speech-to-Speech Translation Improvements with Self-Supervised Learning}{C. Xu \textit{et al.}}{IEEE, 2022}
-Combines self-supervised pre-training, multitask learning and synthetic data
-    to obtain large BLEU gains in speech-to-speech translation, especially for
-    low-resource pairs. \textbf{Drawback:} depends on large-scale pre-training and
-    a multi-stage pipeline that is impractical to deploy on a device.
-
+\begin{paperpoints}
+\item Combines self-supervised pre-training, multitask learning and synthetic data to obtain large BLEU gains in speech-to-speech translation, especially for low-resource pairs.
+\item \textbf{Drawback:} depends on large-scale pre-training and a multi-stage pipeline that is impractical to deploy on a device.
+\end{paperpoints}
 \paper{8}{Direct Speech Translation}{Y. Jia \textit{et al.}}{Springer, 2023}
-Surveys end-to-end speech translation and characterises its principal
-    obstacles: data scarcity, latency and bias. \textbf{Drawback:} a survey rather
-    than a system; no concrete model or experimental validation is offered.
-
+\begin{paperpoints}
+\item Surveys end-to-end speech translation and characterises its principal obstacles: data scarcity, latency and bias.
+\item \textbf{Drawback:} a survey rather than a system; no concrete model or experimental validation is offered.
+\end{paperpoints}
 \paper{9}{Direct Preference Optimization: Your Language Model is Secretly a Reward Model}{R. Rafailov \textit{et al.}}{NeurIPS, 2023}
-Reformulates preference alignment as a simple classification loss over
-    preferred and dispreferred responses, removing the separate reward model and
-    the reinforcement-learning loop of RLHF, with better stability and lower
-    cost. \textbf{Drawback:} effectiveness depends heavily on the quality and
-    diversity of the preference data; the paper studies alignment of large
-    language models, not distillation into small ones.
-
+\begin{paperpoints}
+\item Reformulates preference alignment as a simple classification loss over preferred and dispreferred responses, removing the separate reward model and the reinforcement-learning loop of RLHF, with better stability and lower cost.
+\item \textbf{Drawback:} effectiveness depends heavily on the quality and diversity of the preference data; the paper studies alignment of large language models, not distillation into small ones.
+\end{paperpoints}
 \paper{10}{All-in-One Knowledge Distillation Framework for Neural Machine Translation}{Z. Miao \textit{et al.}}{EMNLP, 2023}
-Distils into several student models simultaneously within one framework,
-    improving training efficiency and enabling scalable multilingual
-    distillation. \textbf{Drawback:} joint optimisation across students creates
-    gradient conflicts, and low-resource directions are the ones that lose.
-
+\begin{paperpoints}
+\item Distils into several student models simultaneously within one framework, improving training efficiency and enabling scalable multilingual distillation.
+\item \textbf{Drawback:} joint optimisation across students creates gradient conflicts.
+\item Low-resource directions are the ones that lose.
+\end{paperpoints}
 \paper{11}{Continual Knowledge Distillation for Neural Machine Translation}{Y. Zhang, P. Li, M. Sun, Y. Liu}{ACL, 2023}
-Adds new languages to an existing multilingual model incrementally without
-    forgetting previously learned ones, supporting long-lived multilingual
-    deployments. \textbf{Drawback:} training complexity grows with the number of
-    tasks and the stability-plasticity balance requires careful tuning.
-
+\begin{paperpoints}
+\item Adds new languages to an existing multilingual model incrementally without forgetting previously learned ones, supporting long-lived multilingual deployments.
+\item \textbf{Drawback:} training complexity grows with the number of tasks and the stability-plasticity balance requires careful tuning.
+\end{paperpoints}
 \paper{12}{IndicTrans2: Towards High-Quality and Accessible Machine Translation Models for All 22 Scheduled Indian Languages}{J. Gala \textit{et al.}}{TMLR, 2023}
-Delivers open translation models covering all twenty-two scheduled Indian
-    languages, together with the BPCC corpus and the IN22 benchmark; the current
-    reference point for Indic MT. \textbf{Drawback:} the flagship models need
-    GPU-class compute and multiple gigabytes of memory, which rules out offline
-    edge deployment.
-
+\begin{paperpoints}
+\item Delivers open translation models covering all twenty-two scheduled Indian languages, together with the BPCC corpus and the IN22 benchmark; the current reference point for Indic MT.
+\item \textbf{Drawback:} the flagship models need GPU-class compute and multiple gigabytes of memory, which rules out offline edge deployment.
+\end{paperpoints}
 \paper{13}{Multilingual Indian Language Neural Machine Translation System Using mT5 Transformer}{A. Jha \textit{et al.}}{IEEE, 2023}
-Fine-tunes mT5 for Indian-language translation and reports strong BLEU on the
-    directions covered, confirming that large pre-trained multilingual encoders
-    transfer to Indic data. \textbf{Drawback:} evaluated on only a few languages
-    and built on a large pre-trained backbone, so it scales neither to all 22
-    languages nor to on-device inference.
-
+\begin{paperpoints}
+\item Fine-tunes mT5 for Indian-language translation and reports strong BLEU on the directions covered, confirming that large pre-trained multilingual encoders transfer to Indic data.
+\item \textbf{Drawback:} evaluated on only a few languages and built on a large pre-trained backbone, so it scales neither to all 22 languages nor to on-device inference.
+\end{paperpoints}
 \paper{14}{IWSLT 2024 Low-Resource Speech Translation Submissions}{M. Zafar \textit{et al.}}{IWSLT, 2024}
-Shows that cascaded ASR-then-MT pipelines still outperform end-to-end speech
-    translation in genuinely low-resource settings, and reports competitive BLEU.
-    \textbf{Drawback:} cascading compounds recognition errors into translation
-    errors; end-to-end alternatives remain data-starved.
-
+\begin{paperpoints}
+\item Shows that cascaded ASR-then-MT pipelines still outperform end-to-end speech translation in genuinely low-resource settings, and reports competitive BLEU.
+\item \textbf{Drawback:} cascading compounds recognition errors into translation errors; end-to-end alternatives remain data-starved.
+\end{paperpoints}
 \paper{15}{Direct Preference Optimization for Neural Machine Translation with Minimum Bayes Risk Decoding}{G. Yang, J. Chen, W. Lin, B. Byrne}{NAACL, 2024}
-Applies DPO to NMT using MBR decoding to construct preference pairs, showing
-    that preference learning can improve translation quality with relatively
-    little data. \textbf{Drawback:} evaluation does not extend to extremely
-    low-resource languages, and the models studied are far larger than an
-    edge-deployable student.
-
+\begin{paperpoints}
+\item Applies DPO to NMT using MBR decoding to construct preference pairs, showing that preference learning can improve translation quality with relatively little data.
+\item \textbf{Drawback:} evaluation does not extend to extremely low-resource languages.
+\item The models studied are far larger than an edge-deployable student.
+\end{paperpoints}
 \paper{16}{Multilingual NMT System for English to Low-Resource Indic Languages (Assamese and Bengali)}{K. Kashyap, S. K. Sarma}{IEEE, 2024}
-A one-to-many multilingual system that improves low-resource quality through
-    shared representations and back-translated synthetic data.
-    \textbf{Drawback:} synthetic data introduces its own noise, and coverage is
-    limited to two languages in one direction.
-
+\begin{paperpoints}
+\item A one-to-many multilingual system that improves low-resource quality through shared representations and back-translated synthetic data.
+\item \textbf{Drawback:} synthetic data introduces its own noise.
+\item Coverage is limited to two languages in one direction.
+\end{paperpoints}
 \paper{17}{Multilingual Neural Machine Translation System for Indic-to-Indic Languages}{S. B. Das \textit{et al.}}{Science\-Direct, 2024}
-Translates directly among several Indic languages using shared models and
-    pivoting, addressing a direction pair largely ignored by English-centric
-    systems. \textbf{Drawback:} error propagates through the pivot language and
-    accuracy degrades relative to direct models.
-
+\begin{paperpoints}
+\item Translates directly among several Indic languages using shared models and pivoting, addressing a direction pair largely ignored by English-centric systems.
+\item \textbf{Drawback:} error propagates through the pivot language and accuracy degrades relative to direct models.
+\end{paperpoints}
 \paper{18}{SURYA-TAC: LLM-Based Offline Portable Speech-to-Speech Translation System}{P. S. Bohra, K. Berwal}{IEEE, 2024}
-Proposes an offline, edge-deployed tactical translation system for use in
-    harsh environments without connectivity, the closest published motivation
-    to this project. \textbf{Drawback:} largely conceptual, without real-world
-    validation, and constrained by data scarcity for the target languages.
-
+\begin{paperpoints}
+\item Proposes an offline, edge-deployed tactical translation system for use in harsh environments without connectivity, the closest published motivation to this project.
+\item \textbf{Drawback:} largely conceptual, without real-world validation.
+\item Constrained by data scarcity for the target languages.
+\end{paperpoints}
 \paper{19}{Latency-Aware Simultaneous Machine Translation Using Large Language Models}{B. Fu \textit{et al.}}{Springer, 2024}
-Introduces latency-aware token generation so that large language models can
-    perform simultaneous translation while maintaining accuracy.
-    \textbf{Drawback:} computationally expensive and premised on models far too
-    large for a handset.
-
+\begin{paperpoints}
+\item Introduces latency-aware token generation so that large language models can perform simultaneous translation while maintaining accuracy.
+\item \textbf{Drawback:} computationally expensive and premised on models far too large for a handset.
+\end{paperpoints}
 \paper{20}{Offline English-to-Hindi Statistical Machine Translation System}{S. Gangwar, I. Naim}{Science\-Direct, 2024}
-Implements genuinely offline English-to-Hindi translation using the Moses SMT
-    toolkit, demonstrating that offline operation is achievable at low cost.
-    \textbf{Drawback:} statistical MT is substantially weaker than neural
-    approaches, and the system covers a single direction of a single language
-    pair.
+\begin{paperpoints}
+\item Implements genuinely offline English-to-Hindi translation using the Moses SMT toolkit, demonstrating that offline operation is achievable at low cost.
+\item \textbf{Drawback:} statistical MT is substantially weaker than neural approaches.
+\item The system covers a single direction of a single language pair.
+\end{paperpoints}
 
 
 \subsection{Discussion of Key Papers}

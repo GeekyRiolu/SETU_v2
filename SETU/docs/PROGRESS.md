@@ -352,6 +352,28 @@ balancing, EWC anti-forgetting, device resolution, scorecard.
 
 ## 10. Session changelog
 
+- **2026-10-11 (cont.) (paper entries on one line, Chapter 3 de-tabulated)** - Two
+  follow-ups. **(1) Literature entries reformatted.** The `\paper` macro now sets the
+  title, authors, venue and year on a single comma-separated line instead of two lines
+  with a bullet separator, and each entry's body is a `paperpoints` bullet list rather
+  than a paragraph with `Drawback:` buried mid-sentence. Where a drawback carried two
+  independent clauses joined by ", and" it became two bullets, so each entry reads as
+  two or three points: 8 of the 20 split into three, the rest into two. **(2) Chapter 3
+  has no tables at all.** All seven became prose: the training and development hardware
+  are now two descriptive paragraphs, and the deployment target, software stack, use case
+  specifications, user requirements, functional requirements and non-functional
+  requirements use a new `\spec{...}` run-in heading macro (bold label, body following on
+  the same line). The two `Table~\ref{}` lead-in sentences were rewritten, and the List of
+  Tables now starts at 4.1.
+
+  The activity diagram moved from `[H]` to `[t]` for the same reason the use-case diagram
+  did last session: at `[H]` it could not fit the remaining space, jumped to the next page
+  and left an 84 % empty page behind it. Final sweep: every remaining low-fill page is a
+  chapter end, a front-matter list end, or the deliberate `\needspace` break before
+  section 5.3; no stranded headings anywhere. Build: **123 pages, zero undefined
+  references, zero overfull boxes above 5 pt**. Regenerated the PDF, the zip and both
+  print sets (92 mono / 31 colour).
+
 - **2026-10-11 (report: literature tables to prose, performance tables to graphs, 2026-27)** -
   Four changes the user asked for in a final pass. **(1) Literature survey de-tabulated.**
   The 20-row literature longtable and the 9-row technology-comparison longtable in Chapter 2
