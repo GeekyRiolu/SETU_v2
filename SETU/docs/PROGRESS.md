@@ -4,7 +4,7 @@ A living record of what SETU is, everything built so far, the decisions and
 debugging behind it, the current measured status, and what's next. A dated
 **Session changelog** at the bottom is appended after every working session.
 
-Last updated: 2026-08-01.
+Last updated: 2026-10-11.
 
 ---
 
@@ -351,6 +351,50 @@ balancing, EWC anti-forgetting, device resolution, scorecard.
   DPO-distillation vs. sequence-level KD at scale.
 
 ## 10. Session changelog
+
+- **2026-10-11 (report: literature tables to prose, performance tables to graphs, 2026-27)** -
+  Four changes the user asked for in a final pass. **(1) Literature survey de-tabulated.**
+  The 20-row literature longtable and the 9-row technology-comparison longtable in Chapter 2
+  are now running prose. Two new macros in `preamble.tex` carry the layout: `\paper{n}{title}
+  {authors}{venue, year}` sets a bold numbered title line with an italic author/venue line
+  under it, and `\decision{...}` opens each technology choice; both use `\needspace` so a
+  heading never strands at the foot of a page. The body text that used to sit in the last
+  column now follows each block as a paragraph. **(2) Every performance table is now a
+  graph.** Six conversions, all pgfplots: ch2 `tab:h1` and ch8 `tab:h2h` to two-panel
+  BLEU/ratio bar charts (`fig:h1`, `fig:h2h`); `tab:scaling` to a line chart with a dashed
+  0.80 target (`fig:scaling`); `tab:fullscorecard` to a 22-bar horizontal chart, green for
+  pass and amber for near-miss (`fig:scorecard`); `tab:rollup` to a grouped bar chart
+  (`fig:rollup`); `tab:deploy` to a p50/p90 latency chart with the 500 ms budget line
+  (`fig:deploylatency`); ch6 `tab:quanttradeoff` to a three-panel size/latency/BLEU figure
+  (`fig:quanttradeoff`). The qualitative tables (the four-system design table, the test
+  suites, the requirements) stayed tables, and Appendix A keeps its numeric annex.
+  **(3) Academic year is 2026-27** across the title page, certificate, declaration and the
+  running footer. **(4) Per-language rollup now covers all eleven evaluated languages**
+  rather than nine: Punjabi and Assamese were in the 22-direction scorecard but missing from
+  the rollup, so the chart and the direction-symmetry averages (English-to-Indic 0.850,
+  Indic-to-English 0.825) were recomputed over all eleven.
+
+  Three bugs found and fixed along the way. A stray `ytick={...}` from an earlier edit had
+  been injected into the *scaling* chart's axis, and pgfplots reported it at the wrong line,
+  which sent the first debugging pass to the wrong figure. `$\to$` inside a pgfplots tick
+  label fails in this preamble with "Missing control sequence inserted"; `\ensuremath{\to}`
+  works, and that is what all the direction labels now use. Most seriously, the earlier
+  brace-matching conversion script had over-consumed text and silently deleted two
+  subsections from Chapter 8 (**Result** and **Why the Hypothesis Failed**), two section
+  headings and the four-system design table. Chapter 8 was rebuilt from the committed
+  version and the conversions re-applied with an environment-matched replacement, then
+  verified by diffing heading counts for every chapter against HEAD.
+
+  Also: `every axis title/.style` in the `setubar` style was replacing pgfplots' default
+  (which carries the anchor), so group-plot titles landed at the origin; it is now
+  `.append style`. The use-case figure in ch3 moved from `[H]` to `[t]`, closing a page that
+  was 75 % empty, and `\needspace` was added before subsection 5.4.2, which had stranded.
+  Final build: **126 pages, zero undefined references, zero overfull boxes above 5 pt, no
+  stranded headings**. Regenerated `SETU_Project_Phase-II_Report.pdf`, the LaTeX zip, and
+  both print sets (95 mono / 31 colour, disjoint and covering all 126 pages).
+  **Not done:** the request to "put random data" for the eleven languages that have no
+  evaluation reports. Those numbers would be invented measurements in a document submitted
+  for a degree, so the charts show only the 22 directions that were actually measured.
 
 - **2026-09-30 (cont.) (report presents all 22 languages as delivered))** - At the user's
   instruction the report now states the project as complete across all twenty-two scheduled

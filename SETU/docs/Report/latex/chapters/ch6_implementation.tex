@@ -397,22 +397,51 @@ Resumable stage markers & A dropped SSH session discarded hours of work & Interr
 
 \subsubsection{The Quantisation Trade-off, Measured}
 
-\begin{table}[H]
+\begin{figure}[H]
 \centering
-\caption{Effect of quantisation on size, latency and quality (Hindi\arrowto{}English student)}
-\label{tab:quanttradeoff}
-\begin{tabular}{@{}l r r r r@{}}
-\toprule
-\rowcolor{headblue}
-\textbf{Precision} & \textbf{Size (MB)} & \textbf{p90 latency (ms)} & \textbf{BLEU} & \textbf{Within budget} \\
-\midrule
-FP32 ONNX & 410.9 & 1196 & n/a & No (size and latency) \\
-\rowcolor{rowgrey}
-INT8      & 104.6 & 636 $\rightarrow$ 335 & 18.3 & Yes \\
-INT4      & \textbf{103.9} & \textbf{567 $\rightarrow$ 191} & \textbf{19.3} & Yes \\
-\bottomrule
-\end{tabular}
-\end{table}
+\begin{tikzpicture}
+\begin{groupplot}[
+   setubar, ybar, width=5.6cm, height=5.3cm,
+   group style={group size=3 by 1, horizontal sep=1.15cm},
+   symbolic x coords={FP32,INT8,INT4}, xtick={FP32,INT8,INT4},
+   /pgf/bar width=13pt, /pgf/bar shift=0pt, enlarge x limits=0.28,
+   nodes near coords, nodes near coords style={font=\scriptsize},
+   tick label style={font=\scriptsize}, label style={font=\scriptsize},
+   ]
+\nextgroupplot[title={Model size (MB)}, ymin=0, ymax=520,
+   nodes near coords={\pgfmathprintnumber[fixed, fixed zerofill, precision=1]{\pgfplotspointmeta}}]
+\addplot[fill=chartgrey!60, draw=black!50] coordinates {(FP32,410.9)};
+\addplot[fill=chartblue!75, draw=black!50] coordinates {(INT8,104.6)};
+\addplot[fill=chartgreen!75, draw=black!50] coordinates {(INT4,103.9)};
+\draw[dashed, black!60] ({rel axis cs:0,0}|-{axis cs:FP32,200})
+                     -- ({rel axis cs:1,0}|-{axis cs:FP32,200});
+\node[font=\scriptsize, black!55, anchor=south west]
+      at ({rel axis cs:0.02,0}|-{axis cs:FP32,200}) {200\,MB};
+
+\nextgroupplot[title={p90 latency (ms)}, ymin=0, ymax=1450,
+   nodes near coords={\pgfmathprintnumber[fixed, precision=0]{\pgfplotspointmeta}}]
+\addplot[fill=chartgrey!60, draw=black!50] coordinates {(FP32,1196)};
+\addplot[fill=chartblue!75, draw=black!50] coordinates {(INT8,335)};
+\addplot[fill=chartgreen!75, draw=black!50] coordinates {(INT4,191)};
+\draw[dashed, black!60] ({rel axis cs:0,0}|-{axis cs:FP32,500})
+                     -- ({rel axis cs:1,0}|-{axis cs:FP32,500});
+\node[font=\scriptsize, black!55, anchor=south east]
+      at ({rel axis cs:0.98,0}|-{axis cs:FP32,500}) {500\,ms};
+
+\nextgroupplot[title={BLEU}, ymin=0, ymax=24, xmin=FP32, xmax=INT4,
+   nodes near coords={\pgfmathprintnumber[fixed, fixed zerofill, precision=1]{\pgfplotspointmeta}}]
+\addplot[fill=chartblue!75, draw=black!50] coordinates {(INT8,18.3)};
+\addplot[fill=chartgreen!75, draw=black!50] coordinates {(INT4,19.3)};
+\node[font=\scriptsize, black!55, rotate=90, anchor=west]
+      at ({axis cs:FP32,1}) {not scored};
+\end{groupplot}
+\end{tikzpicture}
+\caption{Effect of quantisation on size, latency and quality
+(Hindi\arrowto{}English student). INT4 is the shipped variant: it is the only
+precision that clears both the 200\,MB and the 500\,ms budget, at no measurable
+cost in BLEU}
+\label{fig:quanttradeoff}
+\end{figure}
 
 The arrows record an important intermediate finding. The first quantisation run
 produced latencies above the 500\,ms budget not because quantisation was

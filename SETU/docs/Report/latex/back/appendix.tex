@@ -110,7 +110,7 @@ setu-eval     --pair $PAIR --teacher           # BLEU / chrF / ratio
 Keep \texttt{-{}-limit} identical across all four systems, or the comparison is
 not matched.
 
-\begin{lstlisting}[language=bash, caption={The four-system comparison of Table~\ref{tab:h2h}}]
+\begin{lstlisting}[language=bash, caption={The four-system comparison of Figure~\ref{fig:h2h}}]
 setu-data    --limit 102000
 setu-prefs   --max-entries 8000                # only needed for the DPO variants
 setu-distill --limit 100000 --beams 1

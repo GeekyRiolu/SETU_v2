@@ -46,200 +46,136 @@ between directions and pivoting error when no direct model exists.
 \section{Summary of Papers Surveyed}
 \label{sec:papers}
 
-\begin{longtable}{@{}L{0.4cm} L{3.2cm} L{2.0cm} L{1.5cm} J{6.3cm}@{}}
-\caption{Summary of the literature surveyed (2019--2025), in ascending order of year}
-\label{tab:litsurvey}\\
-\toprule
-\rowcolor{headblue}
-\textbf{\#} & \textbf{Title} & \textbf{Authors} & \textbf{Venue \& Year} & \textbf{Contributions and drawbacks} \\
-\midrule
-\endfirsthead
-\multicolumn{5}{c}{\textit{Table \thetable{} (continued)}}\\
-\toprule
-\rowcolor{headblue}
-\textbf{\#} & \textbf{Title} & \textbf{Authors} & \textbf{Venue \& Year} & \textbf{Contributions and drawbacks} \\
-\midrule
-\endhead
-\midrule
-\multicolumn{5}{r}{\textit{continued on next page}}\\
-\endfoot
-\bottomrule
-\endlastfoot
+Each entry below gives the paper, its authors and where it appeared, followed
+by what it contributes and where it falls short for this project's purposes.
 
-1 & DistilBERT, a distilled version of BERT: smaller, faster, cheaper and lighter
-  & V. Sanh \textit{et al.}
-  & arXiv, 2019
-  & Halves the layer count of BERT via distillation while retaining about 97\,\% of
+\paper{1}{DistilBERT, a distilled version of BERT: smaller, faster, cheaper and lighter}{V. Sanh \textit{et al.}}{arXiv, 2019}
+Halves the layer count of BERT via distillation while retaining about 97\,\% of
     language-understanding performance, and establishes triple-loss distillation
     as a practical recipe. \textbf{Drawback:} demonstrated for encoders on
     classification, not for autoregressive sequence generation, and a measurable
-    accuracy loss remains on complex tasks. \\
+    accuracy loss remains on complex tasks.
 
-2 & Neural Machine Translation on Mobile Devices
-  & B. Li \textit{et al.}
-  & IEEE, 2020
-  & Compresses NMT models for mobile and edge deployment, cutting memory
+\paper{2}{Neural Machine Translation on Mobile Devices}{B. Li \textit{et al.}}{IEEE, 2020}
+Compresses NMT models for mobile and edge deployment, cutting memory
     footprint and inference latency to make real-time on-device translation
     feasible. \textbf{Drawback:} the reduction techniques degrade translation
     quality, and the degradation is most visible on long and syntactically
-    complex sentences. \\
+    complex sentences.
 
-3 & SMaLL-100: Introducing Shallow Multilingual Machine Translation for
-    Low-Resource Languages
-  & A. Mohammadshahi \textit{et al.}
-  & Springer, 2020
-  & A compact multilingual translator covering many low-resource directions with
+\paper{3}{SMaLL-100: Introducing Shallow Multilingual Machine Translation for Low-Resource Languages}{A. Mohammadshahi \textit{et al.}}{Springer, 2020}
+A compact multilingual translator covering many low-resource directions with
     substantially lower memory use and faster inference than M2M-100.
     \textbf{Drawback:} quality still trails the large model it compresses,
-    particularly on high-resource pairs where capacity matters. \\
+    particularly on high-resource pairs where capacity matters.
 
-4 & The Tatoeba Translation Challenge -- Realistic Data Sets for Low Resource
-    and Multilingual MT
-  & J. Tiedemann
-  & WMT, 2021
-  & Releases a benchmark spanning 555 languages, enabling systematic evaluation
+\paper{4}{The Tatoeba Translation Challenge -- Realistic Data Sets for Low Resource and Multilingual MT}{J. Tiedemann}{WMT, 2021}
+Releases a benchmark spanning 555 languages, enabling systematic evaluation
     of low-resource, zero-shot and few-shot translation on realistic data.
     \textbf{Drawback:} the data is noisy and inconsistent across languages, and
-    exploiting it fully still requires large-capacity models. \\
+    exploiting it fully still requires large-capacity models.
 
-5 & Shallow-to-Deep Training for Neural Machine Translation
-  & B. Li \textit{et al.}
-  & ACL, 2021
-  & Introduces incremental shallow-to-deep training, stacking Transformer layers
+\paper{5}{Shallow-to-Deep Training for Neural Machine Translation}{B. Li \textit{et al.}}{ACL, 2021}
+Introduces incremental shallow-to-deep training, stacking Transformer layers
     progressively to improve convergence speed and training stability at depth.
     \textbf{Drawback:} the final models remain computationally heavy and the
-    staged schedule adds engineering complexity. \\
+    staged schedule adds engineering complexity.
 
-6 & Nearest Neighbor Knowledge Distillation for Neural Machine Translation
-  & Z. Yang, R. Sun, X. Wan
-  & IEEE, 2022
-  & Uses $k$-nearest-neighbour retrieval over the training set to supply
+\paper{6}{Nearest Neighbor Knowledge Distillation for Neural Machine Translation}{Z. Yang, R. Sun, X. Wan}{IEEE, 2022}
+Uses $k$-nearest-neighbour retrieval over the training set to supply
     additional supervision, improving quality in low-resource conditions.
     \textbf{Drawback:} the datastore is memory-intensive and retrieval slows both
-    training and inference, which is disqualifying for edge deployment. \\
+    training and inference, which is disqualifying for edge deployment.
 
-7 & Speech-to-Speech Translation Improvements with Self-Supervised Learning
-  & C. Xu \textit{et al.}
-  & IEEE, 2022
-  & Combines self-supervised pre-training, multitask learning and synthetic data
+\paper{7}{Speech-to-Speech Translation Improvements with Self-Supervised Learning}{C. Xu \textit{et al.}}{IEEE, 2022}
+Combines self-supervised pre-training, multitask learning and synthetic data
     to obtain large BLEU gains in speech-to-speech translation, especially for
     low-resource pairs. \textbf{Drawback:} depends on large-scale pre-training and
-    a multi-stage pipeline that is impractical to deploy on a device. \\
+    a multi-stage pipeline that is impractical to deploy on a device.
 
-8 & Direct Speech Translation
-  & Y. Jia \textit{et al.}
-  & Springer, 2023
-  & Surveys end-to-end speech translation and characterises its principal
+\paper{8}{Direct Speech Translation}{Y. Jia \textit{et al.}}{Springer, 2023}
+Surveys end-to-end speech translation and characterises its principal
     obstacles: data scarcity, latency and bias. \textbf{Drawback:} a survey rather
-    than a system; no concrete model or experimental validation is offered. \\
+    than a system; no concrete model or experimental validation is offered.
 
-9 & Direct Preference Optimization: Your Language Model is Secretly a Reward Model
-  & R. Rafailov \textit{et al.}
-  & NeurIPS, 2023
-  & Reformulates preference alignment as a simple classification loss over
+\paper{9}{Direct Preference Optimization: Your Language Model is Secretly a Reward Model}{R. Rafailov \textit{et al.}}{NeurIPS, 2023}
+Reformulates preference alignment as a simple classification loss over
     preferred and dispreferred responses, removing the separate reward model and
     the reinforcement-learning loop of RLHF, with better stability and lower
     cost. \textbf{Drawback:} effectiveness depends heavily on the quality and
     diversity of the preference data; the paper studies alignment of large
-    language models, not distillation into small ones. \\
+    language models, not distillation into small ones.
 
-10 & All-in-One Knowledge Distillation Framework for Neural Machine Translation
-  & Z. Miao \textit{et al.}
-  & EMNLP, 2023
-  & Distils into several student models simultaneously within one framework,
+\paper{10}{All-in-One Knowledge Distillation Framework for Neural Machine Translation}{Z. Miao \textit{et al.}}{EMNLP, 2023}
+Distils into several student models simultaneously within one framework,
     improving training efficiency and enabling scalable multilingual
     distillation. \textbf{Drawback:} joint optimisation across students creates
-    gradient conflicts, and low-resource directions are the ones that lose. \\
+    gradient conflicts, and low-resource directions are the ones that lose.
 
-11 & Continual Knowledge Distillation for Neural Machine Translation
-  & Y. Zhang, P. Li, M. Sun, Y. Liu
-  & ACL, 2023
-  & Adds new languages to an existing multilingual model incrementally without
+\paper{11}{Continual Knowledge Distillation for Neural Machine Translation}{Y. Zhang, P. Li, M. Sun, Y. Liu}{ACL, 2023}
+Adds new languages to an existing multilingual model incrementally without
     forgetting previously learned ones, supporting long-lived multilingual
     deployments. \textbf{Drawback:} training complexity grows with the number of
-    tasks and the stability-plasticity balance requires careful tuning. \\
+    tasks and the stability-plasticity balance requires careful tuning.
 
-12 & IndicTrans2: Towards High-Quality and Accessible Machine Translation Models
-     for All 22 Scheduled Indian Languages
-  & J. Gala \textit{et al.}
-  & TMLR, 2023
-  & Delivers open translation models covering all twenty-two scheduled Indian
+\paper{12}{IndicTrans2: Towards High-Quality and Accessible Machine Translation Models for All 22 Scheduled Indian Languages}{J. Gala \textit{et al.}}{TMLR, 2023}
+Delivers open translation models covering all twenty-two scheduled Indian
     languages, together with the BPCC corpus and the IN22 benchmark; the current
     reference point for Indic MT. \textbf{Drawback:} the flagship models need
     GPU-class compute and multiple gigabytes of memory, which rules out offline
-    edge deployment. \\
+    edge deployment.
 
-13 & Multilingual Indian Language Neural Machine Translation System Using mT5
-     Transformer
-  & A. Jha \textit{et al.}
-  & IEEE, 2023
-  & Fine-tunes mT5 for Indian-language translation and reports strong BLEU on the
+\paper{13}{Multilingual Indian Language Neural Machine Translation System Using mT5 Transformer}{A. Jha \textit{et al.}}{IEEE, 2023}
+Fine-tunes mT5 for Indian-language translation and reports strong BLEU on the
     directions covered, confirming that large pre-trained multilingual encoders
     transfer to Indic data. \textbf{Drawback:} evaluated on only a few languages
     and built on a large pre-trained backbone, so it scales neither to all 22
-    languages nor to on-device inference. \\
+    languages nor to on-device inference.
 
-14 & IWSLT 2024 Low-Resource Speech Translation Submissions
-  & M. Zafar \textit{et al.}
-  & IWSLT, 2024
-  & Shows that cascaded ASR-then-MT pipelines still outperform end-to-end speech
+\paper{14}{IWSLT 2024 Low-Resource Speech Translation Submissions}{M. Zafar \textit{et al.}}{IWSLT, 2024}
+Shows that cascaded ASR-then-MT pipelines still outperform end-to-end speech
     translation in genuinely low-resource settings, and reports competitive BLEU.
     \textbf{Drawback:} cascading compounds recognition errors into translation
-    errors; end-to-end alternatives remain data-starved. \\
+    errors; end-to-end alternatives remain data-starved.
 
-15 & Direct Preference Optimization for Neural Machine Translation with Minimum
-     Bayes Risk Decoding
-  & G. Yang, J. Chen, W. Lin, B. Byrne
-  & NAACL, 2024
-  & Applies DPO to NMT using MBR decoding to construct preference pairs, showing
+\paper{15}{Direct Preference Optimization for Neural Machine Translation with Minimum Bayes Risk Decoding}{G. Yang, J. Chen, W. Lin, B. Byrne}{NAACL, 2024}
+Applies DPO to NMT using MBR decoding to construct preference pairs, showing
     that preference learning can improve translation quality with relatively
     little data. \textbf{Drawback:} evaluation does not extend to extremely
     low-resource languages, and the models studied are far larger than an
-    edge-deployable student. \\
+    edge-deployable student.
 
-16 & Multilingual NMT System for English to Low-Resource Indic Languages
-     (Assamese and Bengali)
-  & K. Kashyap, S. K. Sarma
-  & IEEE, 2024
-  & A one-to-many multilingual system that improves low-resource quality through
+\paper{16}{Multilingual NMT System for English to Low-Resource Indic Languages (Assamese and Bengali)}{K. Kashyap, S. K. Sarma}{IEEE, 2024}
+A one-to-many multilingual system that improves low-resource quality through
     shared representations and back-translated synthetic data.
     \textbf{Drawback:} synthetic data introduces its own noise, and coverage is
-    limited to two languages in one direction. \\
+    limited to two languages in one direction.
 
-17 & Multilingual Neural Machine Translation System for Indic-to-Indic Languages
-  & S. B. Das \textit{et al.}
-  & Science\-Direct, 2024
-  & Translates directly among several Indic languages using shared models and
+\paper{17}{Multilingual Neural Machine Translation System for Indic-to-Indic Languages}{S. B. Das \textit{et al.}}{Science\-Direct, 2024}
+Translates directly among several Indic languages using shared models and
     pivoting, addressing a direction pair largely ignored by English-centric
     systems. \textbf{Drawback:} error propagates through the pivot language and
-    accuracy degrades relative to direct models. \\
+    accuracy degrades relative to direct models.
 
-18 & SURYA-TAC: LLM-Based Offline Portable Speech-to-Speech Translation System
-  & P. S. Bohra, K. Berwal
-  & IEEE, 2024
-  & Proposes an offline, edge-deployed tactical translation system for use in
+\paper{18}{SURYA-TAC: LLM-Based Offline Portable Speech-to-Speech Translation System}{P. S. Bohra, K. Berwal}{IEEE, 2024}
+Proposes an offline, edge-deployed tactical translation system for use in
     harsh environments without connectivity, the closest published motivation
     to this project. \textbf{Drawback:} largely conceptual, without real-world
-    validation, and constrained by data scarcity for the target languages. \\
+    validation, and constrained by data scarcity for the target languages.
 
-19 & Latency-Aware Simultaneous Machine Translation Using Large Language Models
-  & B. Fu \textit{et al.}
-  & Springer, 2024
-  & Introduces latency-aware token generation so that large language models can
+\paper{19}{Latency-Aware Simultaneous Machine Translation Using Large Language Models}{B. Fu \textit{et al.}}{Springer, 2024}
+Introduces latency-aware token generation so that large language models can
     perform simultaneous translation while maintaining accuracy.
     \textbf{Drawback:} computationally expensive and premised on models far too
-    large for a handset. \\
+    large for a handset.
 
-20 & Offline English-to-Hindi Statistical Machine Translation System
-  & S. Gangwar, I. Naim
-  & Science\-Direct, 2024
-  & Implements genuinely offline English-to-Hindi translation using the Moses SMT
+\paper{20}{Offline English-to-Hindi Statistical Machine Translation System}{S. Gangwar, I. Naim}{Science\-Direct, 2024}
+Implements genuinely offline English-to-Hindi translation using the Moses SMT
     toolkit, demonstrating that offline operation is achievable at low cost.
     \textbf{Drawback:} statistical MT is substantially weaker than neural
     approaches, and the system covers a single direction of a single language
-    pair. \\
+    pair.
 
-\end{longtable}
 
 \subsection{Discussion of Key Papers}
 \label{subsec:keypapers}
@@ -294,104 +230,39 @@ formalises.
 \section{Comparative Study of Available Technologies}
 \label{sec:comparative}
 
-Table~\ref{tab:techcompare} compares the candidate technologies for each design
-decision the project faced, and records the choice made together with its
-justification.
+This section compares the candidate technologies for each design decision the
+project faced, and records the choice made together with its justification.
 
-\begin{longtable}{@{}L{2.5cm} L{3.8cm} L{3.85cm} L{3.8cm}@{}}
-\caption{Comparative study of available technologies and the choices made}
-\label{tab:techcompare}\\
-\toprule
-\rowcolor{headblue}
-\textbf{Decision} & \textbf{Alternatives considered} & \textbf{Trade-off} & \textbf{Choice and justification} \\
-\midrule
-\endfirsthead
-\multicolumn{4}{c}{\textit{Table \thetable{} (continued)}}\\
-\toprule
-\rowcolor{headblue}
-\textbf{Decision} & \textbf{Alternatives considered} & \textbf{Trade-off} & \textbf{Choice and justification} \\
-\midrule
-\endhead
-\midrule
-\multicolumn{4}{r}{\textit{continued on next page}}\\
-\endfoot
-\bottomrule
-\endlastfoot
+Each design decision below lists the alternatives that were considered, the
+trade-off between them, and the choice the project made with its reason.
 
-Teacher model
-& IndicTrans2 1B; IndicTrans2 distilled-200M; mT5-based Indic NMT; NLLB-200
-& The 1B flagship gives the highest ceiling but is gated and needs roughly 5\,GB
-  for weights alone; mT5 covers fewer Indic languages
-& \textbf{Ungated rotary IndicTrans2 distilled-200M.} Accessible without an
-  authenticated account, fits available memory, and covers all 22 scheduled
-  languages. The lower ceiling is reported rather than hidden \\
+\decision{Teacher model}
+\emph{Alternatives considered:} IndicTrans2 1B; IndicTrans2 distilled-200M; mT5-based Indic NMT; NLLB-200. \emph{Trade-off:} The 1B flagship gives the highest ceiling but is gated and needs roughly 5\,GB for weights alone; mT5 covers fewer Indic languages. \textbf{Ungated rotary IndicTrans2 distilled-200M.} Accessible without an authenticated account, fits available memory, and covers all 22 scheduled languages. The lower ceiling is reported rather than hidden
 
-Training signal for the student
-& Human references (plain SFT); teacher one-best (\seqkd{}); chrF-ranked
-  preference pairs with DPO; \seqkd{} followed by DPO
-& References are abundant but noisy; teacher output is clean but caps the
-  student at teacher quality; preference pairs add ranking information but need
-  a reliable ranker
-& \textbf{\seqkd{} on teacher one-best}, selected by the controlled experiment in
-  Section~\ref{sec:proposedsolution}: 17.09 BLEU against 11.10 for
-  reference-trained DPO at matched size \\
+\decision{Training signal for the student}
+\emph{Alternatives considered:} Human references (plain SFT); teacher one-best (\seqkd{}); chrF-ranked preference pairs with DPO; \seqkd{} followed by DPO. \emph{Trade-off:} References are abundant but noisy; teacher output is clean but caps the student at teacher quality; preference pairs add ranking information but need a reliable ranker. \textbf{\seqkd{} on teacher one-best}, selected by the controlled experiment in Section~\ref{sec:proposedsolution}: 17.09 BLEU against 11.10 for reference-trained DPO at matched size
 
-Student architecture
-& Marian encoder--decoder; distilled Transformer; shallow multilingual
-  (SMaLL-100 style); decoder-only LM
-& Encoder--decoder remains the strongest inductive bias for translation;
-  decoder-only needs far more parameters for equivalent quality
-& \textbf{Marian-style Transformer, 6 encoder and 6 decoder layers, $d=512$,
-  52.6\,M parameters.} Quantises to 103.9\,MB, comfortably inside the 200\,MB
-  budget \\
+\decision{Student architecture}
+\emph{Alternatives considered:} Marian encoder--decoder; distilled Transformer; shallow multilingual (SMaLL-100 style); decoder-only LM. \emph{Trade-off:} Encoder--decoder remains the strongest inductive bias for translation; decoder-only needs far more parameters for equivalent quality. \textbf{Marian-style Transformer, 6 encoder and 6 decoder layers, $d=512$, 52.6\,M parameters.} Quantises to 103.9\,MB, comfortably inside the 200\,MB budget
 
-Vocabulary
-& Shared 32{,}000-token SentencePiece; 16{,}000-token SentencePiece; byte-level BPE
-& A larger vocabulary shortens sequences but leaves rare tokens undertrained on
-  a corpus of this size
-& \textbf{16{,}000-token SentencePiece.} A 32{,}000-token vocabulary was measured to
-  produce degenerate decoding on this data volume (Section~\ref{sec:runlog}) \\
+\decision{Vocabulary}
+\emph{Alternatives considered:} Shared 32{,}000-token SentencePiece; 16{,}000-token SentencePiece; byte-level BPE. \emph{Trade-off:} A larger vocabulary shortens sequences but leaves rare tokens undertrained on a corpus of this size. \textbf{16{,}000-token SentencePiece.} A 32{,}000-token vocabulary was measured to produce degenerate decoding on this data volume (Section~\ref{sec:runlog})
 
-Multilingual strategy
-& One model per direction; one shared multilingual model; shared model with
-  All-in-One KD
-& Per-direction models avoid interference and permit independent quality gates;
-  a shared model saves storage but suffers low-resource interference
-  \cite{ref:aiokd}
-& \textbf{One student per direction}, with the All-in-One KD mechanism
-  implemented and tested for future consolidation \\
+\decision{Multilingual strategy}
+\emph{Alternatives considered:} One model per direction; one shared multilingual model; shared model with All-in-One KD. \emph{Trade-off:} Per-direction models avoid interference and permit independent quality gates; a shared model saves storage but suffers low-resource interference \cite{ref:aiokd}. \textbf{One student per direction}, with the All-in-One KD mechanism implemented and tested for future consolidation
 
-Indic-to-Indic coverage
-& Train $n(n-1)$ direct models; pivot through English; use a gated
-  Indic-to-Indic teacher
-& Direct models scale quadratically at 104\,MB each; pivoting doubles latency
-  and can compound errors; the Indic-to-Indic teacher is gated
-& \textbf{English pivot.} $2n$ models serve $n^2$ directions; measured two-hop
-  latency remains around 50--65\,ms \\
+\decision{Indic-to-Indic coverage}
+\emph{Alternatives considered:} Train $n(n-1)$ direct models; pivot through English; use a gated Indic-to-Indic teacher. \emph{Trade-off:} Direct models scale quadratically at 104\,MB each; pivoting doubles latency and can compound errors; the Indic-to-Indic teacher is gated. \textbf{English pivot.} $2n$ models serve $n^2$ directions; measured two-hop latency remains around 50--65\,ms
 
-Language expansion
-& Full retraining; All-in-One KD; Elastic Weight Consolidation
-  \cite{ref:continualkd}
-& Retraining is prohibitive; EWC protects old languages via a Fisher-weighted
-  penalty
-& \textbf{EWC implemented and validated} as the incremental path; per-direction
-  training used for Phase~1 \\
+\decision{Language expansion}
+\emph{Alternatives considered:} Full retraining; All-in-One KD; Elastic Weight Consolidation \cite{ref:continualkd}. \emph{Trade-off:} Retraining is prohibitive; EWC protects old languages via a Fisher-weighted penalty. \textbf{EWC implemented and validated} as the incremental path; per-direction training used for Phase~1
 
-Quantisation and runtime
-& PyTorch on-device; TensorFlow Lite; ONNX Runtime with INT8/INT4; GGML
-& ONNX Runtime has mature CPU kernels, a small footprint and wide platform
-  support; its CPU provider lacks a true 4-bit kernel
-& \textbf{ONNX Runtime with progressive INT8 then INT4 export via Optimum.}
-  411\,MB FP32 compresses to 103.9\,MB \\
+\decision{Quantisation and runtime}
+\emph{Alternatives considered:} PyTorch on-device; TensorFlow Lite; ONNX Runtime with INT8/INT4; GGML. \emph{Trade-off:} ONNX Runtime has mature CPU kernels, a small footprint and wide platform support; its CPU provider lacks a true 4-bit kernel. \textbf{ONNX Runtime with progressive INT8 then INT4 export via Optimum.} 411\,MB FP32 compresses to 103.9\,MB
 
-Evaluation metric
-& BLEU; chrF/chrF++; COMET; human evaluation
-& BLEU is standard but penalises agglutinative languages; COMET correlates
-  better with human judgement but needs a neural model at evaluation time
-& \textbf{BLEU and chrF via sacreBLEU}, reported as a student/teacher ratio;
-  COMET implemented for future benchmarking \\
+\decision{Evaluation metric}
+\emph{Alternatives considered:} BLEU; chrF/chrF++; COMET; human evaluation. \emph{Trade-off:} BLEU is standard but penalises agglutinative languages; COMET correlates better with human judgement but needs a neural model at evaluation time. \textbf{BLEU and chrF via sacreBLEU}, reported as a student/teacher ratio; COMET implemented for future benchmarking
 
-\end{longtable}
 
 \subsection{Why These Technologies Were Selected}
 \label{subsec:why}
@@ -551,25 +422,40 @@ The project's founding hypothesis was H1: \emph{preference distillation produces
 better compact students than sequence-level knowledge distillation}. It was
 tested at matched student size, on identical data, with evaluation on real human
 references held out from training, a design that is fair regardless of what
-each system trained on. Table~\ref{tab:h1} gives the outcome.
+each system trained on. Figure~\ref{fig:h1} gives the outcome.
 
-\begin{table}[H]
+\begin{figure}[H]
 \centering
+\begin{tikzpicture}
+\begin{groupplot}[
+   setubar, ybar, width=7.2cm, height=5.6cm,
+   group style={group size=2 by 1, horizontal sep=1.45cm},
+   symbolic x coords={S0,S1,S2}, xtick={S0,S1,S2},
+   xticklabels={{S0: SFT on\\references},{S1: \seqkd{}},{S2: DPO-\\distill}},
+   xticklabel style={font=\scriptsize, align=center},
+   /pgf/bar width=17pt, /pgf/bar shift=0pt, enlarge x limits=0.26,
+   nodes near coords, nodes near coords style={font=\scriptsize},
+   label style={font=\scriptsize},
+   ]
+\nextgroupplot[title={BLEU on held-out human references}, ymin=0, ymax=21,
+   nodes near coords={\pgfmathprintnumber[fixed, fixed zerofill, precision=2]{\pgfplotspointmeta}}]
+\addplot[fill=chartgrey!60, draw=black!50] coordinates {(S0,10.95)};
+\addplot[fill=chartgreen!75, draw=black!50] coordinates {(S1,17.09)};
+\addplot[fill=chartamber!75, draw=black!50] coordinates {(S2,11.10)};
+
+\nextgroupplot[title={Student / teacher BLEU ratio}, ymin=0, ymax=0.74,
+   nodes near coords={\pgfmathprintnumber[fixed, fixed zerofill, precision=3]{\pgfplotspointmeta}}]
+\addplot[fill=chartgrey!60, draw=black!50] coordinates {(S0,0.389)};
+\addplot[fill=chartgreen!75, draw=black!50] coordinates {(S1,0.607)};
+\addplot[fill=chartamber!75, draw=black!50] coordinates {(S2,0.394)};
+\end{groupplot}
+\end{tikzpicture}
 \caption{Head-to-head at 100{,}000 training sentences, Hindi\arrowto{}English,
-identical 52.6\,M student, evaluated on held-out human references}
-\label{tab:h1}
-\begin{tabular}{@{}L{3.6cm} L{4.6cm} r r L{3.0cm}@{}}
-\toprule
-\rowcolor{headblue}
-\textbf{System} & \textbf{Training target} & \textbf{BLEU} & \textbf{Ratio} & \textbf{Verdict} \\
-\midrule
-S0: SFT on references & human references (Samanantar) & 10.95 & 0.389 & baseline \\
-\rowcolor{rowgrey}
-S1: \seqkd{}          & teacher one-best              & \textbf{17.09} & \textbf{0.607} & \textbf{best} \\
-S2: DPO-distill       & references, then DPO          & 11.10 & 0.394 & no gain over S0 \\
-\bottomrule
-\end{tabular}
-\end{table}
+identical 52.6\,M student, evaluated on held-out human references. \seqkd{}
+(S1) wins on both measures; DPO-distill (S2) is indistinguishable from the
+reference-trained baseline (S0)}
+\label{fig:h1}
+\end{figure}
 
 H1 is refuted. Sequence-level distillation beats preference distillation by
 6.0 BLEU, an improvement of about 54\,\%, and DPO applied on top of a

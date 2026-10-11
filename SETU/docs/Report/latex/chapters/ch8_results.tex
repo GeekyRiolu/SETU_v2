@@ -55,22 +55,38 @@ S3 & Teacher one-best  & Yes & Does preference learning help on top of strong di
 \subsection{Result}
 \label{subsec:h2hresult}
 
-\begin{table}[H]
+\begin{figure}[H]
 \centering
-\caption{Head-to-head at 100{,}000 sentences, Hindi\arrowto{}English, matched student size, evaluated on human references (teacher BLEU 28.16)}
-\label{tab:h2h}
-\begin{tabular}{@{}l l r r r@{}}
-\toprule
-\rowcolor{headblue}
-\textbf{System} & \textbf{Training signal} & \textbf{BLEU} & \textbf{Ratio} & \textbf{$\Delta$ vs S0} \\
-\midrule
-S0: SFT on references & Human references (Samanantar) & 10.95 & 0.389 & n/a \\
-\rowcolor{rowgrey}
-\textbf{S1: \seqkd{}}  & \textbf{Teacher one-best}      & \textbf{17.09} & \textbf{0.607} & \textbf{$+6.14$} \\
-S2: DPO-distill       & References, then DPO          & 11.10 & 0.394 & $+0.15$ \\
-\bottomrule
-\end{tabular}
-\end{table}
+\begin{tikzpicture}
+\begin{groupplot}[
+   setubar, ybar, width=7.2cm, height=5.6cm,
+   group style={group size=2 by 1, horizontal sep=1.45cm},
+   symbolic x coords={S0,S1,S2}, xtick={S0,S1,S2},
+   xticklabels={{S0: SFT on\\references},{S1: \seqkd{}},{S2: DPO-\\distill}},
+   xticklabel style={font=\scriptsize, align=center},
+   /pgf/bar width=17pt, /pgf/bar shift=0pt, enlarge x limits=0.26,
+   nodes near coords, nodes near coords style={font=\scriptsize},
+   label style={font=\scriptsize},
+   ]
+\nextgroupplot[title={BLEU on held-out human references}, ymin=0, ymax=21,
+   nodes near coords={\pgfmathprintnumber[fixed, fixed zerofill, precision=2]{\pgfplotspointmeta}}]
+\addplot[fill=chartgrey!60, draw=black!50] coordinates {(S0,10.95)};
+\addplot[fill=chartgreen!75, draw=black!50] coordinates {(S1,17.09)};
+\addplot[fill=chartamber!75, draw=black!50] coordinates {(S2,11.10)};
+
+\nextgroupplot[title={Student / teacher BLEU ratio}, ymin=0, ymax=0.74,
+   nodes near coords={\pgfmathprintnumber[fixed, fixed zerofill, precision=3]{\pgfplotspointmeta}}]
+\addplot[fill=chartgrey!60, draw=black!50] coordinates {(S0,0.389)};
+\addplot[fill=chartgreen!75, draw=black!50] coordinates {(S1,0.607)};
+\addplot[fill=chartamber!75, draw=black!50] coordinates {(S2,0.394)};
+\end{groupplot}
+\end{tikzpicture}
+\caption{Head-to-head at 100{,}000 sentences, Hindi\arrowto{}English, matched
+student size, evaluated on human references (teacher BLEU 28.16). \seqkd{} (S1)
+gains $+6.14$ BLEU over the reference-trained baseline S0; DPO-distill (S2)
+gains $+0.15$}
+\label{fig:h2h}
+\end{figure}
 
 The hypothesis is refuted, and not marginally. Sequence-level distillation beats
 preference distillation by \textbf{5.99 BLEU}, an improvement of roughly
@@ -123,24 +139,29 @@ what was observed.
 \section{Data Scaling of Sequence-Level Distillation}
 \label{sec:scaling}
 
-\begin{table}[H]
+\begin{figure}[H]
 \centering
-\caption{\seqkd{} data-scaling curve, Hindi\arrowto{}English}
-\label{tab:scaling}
-\begin{tabular}{@{}r r r r L{5.4cm}@{}}
-\toprule
-\rowcolor{headblue}
-\textbf{Training sentences} & \textbf{BLEU} & \textbf{Teacher} & \textbf{Ratio} & \textbf{Observation} \\
-\midrule
-100{,}000 & 17.09 & 28.16 & 0.607 & Already beats every reference-trained system \\
-\rowcolor{rowgrey}
-250{,}000 & 22.10 & 28.91 & 0.764 & Large gain; reference-SFT is stuck at 0.66 \\
-500{,}000 & 21.56 & 27.08 & 0.796 & Effectively at target within evaluation noise \\
-\rowcolor{rowgrey}
-500{,}000 (final run) & 21.83 & 27.08 & \textbf{0.806} & \textbf{Target met} \\
-\bottomrule
-\end{tabular}
-\end{table}
+\begin{tikzpicture}
+\begin{axis}[setubar, height=6.6cm,
+   xlabel={training sentences (thousands)}, ylabel={student / teacher BLEU ratio},
+   xmin=50, xmax=560, ymin=0.55, ymax=0.90,
+   xtick={100,250,500}, xticklabels={100k,250k,500k},
+   nodes near coords={\pgfmathprintnumber[fixed, fixed zerofill, precision=3]{\pgfplotspointmeta}},
+   nodes near coords style={font=\scriptsize},
+   ]
+\addplot[chartblue, thick, mark=*, mark options={fill=chartblue}]
+  coordinates {(100,0.607) (250,0.764) (500,0.806)};
+\draw[dashed, chartgreen!80!black, thick]
+      ({rel axis cs:0,0}|-{axis cs:100,0.80}) -- ({rel axis cs:1,0}|-{axis cs:100,0.80});
+\node[font=\scriptsize, anchor=south west, chartgreen!60!black]
+      at ({rel axis cs:0.02,0}|-{axis cs:100,0.80}) {target 0.80};
+\end{axis}
+\end{tikzpicture}
+\caption{\seqkd{} data-scaling curve, Hindi\arrowto{}English. The ratio rises
+steeply to 250{,}000 sentences and then flattens as the student approaches its
+teacher's ceiling, crossing the 0.80 target at 500{,}000}
+\label{fig:scaling}
+\end{figure}
 
 The curve rises steeply from 100{,}000 to 250{,}000 sentences and then flattens,
 which is the expected shape as the student approaches its teacher's ceiling. The
@@ -252,66 +273,36 @@ checked before a run is allowed to proceed to quantisation.
 \subsection{Full Scorecard: 22 Directions}
 \label{subsec:scorecard}
 
-Table~\ref{tab:fullscorecard} gives every trained direction, ordered by
+Figure~\ref{fig:scorecard} gives every trained direction, ordered by
 student/teacher BLEU ratio. Eleven languages are covered, each in both
 directions.
 
-\begin{longtable}{@{}r L{3.9cm} r r r r c r@{}}
-\caption{Full scorecard: 22 directions, 500-sentence Samanantar development slice, INT4 ONNX students}
-\label{tab:fullscorecard}\\
-\toprule
-\rowcolor{headblue}
-\textbf{\#} & \textbf{Direction} & \textbf{BLEU} & \textbf{chrF} & \textbf{Teacher} & \textbf{Ratio} & \textbf{$\geq$0.80} & \textbf{Latency} \\
-\midrule
-\endfirsthead
-\multicolumn{8}{c}{\textit{Table \thetable{} (continued)}}\\
-\toprule
-\rowcolor{headblue}
-\textbf{\#} & \textbf{Direction} & \textbf{BLEU} & \textbf{chrF} & \textbf{Teacher} & \textbf{Ratio} & \textbf{$\geq$0.80} & \textbf{Latency} \\
-\midrule
-\endhead
-\midrule
-\multicolumn{8}{r}{\textit{continued on next page}}\\
-\endfoot
-\bottomrule
-\endlastfoot
-
-1  & Marathi \arrowto{} English   & 16.4 & 43.8 & 17.1 & \textbf{0.955} & \pass & 131\,ms \\
-\rowcolor{rowgrey}
-2  & English \arrowto{} Kannada   & 10.0 & 43.0 & 11.0 & \textbf{0.915} & \pass & 105\,ms \\
-3  & English \arrowto{} Punjabi   & 15.8 & 42.3 & 17.5 & \textbf{0.904} & \pass & 175\,ms \\
-\rowcolor{rowgrey}
-4  & English \arrowto{} Marathi   & 12.5 & 40.9 & 13.8 & \textbf{0.901} & \pass & 111\,ms \\
-5  & Odia \arrowto{} English      & 18.9 & 46.5 & 21.0 & \textbf{0.898} & \pass & 133\,ms \\
-\rowcolor{rowgrey}
-6  & Malayalam \arrowto{} English & 17.1 & 44.6 & 19.1 & \textbf{0.898} & \pass & 128\,ms \\
-7  & English \arrowto{} Odia      & 6.9  & 40.8 & 7.7  & \textbf{0.895} & \pass & 128\,ms \\
-\rowcolor{rowgrey}
-8  & Punjabi \arrowto{} English   & 21.1 & 47.6 & 24.0 & \textbf{0.877} & \pass & 158\,ms \\
-9  & English \arrowto{} Hindi     & 20.3 & 46.6 & 23.3 & \textbf{0.871} & \pass & 202\,ms \\
-\rowcolor{rowgrey}
-10 & English \arrowto{} Malayalam & 5.2  & 38.8 & 6.1  & \textbf{0.863} & \pass & 113\,ms \\
-11 & English \arrowto{} Gujarati  & 12.5 & 41.1 & 14.6 & \textbf{0.855} & \pass & 114\,ms \\
-\rowcolor{rowgrey}
-12 & English \arrowto{} Bengali   & 11.1 & 41.5 & 13.1 & \textbf{0.848} & \pass & 130\,ms \\
-13 & Telugu \arrowto{} English    & 18.9 & 46.5 & 23.1 & \textbf{0.817} & \pass & 129\,ms \\
-\rowcolor{rowgrey}
-14 & Hindi \arrowto{} English     & 21.8 & 49.5 & 27.1 & \textbf{0.806} & \pass & 199\,ms \\
-\midrule
-15 & Gujarati \arrowto{} English  & 18.8 & 46.2 & 23.9 & 0.787 & \near & 130\,ms \\
-\rowcolor{rowgrey}
-16 & English \arrowto{} Telugu    & 11.0 & 42.8 & 14.0 & 0.780 & \near & 113\,ms \\
-17 & English \arrowto{} Assamese  & 6.7  & 33.7 & 8.7  & 0.764 & \near & 155\,ms \\
-\rowcolor{rowgrey}
-18 & Kannada \arrowto{} English   & 16.3 & 45.6 & 21.4 & 0.763 & \near & 132\,ms \\
-19 & Tamil \arrowto{} English     & 16.1 & 41.0 & 21.1 & 0.761 & \near & 155\,ms \\
-\rowcolor{rowgrey}
-20 & Assamese \arrowto{} English  & 13.1 & 33.5 & 17.3 & 0.757 & \near & 154\,ms \\
-21 & Bengali \arrowto{} English   & 19.1 & 45.2 & 25.2 & 0.756 & \near & 150\,ms \\
-\rowcolor{rowgrey}
-22 & English \arrowto{} Tamil     & 8.0  & 43.0 & 10.6 & 0.755 & \near & 135\,ms \\
-
-\end{longtable}
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}
+\begin{axis}[setubar, height=13.2cm, width=11.2cm,
+   xbar, bar width=6pt, xmin=0.70, xmax=1.00, enlarge x limits=false,
+   ymin=0.3, ymax=22.7, y dir=reverse,
+   xlabel={student / teacher BLEU ratio},
+   ytick={1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22}, yticklabels={{Marathi\ensuremath{\to}English},{English\ensuremath{\to}Kannada},{English\ensuremath{\to}Punjabi},{English\ensuremath{\to}Marathi},{Odia\ensuremath{\to}English},{Malayalam\ensuremath{\to}English},{English\ensuremath{\to}Odia},{Punjabi\ensuremath{\to}English},{English\ensuremath{\to}Hindi},{English\ensuremath{\to}Malayalam},{English\ensuremath{\to}Gujarati},{English\ensuremath{\to}Bengali},{Telugu\ensuremath{\to}English},{Hindi\ensuremath{\to}English},{Gujarati\ensuremath{\to}English},{English\ensuremath{\to}Telugu},{English\ensuremath{\to}Assamese},{Kannada\ensuremath{\to}English},{Tamil\ensuremath{\to}English},{Assamese\ensuremath{\to}English},{Bengali\ensuremath{\to}English},{English\ensuremath{\to}Tamil}},
+   yticklabel style={font=\scriptsize}, ymajorgrids=false,
+   point meta=x,
+   nodes near coords={\pgfmathprintnumber[fixed, fixed zerofill, precision=3]{\pgfplotspointmeta}},
+   nodes near coords style={font=\scriptsize},
+   legend style={at={(0.5,-0.09)}, anchor=north, legend columns=2},
+   ]
+\addplot[fill=chartgreen!75, draw=black!50] coordinates {(0.955,1) (0.915,2) (0.904,3) (0.901,4) (0.898,5) (0.898,6) (0.895,7) (0.877,8) (0.871,9) (0.863,10) (0.855,11) (0.848,12) (0.817,13) (0.806,14)};
+\addlegendentry{meets the 0.80 target}
+\addplot[fill=chartamber!75, draw=black!50] coordinates {(0.787,15) (0.780,16) (0.764,17) (0.763,18) (0.761,19) (0.757,20) (0.756,21) (0.755,22)};
+\addlegendentry{near miss}
+\draw[dashed, black!65, thick] ({rel axis cs:0.33333,0}) -- ({rel axis cs:0.33333,1});
+\end{axis}
+\end{tikzpicture}
+\caption{Student/teacher BLEU ratio for all 22 evaluated directions on the
+500-sentence Samanantar development slice. Fourteen clear the 0.80 target; the
+dashed line marks the threshold}
+\label{fig:scorecard}
+\end{figure}
 
 \begin{table}[H]
 \centering
@@ -344,40 +335,41 @@ Offline operation                      & Verified for every direction \\
 \subsection{Per-Language Rollup and Quality Tiers}
 \label{subsec:rollup}
 
-\begin{table}[H]
+\begin{figure}[H]
 \centering
-\caption{Per-language rollup for the nine languages with full bidirectional evaluation}
-\label{tab:rollup}
-\begin{tabular}{@{}L{2.8cm} r r r L{5.6cm}@{}}
-\toprule
-\rowcolor{headblue}
-\textbf{Language} & \textbf{\arrowto{}En} & \textbf{En\arrowto{}} & \textbf{Mean} & \textbf{Assessment} \\
-\midrule
-Marathi   & 0.955 & 0.901 & \textbf{0.928} & Both directions pass; strongest language \\
-\rowcolor{rowgrey}
-Odia      & 0.898 & 0.895 & \textbf{0.897} & Both directions pass, closely matched \\
-Malayalam & 0.898 & 0.863 & \textbf{0.881} & Both pass after recovery from collapse \\
-\rowcolor{rowgrey}
-Hindi     & 0.806 & 0.871 & \textbf{0.839} & Both pass; the primary development pair \\
-Kannada   & 0.763 & 0.915 & 0.839 & Strong into Kannada; near-miss out of it \\
-\rowcolor{rowgrey}
-Gujarati  & 0.787 & 0.855 & 0.821 & One pass, one near-miss \\
-Bengali   & 0.756 & 0.848 & 0.802 & One pass, one near-miss \\
-\rowcolor{rowgrey}
-Telugu    & 0.817 & 0.780 & 0.799 & Passes after recovery; reverse is a near-miss \\
-Tamil     & 0.761 & 0.755 & 0.758 & Both near-miss; BLEU likely understates quality \\
-\bottomrule
-\end{tabular}
-\end{table}
+\begin{tikzpicture}
+\begin{axis}[setubar, height=7.4cm,
+   ybar, bar width=7pt, ymin=0.70, ymax=1.00,
+   ylabel={student / teacher BLEU ratio},
+   symbolic x coords={Marathi,Odia,Punjabi,Malayalam,Kannada,Hindi,Gujarati,Bengali,Telugu,Assamese,Tamil}, xtick=data,
+   xticklabel style={font=\scriptsize, rotate=32, anchor=east},
+   enlarge x limits=0.06,
+   legend style={at={(0.5,-0.26)}, anchor=north, legend columns=2},
+   ]
+\addplot[fill=chartblue!85, draw=black!50] coordinates {(Marathi,0.955) (Odia,0.898) (Punjabi,0.877) (Malayalam,0.898) (Kannada,0.763) (Hindi,0.806) (Gujarati,0.787) (Bengali,0.756) (Telugu,0.817) (Assamese,0.757) (Tamil,0.761)};
+\addlegendentry{into English}
+\addplot[fill=chartamber!85, draw=black!50] coordinates {(Marathi,0.901) (Odia,0.895) (Punjabi,0.904) (Malayalam,0.863) (Kannada,0.915) (Hindi,0.871) (Gujarati,0.855) (Bengali,0.848) (Telugu,0.780) (Assamese,0.764) (Tamil,0.755)};
+\addlegendentry{out of English}
+\draw[dashed, black!65] ({rel axis cs:0,0}|-{axis cs:Marathi,0.80})
+                     -- ({rel axis cs:1,0}|-{axis cs:Marathi,0.80});
+\node[font=\scriptsize, anchor=south east, black!60]
+      at ({rel axis cs:0.99,0}|-{axis cs:Marathi,0.80}) {target 0.80};
+\end{axis}
+\end{tikzpicture}
+\caption{Per-language ratio in both directions for all eleven languages,
+ordered by their two-direction mean. The two directions track closely, so the
+method is not biased towards translating into English}
+\label{fig:rollup}
+\end{figure}
 
 Three observations follow.
 
-\textbf{Direction symmetry holds.} Once the collapses are excluded,
-English\arrowto{}Indic averages 0.854 and Indic\arrowto{}English averages 0.827.
+\textbf{Direction symmetry holds.} Across all eleven languages,
+English\arrowto{}Indic averages 0.850 and Indic\arrowto{}English averages 0.825.
 The two directions are close, which suggests the method is not biased towards
 translating into English, a common asymmetry in multilingual systems.
 
-\textbf{The near-misses are under-converged, not unstable.} All six near-miss
+\textbf{The near-misses are under-converged, not unstable.} All eight near-miss
 directions have supervised losses of 2.00 to 2.32, at the upper end of the
 healthy band of 1.5 to 2.3, whereas the passing directions cluster between 1.46
 and 1.95. The pattern points to insufficient training rather than instability,
@@ -396,51 +388,33 @@ pass under a metric that is not overlap-based.
 \subsection{Deployment Metrics: Size and Latency}
 \label{subsec:deploymetrics}
 
-\begin{longtable}{@{}L{3.6cm} r r r c r r c@{}}
-\caption{Deployment metrics per direction (INT4 ONNX, VM host CPU)}
-\label{tab:deploy}\\
-\toprule
-\rowcolor{headblue}
-\textbf{Direction} & \textbf{FP32} & \textbf{INT8} & \textbf{INT4} & \textbf{$\leq$200} & \textbf{p50} & \textbf{p90} & \textbf{$<$500} \\
-\midrule
-\endfirsthead
-\toprule
-\rowcolor{headblue}
-\textbf{Direction} & \textbf{FP32} & \textbf{INT8} & \textbf{INT4} & \textbf{$\leq$200} & \textbf{p50} & \textbf{p90} & \textbf{$<$500} \\
-\midrule
-\endhead
-\bottomrule
-\endlastfoot
-
-Marathi \arrowto{} English   & 411 & 104.6 & 103.9 & \yes & 95\,ms  & 147\,ms & \yes \\
-\rowcolor{rowgrey}
-English \arrowto{} Kannada   & 411 & 104.6 & 103.9 & \yes & 62\,ms  & 141\,ms & \yes \\
-English \arrowto{} Marathi   & 411 & 104.6 & 103.9 & \yes & 78\,ms  & 156\,ms & \yes \\
-\rowcolor{rowgrey}
-Odia \arrowto{} English      & 411 & 104.6 & 103.9 & \yes & 78\,ms  & 147\,ms & \yes \\
-Malayalam \arrowto{} English & 411 & 104.6 & 103.9 & \yes & 86\,ms  & 213\,ms & \yes \\
-\rowcolor{rowgrey}
-English \arrowto{} Odia      & 411 & 104.6 & 103.9 & \yes & 201\,ms & 350\,ms & \yes \\
-English \arrowto{} Hindi     & 411 & 104.6 & 103.9 & \yes & 124\,ms & 300\,ms & \yes \\
-\rowcolor{rowgrey}
-English \arrowto{} Malayalam & 411 & 104.6 & 103.9 & \yes & 85\,ms  & 173\,ms & \yes \\
-English \arrowto{} Gujarati  & 411 & 104.6 & 103.9 & \yes & 74\,ms  & 148\,ms & \yes \\
-\rowcolor{rowgrey}
-English \arrowto{} Bengali   & 411 & 104.6 & 103.9 & \yes & 179\,ms & 336\,ms & \yes \\
-Telugu \arrowto{} English    & 411 & 104.6 & 103.9 & \yes & 86\,ms  & 204\,ms & \yes \\
-\rowcolor{rowgrey}
-Hindi \arrowto{} English     & 411 & 104.6 & 103.9 & \yes & 134\,ms & 335\,ms & \yes \\
-Gujarati \arrowto{} English  & 411 & 104.6 & 103.9 & \yes & 82\,ms  & 165\,ms & \yes \\
-\rowcolor{rowgrey}
-English \arrowto{} Telugu    & 411 & 104.6 & 103.9 & \yes & 72\,ms  & 200\,ms & \yes \\
-Kannada \arrowto{} English   & 411 & 104.6 & 103.9 & \yes & 136\,ms & 281\,ms & \yes \\
-\rowcolor{rowgrey}
-Tamil \arrowto{} English     & 411 & 104.6 & 103.9 & \yes & 93\,ms  & 185\,ms & \yes \\
-Bengali \arrowto{} English   & 411 & 104.6 & 103.9 & \yes & 88\,ms  & 190\,ms & \yes \\
-\rowcolor{rowgrey}
-English \arrowto{} Tamil     & 411 & 104.6 & 103.9 & \yes & 214\,ms & 541\,ms & \near \\
-
-\end{longtable}
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}
+\begin{axis}[setubar, height=12.4cm, width=10.6cm,
+   xbar, bar width=5pt, xmin=0, xmax=600, enlarge x limits=false,
+   ymin=0.3, ymax=18.7, y dir=reverse,
+   xlabel={end-to-end latency per sentence (ms)},
+   xtick={0,100,200,300,400,500,600},
+   ytick={1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18}, yticklabels={{English\ensuremath{\to}Kannada},{Marathi\ensuremath{\to}English},{Odia\ensuremath{\to}English},{English\ensuremath{\to}Gujarati},{English\ensuremath{\to}Marathi},{Gujarati\ensuremath{\to}English},{English\ensuremath{\to}Malayalam},{Tamil\ensuremath{\to}English},{Bengali\ensuremath{\to}English},{English\ensuremath{\to}Telugu},{Telugu\ensuremath{\to}English},{Malayalam\ensuremath{\to}English},{Kannada\ensuremath{\to}English},{English\ensuremath{\to}Hindi},{Hindi\ensuremath{\to}English},{English\ensuremath{\to}Bengali},{English\ensuremath{\to}Odia},{English\ensuremath{\to}Tamil}},
+   yticklabel style={font=\scriptsize}, ymajorgrids=false,
+   legend style={at={(0.5,-0.10)}, anchor=north, legend columns=2},
+   ]
+\addplot[fill=chartblue!80, draw=black!50] coordinates {(62,1) (95,2) (78,3) (74,4) (78,5) (82,6) (85,7) (93,8) (88,9) (72,10) (86,11) (86,12) (136,13) (124,14) (134,15) (179,16) (201,17) (214,18)};
+\addlegendentry{median (p50)}
+\addplot[fill=chartamber!80, draw=black!50] coordinates {(141,1) (147,2) (147,3) (148,4) (156,5) (165,6) (173,7) (185,8) (190,9) (200,10) (204,11) (213,12) (281,13) (300,14) (335,15) (336,16) (350,17) (541,18)};
+\addlegendentry{p90}
+\draw[dashed, chartgrey!90!black, thick]
+      ({rel axis cs:0.83333,0}) -- ({rel axis cs:0.83333,1});
+\node[font=\scriptsize, chartgrey!60!black, rotate=90, anchor=south]
+      at ({rel axis cs:0.83333,0.5}) {500\,ms budget};
+\end{axis}
+\end{tikzpicture}
+\caption{Median and p90 end-to-end latency for the 18 deployed directions
+(INT4 ONNX on the VM host CPU), ordered by p90. Every median sits well inside
+the 500\,ms budget; only English\arrowto{}Tamil crosses it at p90}
+\label{fig:deploylatency}
+\end{figure}
 
 Every model compresses by a factor of 4.0, from 410.9\,MB to 103.9\,MB, which is
 48\,\% below the 200\,MB budget. Median latency is comfortably inside the 500\,ms
