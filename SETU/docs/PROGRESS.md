@@ -352,6 +352,40 @@ balancing, EWC anti-forgetting, device resolution, scorecard.
 
 ## 10. Session changelog
 
+- **2026-10-11 (cont.) (chapter list format, algorithm numbering, Word export)** - Five
+  changes. **(1) The report-organisation list** in Section 1.4 now reads "Chapter 2 -
+  Literature Survey: Reviews twenty papers ..." rather than "Chapter 2, Literature Survey,
+  reviews ...". **(2) A wrapped paper entry now hangs under its title** instead of under
+  the "[20]" number: the entry number sits in a fixed-width box and the paragraph carries
+  a matching `\hangindent`. **(3) The algorithm steps are no longer numbered**, at the
+  user's request; `algsteps` moved from an enumerate to a plain `\list` so a wrapped line
+  still hangs at the step's own indent rather than falling back to the page margin.
+  **(4) Two subsections that opened two lines before a page break** (3.2.3 Activity Diagram
+  and 3.2.5 Data Flow Diagram) now carry `\needspace` and start their own page, and the
+  closing SeqKD sentence at the end of Chapter 2 was deleted on request.
+
+  **(5) A Word version of the report**, built by the new `make_docx.py`. Pandoc cannot draw
+  TikZ or pgfplots, so the script first renders all fifteen such figures to cropped PNGs at
+  the report's own text width (one figure per page of a throwaway document that shares the
+  real preamble, then auto-cropped to the ink), substitutes them into a copy of the LaTeX
+  tree, and runs pandoc against a reference document restyled to Times New Roman 12 pt with
+  black headings and a justified body. Several things needed handling for the conversion to
+  come out whole: `\scalebox` silently swallows its contents in pandoc, which had dropped
+  the activity diagram, class diagram and PERT network; `\textsc` inside math defeats
+  pandoc's math reader; the custom `bullets`, `paperpoints` and `terms` environments are
+  invisible to pandoc and are mapped to `itemize` and `description`; `\cite` and the
+  `[n]` labels on `\bibitem` are dropped, so both are resolved to literal numbers; and the
+  `\paper`, `\decision` and `\algtitle` macros are redefined without `\makebox` and
+  `\hangindent`, which pandoc rendered as a stray "=". The .docx is finally patched
+  directly: the front matter is re-centred, each front- and back-matter section gets
+  `pageBreakBefore` (on the paragraph itself, so no empty page appears), and the table of
+  contents is moved from the top of the file to just before Chapter 1. Result: 19 figures
+  embedded, the full nine-chapter heading hierarchy, 90 pages when rendered.
+
+  Both formats are current: the typeset PDF at **107 pages** with no undefined references,
+  no overfull boxes above 5 pt and no tables anywhere, plus the LaTeX zip, the two print
+  sets (83 mono / 24 colour) and `SETU_Project_Phase-II_Report.docx`.
+
 - **2026-10-11 (cont.) (every table removed; requirements as bullets)** - Three
   changes. **(1) The report now contains no tables at all.** All 37 remaining ones became
   prose, bullet lists, description lists or numbered steps, whichever suited the content:

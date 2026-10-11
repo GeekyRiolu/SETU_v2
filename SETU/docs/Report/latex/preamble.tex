@@ -349,9 +349,14 @@
 % One surveyed paper, set as a headed paragraph rather than a table row:
 % #1 number, #2 title, #3 authors, #4 venue and year. The commentary follows as
 % ordinary body text.
+% The entry number sits in a fixed-width box and the paragraph hangs by the
+% same amount, so a wrapped title aligns under the title rather than under
+% the number.
+\newlength{\paperlabelwidth}\setlength{\paperlabelwidth}{0.46in}
 \newcommand{\paper}[4]{%
   \par\medskip\needspace{6\baselineskip}%
-  \noindent\textbf{[#1]\quad #2}, #3, #4\par
+  \hangindent=\paperlabelwidth \hangafter=1
+  \noindent\makebox[\paperlabelwidth][l]{\textbf{[#1]}}\textbf{#2}, #3, #4\par
   \nopagebreak\vspace{1pt}}
 
 % The findings under one surveyed paper, as a tight bullet list.
@@ -379,9 +384,21 @@
 \newcommand{\algtitle}[1]{%
   \par\medskip\needspace{7\baselineskip}%
   \noindent\textbf{#1}\par\nopagebreak\vspace{3pt}}
-\newlist{algsteps}{enumerate}{1}
-\setlist[algsteps]{label=\bfseries\arabic*., leftmargin=0.5in,
-                   topsep=2pt, itemsep=1pt, parsep=0pt}
+% Unnumbered pseudo-code lines. Plain \list rather than enumitem so that a
+% wrapped line hangs at the step's own indent instead of the page margin.
+\newenvironment{algsteps}
+  {\begin{list}{}{%
+      \setlength{\leftmargin}{0.34in}%
+      \setlength{\labelwidth}{0pt}%
+      \setlength{\labelsep}{0pt}%
+      \setlength{\itemindent}{0pt}%
+      \setlength{\listparindent}{0pt}%
+      \setlength{\rightmargin}{0pt}%
+      \setlength{\topsep}{2pt}%
+      \setlength{\partopsep}{0pt}%
+      \setlength{\itemsep}{1pt}%
+      \setlength{\parsep}{0pt}}}
+  {\end{list}}
 \newcommand{\algind}{\hspace*{1.2em}}
 
 % Class-box separator usable inside a TikZ node (\hrule is illegal there)

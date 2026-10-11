@@ -449,13 +449,9 @@ student then continues to improve with data: the ratio rises from 0.607 at
 100{,}000 sentences to 0.764 at 250{,}000 and 0.806 at 500{,}000, whereas
 reference-trained students plateau near 0.66 regardless of data volume.
 
-%% One line of this closing paragraph was spilling onto a page of its own at
-%% the end of the chapter; the extra line of depth pulls it back.
-\enlargethispage{\baselineskip}
 The DPO implementation is not defective, which is what makes the result
 informative. Its margin accuracy reaches 1.0, meaning it ranks preferred above
 dispreferred candidates perfectly; it consistently improves chrF by one to two
 points while costing about one BLEU point. The preference signal is being
 learned correctly; it simply is not the signal that a 52-million-parameter
-student most needs when its reference targets are noisy. \setu{} therefore ships
-\seqkd{}, and reports DPO as a controlled negative result.
+student most needs when its reference targets are noisy.
