@@ -436,7 +436,7 @@ measured them.
 The survey exposes five drawbacks that, taken together, leave the offline Indic
 translation problem unsolved.
 
-\textbf{Cloud dependency.} Almost every high-quality MT system in production
+\textbf{Cloud dependency:} Almost every high-quality MT system in production
 requires an active network connection. IndicTrans2 \cite{ref:indictrans2}, mT5
 based systems \cite{ref:mt5indic} and LLM-based simultaneous translators
 \cite{ref:latency} all assume server-side execution. In regions with intermittent
@@ -444,26 +444,26 @@ connectivity, which is where the language barrier is most acute, these
 systems are unavailable exactly when needed. Cloud execution also means that
 every translated sentence is transmitted to and processed by a third party.
 
-\textbf{High compute requirements.} The models that achieve state-of-the-art
+\textbf{High compute requirements:} The models that achieve state-of-the-art
 Indic quality hold hundreds of millions to billions of parameters and need
 GPU-class memory. The IndicTrans2 flagship requires roughly 5\,GB for weights
 alone. Mid-range handsets and ARM single-board computers cannot host them, and
 the compression literature \cite{ref:mobilenmt, ref:small100} consistently reports
 quality degradation as the price of shrinking them.
 
-\textbf{Error propagation in cascaded pipelines.} Systems that chain automatic
+\textbf{Error propagation in cascaded pipelines:} Systems that chain automatic
 speech recognition to translation \cite{ref:iwslt} compound recognition errors
 into translation errors. The IWSLT 2024 results show cascades still outperforming
 end-to-end models in low-resource settings, which means the compounding problem
 is currently unavoidable in that design.
 
-\textbf{Narrow language coverage.} Compact and specialised systems cover very few
+\textbf{Narrow language coverage:} Compact and specialised systems cover very few
 languages. The mT5-based Indic system \cite{ref:mt5indic} evaluates on a handful;
 the Assamese-Bengali system \cite{ref:assamese} covers two in one direction; the
 offline SMT system \cite{ref:offlinesmt} covers a single direction of a single
 pair. Systems with broad coverage are precisely the ones too large to deploy.
 
-\textbf{Data scarcity for low-resource languages.} Languages such as Kashmiri,
+\textbf{Data scarcity for low-resource languages:} Languages such as Kashmiri,
 Dogri, Konkani, Bodo and Santali lack parallel corpora at the scale neural
 translation requires. Where corpora do exist they are frequently web-mined and
 noisy, as the Tatoeba challenge \cite{ref:tatoeba} documents. This project
@@ -488,12 +488,12 @@ The overall problem decomposes into six sub-problems, each addressed by an
 identifiable part of the system.
 
 \begin{bullets}
-\item \textbf{Corpus quality.} The available ungated parallel data (Samanantar) is web-mined, and contains misaligned pairs, length-ratio anomalies, wrong-script segments and duplicates. \emph{Sub-problem:} construct a cleaning pipeline that yields a corpus a 52-million-parameter student can learn from. Addressed by the Corpus Loader module (Section~\ref{subsec:mod1}).
-\item \textbf{Choice of training signal.} It is not established which signal (human references, teacher one-best output, or preference-ranked teacher hypotheses) best trains a student an order of magnitude smaller than its teacher on noisy data. \emph{Sub-problem:} construct all three and compare them under matched conditions. Addressed by the Teacher Distiller and Trainer modules and reported in Section~\ref{sec:headtohead}.
-\item \textbf{Training stability.} A Transformer trained from scratch at this scale is unstable: three distinct failure modes (empty output, unconditional decoding, and mid-training collapse) were encountered. \emph{Sub-problem:} identify and eliminate each. Addressed in Section~\ref{sec:runlog}.
-\item \textbf{Deployment footprint.} A 52.6-million-parameter FP32 model occupies 411\,MB, over twice the size budget, and decodes too slowly in PyTorch on CPU. \emph{Sub-problem:} compress and accelerate without materially losing quality. Addressed by the Quantiser module (Section~\ref{subsec:mod4}).
-\item \textbf{Indic-to-Indic coverage.} No ungated Indic-to-Indic teacher exists, and training direct models for every pair would require $n(n-1)$ models at 104\,MB each. \emph{Sub-problem:} serve every pair without quadratic growth. Addressed by the English-pivot router (Section~\ref{subsec:mod5}).
-\item \textbf{Extensibility.} Adding a language must not require retraining everything or degrade the languages already supported. \emph{Sub-problem:} provide a mechanism for incremental expansion with measured retention. Addressed by the All-in-One KD and Elastic Weight Consolidation implementations (Section~\ref{subsec:mod8}).
+\item \textbf{Corpus quality:} The available ungated parallel data (Samanantar) is web-mined, and contains misaligned pairs, length-ratio anomalies, wrong-script segments and duplicates. \emph{Sub-problem:} construct a cleaning pipeline that yields a corpus a 52-million-parameter student can learn from. Addressed by the Corpus Loader module (Section~\ref{subsec:mod1}).
+\item \textbf{Choice of training signal:} It is not established which signal (human references, teacher one-best output, or preference-ranked teacher hypotheses) best trains a student an order of magnitude smaller than its teacher on noisy data. \emph{Sub-problem:} construct all three and compare them under matched conditions. Addressed by the Teacher Distiller and Trainer modules and reported in Section~\ref{sec:headtohead}.
+\item \textbf{Training stability:} A Transformer trained from scratch at this scale is unstable: three distinct failure modes (empty output, unconditional decoding, and mid-training collapse) were encountered. \emph{Sub-problem:} identify and eliminate each. Addressed in Section~\ref{sec:runlog}.
+\item \textbf{Deployment footprint:} A 52.6-million-parameter FP32 model occupies 411\,MB, over twice the size budget, and decodes too slowly in PyTorch on CPU. \emph{Sub-problem:} compress and accelerate without materially losing quality. Addressed by the Quantiser module (Section~\ref{subsec:mod4}).
+\item \textbf{Indic-to-Indic coverage:} No ungated Indic-to-Indic teacher exists, and training direct models for every pair would require $n(n-1)$ models at 104\,MB each. \emph{Sub-problem:} serve every pair without quadratic growth. Addressed by the English-pivot router (Section~\ref{subsec:mod5}).
+\item \textbf{Extensibility:} Adding a language must not require retraining everything or degrade the languages already supported. \emph{Sub-problem:} provide a mechanism for incremental expansion with measured retention. Addressed by the All-in-One KD and Elastic Weight Consolidation implementations (Section~\ref{subsec:mod8}).
 \end{bullets}
 
 \section{Proposed Solution}
@@ -503,14 +503,14 @@ identifiable part of the system.
 instantiated once per translation direction and bound together by a routing
 layer that pivots through English.
 
-\textbf{Stage 1: Teacher distillation.} The ungated IndicTrans2 distilled-200M
+\textbf{Stage 1, teacher distillation:} The ungated IndicTrans2 distilled-200M
 teacher decodes every source sentence in the cleaned corpus, and its one-best
 output replaces the human reference as the training target. This is
 sequence-level knowledge distillation in the sense of Kim and Rush
 \cite{ref:seqkd}. Greedy decoding is used, which is four to five times faster than
 beam search and produces targets of equivalent utility.
 
-\textbf{Stage 2: Student training.} A 52.6-million-parameter Marian
+\textbf{Stage 2, student training:} A 52.6-million-parameter Marian
 encoder--decoder with a 16{,}000-token SentencePiece vocabulary is trained from
 scratch on the distilled corpus with token-level cross-entropy, padding masked
 out of the loss, linear learning-rate warmup and decay, label smoothing of 0.1,
@@ -518,12 +518,12 @@ dropout of 0.2 and gradient-norm clipping at 1.0. Every one of these components
 was added in response to a measured failure, not adopted by default;
 Section~\ref{sec:runlog} gives the history.
 
-\textbf{Stage 3: Quantisation.} The trained student is exported to ONNX,
+\textbf{Stage 3, quantisation:} The trained student is exported to ONNX,
 validated against ONNX Runtime, and quantised progressively to INT8 and then
 INT4, with latency and size benchmarked at each stage. The result is a 103.9\,MB
 artifact, a fourfold compression from 411\,MB.
 
-\textbf{Stage 4: Offline serving.} An inference engine loads the quantised ONNX
+\textbf{Stage 4, offline serving:} An inference engine loads the quantised ONNX
 model and a local SentencePiece tokenizer and decodes greedily. A router
 resolves each request to a directly trained model where one exists, and
 otherwise chains two students through English. One engine serves a REST API, a

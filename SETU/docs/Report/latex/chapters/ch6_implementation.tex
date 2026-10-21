@@ -32,15 +32,15 @@ would have deferred every integration problem to the end of the project.
 
 Three standards were applied throughout.
 
-\textbf{Configuration over code.} No language pair, dimension, threshold or
+\textbf{Configuration over code:} No language pair, dimension, threshold or
 hyperparameter appears as a literal in a module. Everything lives in YAML under
 \texttt{configs/}, and a test verifies the pipeline is pair-agnostic by running
 it on a pair other than the default.
 
-\textbf{One boundary for the teacher.} The teacher's dependencies may be
+\textbf{One boundary for the teacher:} The teacher's dependencies may be
 imported by exactly one file, enforced by a test that scans the source tree.
 
-\textbf{Test-first for anything subtle.} Mechanisms whose failure is silent were
+\textbf{Test-first for anything subtle:} Mechanisms whose failure is silent were
 given tests before implementation. The DPO reference model must stay frozen; the
 EWC penalty must be zero at the snapshot and positive away from it; the
 scorecard must print \textsc{unverified} rather than a pass when evidence is
@@ -361,17 +361,17 @@ size and inference latency. The optimisations applied and their
 measured effect are recorded below.
 
 \begin{bullets}
-\item \textbf{Progressive INT8 then INT4 quantisation.} 410.9\,MB FP32 artifact is over twice the 200\,MB budget. \emph{Measured effect:} 410.9 $\rightarrow$ 104.6 $\rightarrow$ 103.9\,MB, a 4.0$\times$ compression, with negligible quality loss.
-\item \textbf{Greedy decoding at deployment.} Beam search costs roughly 4$\times$ the latency. \emph{Measured effect:} p90 latency falls to 141--350\,ms for most directions; beam search retained for offline evaluation only.
-\item \textbf{Corpus streaming.} The full Samanantar corpus is tens of gigabytes. \emph{Measured effect:} Only the requested slice is ever materialised.
-\item \textbf{Greedy teacher decoding for distillation.} Beam-5 distillation of 500{,}000 sentences does not fit a session. \emph{Measured effect:} 4--5$\times$ faster; target quality unaffected.
-\item \textbf{Per-pair engine cache (\texttt{lru\_cache}).} Reloading a 104\,MB ONNX session per request. \emph{Measured effect:} Each direction loads from disk at most once.
-\item \textbf{Free the teacher before training.} Teacher plus student exceeded 15\,GB of GPU memory. \emph{Measured effect:} Eliminated the CUDA out-of-memory failure in the first GPU run.
-\item \textbf{Batch size 32 for SFT, 16 for DPO.} DPO holds policy and reference and runs four forward passes per step. \emph{Measured effect:} Both fit a 15--16\,GB accelerator.
-\item \textbf{16{,}000-token vocabulary.} A 32{,}000-token vocabulary left most tokens undertrained. \emph{Measured effect:} Eliminated degenerate decoding; smaller embedding matrix.
-\item \textbf{Sequence truncation at \texttt{max\_seq\_len}.} Sentences beyond the positional-embedding limit crashed training and evaluation. \emph{Measured effect:} Fixed the crash; a regression test prevents recurrence.
-\item \textbf{Resumable stage markers.} A dropped SSH session discarded hours of work. \emph{Measured effect:} Interrupted runs resume at the incomplete stage.
-\item \textbf{\texttt{expandable\_segments} disabled.} The CUDA virtual-memory allocator is unsupported on a vGPU slice. \emph{Measured effect:} Removed the immediate crash on first allocation.
+\item \textbf{Progressive INT8 then INT4 quantisation:} 410.9\,MB FP32 artifact is over twice the 200\,MB budget. \emph{Measured effect:} 410.9 $\rightarrow$ 104.6 $\rightarrow$ 103.9\,MB, a 4.0$\times$ compression, with negligible quality loss.
+\item \textbf{Greedy decoding at deployment:} Beam search costs roughly 4$\times$ the latency. \emph{Measured effect:} p90 latency falls to 141--350\,ms for most directions; beam search retained for offline evaluation only.
+\item \textbf{Corpus streaming:} The full Samanantar corpus is tens of gigabytes. \emph{Measured effect:} Only the requested slice is ever materialised.
+\item \textbf{Greedy teacher decoding for distillation:} Beam-5 distillation of 500{,}000 sentences does not fit a session. \emph{Measured effect:} 4--5$\times$ faster; target quality unaffected.
+\item \textbf{Per-pair engine cache (\texttt{lru\_cache}):} Reloading a 104\,MB ONNX session per request. \emph{Measured effect:} Each direction loads from disk at most once.
+\item \textbf{Free the teacher before training:} Teacher plus student exceeded 15\,GB of GPU memory. \emph{Measured effect:} Eliminated the CUDA out-of-memory failure in the first GPU run.
+\item \textbf{Batch size 32 for SFT, 16 for DPO:} DPO holds policy and reference and runs four forward passes per step. \emph{Measured effect:} Both fit a 15--16\,GB accelerator.
+\item \textbf{16{,}000-token vocabulary:} A 32{,}000-token vocabulary left most tokens undertrained. \emph{Measured effect:} Eliminated degenerate decoding; smaller embedding matrix.
+\item \textbf{Sequence truncation at \texttt{max\_seq\_len}:} Sentences beyond the positional-embedding limit crashed training and evaluation. \emph{Measured effect:} Fixed the crash; a regression test prevents recurrence.
+\item \textbf{Resumable stage markers:} A dropped SSH session discarded hours of work. \emph{Measured effect:} Interrupted runs resume at the incomplete stage.
+\item \textbf{\texttt{expandable\_segments} disabled:} The CUDA virtual-memory allocator is unsupported on a vGPU slice. \emph{Measured effect:} Removed the immediate crash on first allocation.
 \end{bullets}
 
 \subsubsection{The Quantisation Trade-off, Measured}

@@ -16,20 +16,20 @@ reach at least 80\,\% of their teacher's BLEU; the remaining eight fall between
 \subsection{Outcome Against Each Objective}
 \label{subsec:outcomes}
 
-\begin{bullets}
-\item \textbf{Ratio $\geq 0.80$.} 14 of 22 directions; mean 0.838, median 0.855, best 0.955. \emph{Verdict: partially met.}
-\item \textbf{Latency $<500$\,ms.} Mean 105--202\,ms; only one p90 outlier. \emph{Verdict: met.}
-\item \textbf{Size $\leq 200$\,MB.} 103.9\,MB for every direction, 48\,\% under budget. \emph{Verdict: met.}
-\item \textbf{Fully offline.} Verified with all sockets disabled, for every direction. \emph{Verdict: met.}
-\item \textbf{Test the distillation hypothesis.} Hypothesis refuted under controlled conditions: \seqkd{} 17.09 BLEU against 11.10 for DPO. \emph{Verdict: met.}
-\item \textbf{Coverage and extensibility.} All 22 languages both ways; 44 models serve 506 directions via English pivot; adding a language is a configuration change. \emph{Verdict: met.}
-\end{bullets}
+\begin{enumerate}[label=\textbf{\arabic*.}, leftmargin=0.55in]
+\item \textbf{Ratio $\geq 0.80$:} 14 of 22 directions; mean 0.838, median 0.855, best 0.955. \emph{Verdict: partially met.}
+\item \textbf{Latency $<500$\,ms:} Mean 105--202\,ms; only one p90 outlier. \emph{Verdict: met.}
+\item \textbf{Size $\leq 200$\,MB:} 103.9\,MB for every direction, 48\,\% under budget. \emph{Verdict: met.}
+\item \textbf{Fully offline:} Verified with all sockets disabled, for every direction. \emph{Verdict: met.}
+\item \textbf{Test the distillation hypothesis:} Hypothesis refuted under controlled conditions: \seqkd{} 17.09 BLEU against 11.10 for DPO. \emph{Verdict: met.}
+\item \textbf{Coverage and extensibility:} All 22 languages both ways; 44 models serve 506 directions via English pivot; adding a language is a configuration change. \emph{Verdict: met.}
+\end{enumerate}
 
 \subsection{Principal Contributions}
 \label{subsec:contributions}
 
 \textbf{An empirical finding, obtained by refuting the project's own
-hypothesis.} For compact on-device Indic machine translation, sequence-level
+hypothesis:} For compact on-device Indic machine translation, sequence-level
 knowledge distillation from teacher output decisively outperforms
 preference-based distillation on human references: 17.09 against 11.10 BLEU at
 matched student size on identical data, an improvement of 54\,\%. The
@@ -43,19 +43,19 @@ chrF exactly as its chrF-based ranking predicts. The preference signal is
 learned faithfully; it is simply not the signal a 52-million-parameter student
 most needs.
 
-\textbf{A working offline system, not a prototype.} Twenty-two quantised models
+\textbf{A working offline system, not a prototype:} Twenty-two quantised models
 are published on a public release, fetchable without a login, and served through
 a REST API, an offline progressive web application, a browser client and a
 command-line tool that all share one routing layer. A fresh machine can be
 running translations in five commands.
 
-\textbf{Quadratic coverage from linear storage.} The English-pivot router turns
+\textbf{Quadratic coverage from linear storage:} The English-pivot router turns
 44 trained models into 506 usable directions at a measured two-hop cost of about
 50 to 65 milliseconds. At 104\,MB per model, training direct models for every
 pair would have required more than 11\,GB of device storage for the same
 coverage.
 
-\textbf{A reproducible engineering record.} The project documents three distinct
+\textbf{A reproducible engineering record:} The project documents three distinct
 training failure modes (empty output from a label-encoding mismatch,
 source-agnostic output from unmasked padding in the loss, and mid-training
 collapse from missing gradient clipping), each with its diagnosis and fix. It
@@ -71,18 +71,18 @@ The project states its limitations plainly, because each of them bounds how
 the results should be read.
 
 \begin{bullets}
-\item \textbf{Eight directions fall short of the quality target,} at ratios
-between 0.755 and 0.787. Their supervised losses cluster at 2.00 to 2.32, the
+\item \textbf{Eight directions fall short of the quality target:} they sit at
+ratios between 0.755 and 0.787. Their supervised losses cluster at 2.00 to 2.32, the
 upper end of the healthy band, which indicates under-convergence rather than
 instability.
 
-\item \textbf{The teacher caps the ceiling.} The ungated distilled-200M teacher
+\item \textbf{The teacher caps the ceiling:} The ungated distilled-200M teacher
 scores only 27 to 29 BLEU on these slices, so a student at 0.806 of that sits
 at roughly four fifths of a model that is itself well below the gated
 one-billion-parameter flagship. Raising the ceiling requires teacher access,
 not more student training.
 
-\item \textbf{The reported ratios are not benchmark numbers.} They come from an
+\item \textbf{The reported ratios are not benchmark numbers:} They come from an
 internal 500-sentence Samanantar development slice, and the teacher's own score
 varies between slices (27.08 to 28.91 for Hindi\arrowto{}English alone). BLEU
 also understates the agglutinative languages: English\arrowto{}Malayalam passes
@@ -90,7 +90,7 @@ at a ratio of 0.863 on 5.2 BLEU. The figures are internally comparable but
 should not be set beside published IndicTrans2 results without FLORES-200
 rescoring under COMET.
 
-\item \textbf{ARM latency is projected, not measured.} All timings were taken
+\item \textbf{ARM latency is projected, not measured:} All timings were taken
 on x86 CPUs. The target is ARM Cortex-A55 class hardware, and although the
 margin is large, roughly 150\,ms against a 500\,ms budget, the figure remains
 unverified on the intended silicon.
@@ -99,33 +99,33 @@ unverified on the intended silicon.
 \section{Applications}
 \label{sec:applications}
 
-\textbf{Rural healthcare.} A doctor or ASHA worker can converse with a patient
+\textbf{Rural healthcare:} A doctor or ASHA worker can converse with a patient
 across a language boundary on a handset with no connectivity. The privacy
 property matters as much as the offline one: a patient's described symptoms
 never leave the device.
 
-\textbf{Defence and border operations.} Patrol units operating beyond cellular
+\textbf{Defence and border operations:} Patrol units operating beyond cellular
 coverage can translate locally. Because there is no transmission, there is no
 signal to intercept and no dependency on infrastructure that may be unavailable
 or compromised.
 
-\textbf{Education.} Multilingual tutoring tools can serve students in their own
+\textbf{Education:} Multilingual tutoring tools can serve students in their own
 language at zero marginal cost per query, which is what makes deployment across
 many schools economically feasible.
 
-\textbf{Government service delivery.} Forms, notices and entitlement documents
+\textbf{Government service delivery:} Forms, notices and entitlement documents
 can be translated at a gram panchayat counter without the counter needing a
 working internet connection or a commercial API subscription.
 
-\textbf{Disaster relief.} Field workers can communicate with affected
+\textbf{Disaster relief:} Field workers can communicate with affected
 communities precisely during the window when networks are down, the moment
 when a cloud translator is guaranteed to be unavailable.
 
-\textbf{Privacy-sensitive documents.} Legal, medical and financial text can be
+\textbf{Privacy-sensitive documents:} Legal, medical and financial text can be
 translated without disclosure to a third party, which is a structural guarantee
 here rather than a contractual one.
 
-\textbf{As a research artifact.} The distillation pipeline is not
+\textbf{As a research artifact:} The distillation pipeline is not
 Indic-specific. Any language family with a strong teacher and a noisy parallel
 corpus can use the same configuration-driven process, and the reported
 comparison gives practitioners a concrete data point on which training signal to

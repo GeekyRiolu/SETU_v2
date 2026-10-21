@@ -84,22 +84,22 @@ repeats them. They are recorded here because they are requirements in practice,
 even though no specification predicted them.
 
 \begin{enumerate}[leftmargin=0.75in]
-  \item \textbf{Transformers versus Torch (CVE-2025-32434).} The VM shipped
+  \item \textbf{Transformers versus Torch (CVE-2025-32434):} The VM shipped
         \texttt{transformers} 4.36; the installation floor raised it to 4.53,
         whose \texttt{torch.load} security guard refuses the teacher's
         non-safetensors \texttt{.bin} weights unless Torch is 2.6 or newer.
         Resolution: upgrade to Torch 2.6.0+cu124, which works on driver 535
         through CUDA minor-version compatibility.
-  \item \textbf{Torchvision ABI mismatch.} After the Torch upgrade, loading the
+  \item \textbf{Torchvision ABI mismatch:} After the Torch upgrade, loading the
         teacher failed with \texttt{operator torchvision::nms does not exist},
         because \texttt{torchvision} 0.20.1 was built against Torch 2.5.1.
         Resolution: \texttt{torchvision} 0.21.0 (cu124).
-  \item \textbf{vGPU allocator crash.} Training died on its first CUDA
+  \item \textbf{vGPU allocator crash:} Training died on its first CUDA
         allocation with \texttt{CUDA driver error: operation not supported}. The
         cause was \texttt{PYTORCH\_CUDA\_ALLOC\_CONF=expandable\_segments:True},
         whose CUDA virtual-memory APIs are unsupported on an A40-16Q vGPU slice.
         Resolution: the flag now defaults to \texttt{False}.
-  \item \textbf{Resume re-clone bug.} The runner's clone check looked for
+  \item \textbf{Resume re-clone bug:} The runner's clone check looked for
         \texttt{.git} inside the \texttt{SETU/} subdirectory, but Git places it
         at the clone root, so every resume attempted to re-clone over an existing
         tree that already held the expensive distilled corpus. Resolution: detect
@@ -506,20 +506,20 @@ This section states what the system must do, independently of how it does it.
 \label{subsec:sysreq}
 
 \begin{itemize}
-  \item \textbf{Python runtime.} Python 3.11 or 3.12; Python 3.14 is incompatible with the
+  \item \textbf{Python runtime:} Python 3.11 or 3.12; Python 3.14 is incompatible with the
         teacher's remote modelling code.
-  \item \textbf{Transformers version.} \texttt{transformers} at least 4.42 and below 4.54, since
+  \item \textbf{Transformers version:} \texttt{transformers} at least 4.42 and below 4.54, since
         4.54 removed the legacy tuple \texttt{past\_key\_values} cache API that
         the rotary teacher relies on.
-  \item \textbf{PyTorch and torchvision.} PyTorch 2.6 or newer for training, paired with a matching
+  \item \textbf{PyTorch and torchvision:} PyTorch 2.6 or newer for training, paired with a matching
         \texttt{torchvision} build.
-  \item \textbf{ONNX Runtime.} ONNX Runtime with the CPU execution provider for
+  \item \textbf{ONNX Runtime:} ONNX Runtime with the CPU execution provider for
         inference; no GPU dependency in the deployed artifact.
-  \item \textbf{Training accelerator.} A CUDA-capable GPU with at least 16\,GB of memory for
+  \item \textbf{Training accelerator:} A CUDA-capable GPU with at least 16\,GB of memory for
         training a direction.
-  \item \textbf{Storage per direction.} At least 104\,MB of free storage per translation
+  \item \textbf{Storage per direction:} At least 104\,MB of free storage per translation
         direction on the target device.
-  \item \textbf{Node.js for the browser build.} Node.js 18 or newer to build the browser client (build
+  \item \textbf{Node.js for the browser build:} Node.js 18 or newer to build the browser client (build
         time only; the exported application is static).
 \end{itemize}
 
@@ -566,26 +566,26 @@ against it.
 \label{subsec:domainreq}
 
 \begin{itemize}
-  \item \textbf{Script-qualified language codes.} Language identification must follow the script-qualified
+  \item \textbf{Script-qualified language codes:} Language identification must follow the script-qualified
         FLORES convention used by IndicTrans2 (\texttt{hin\_Deva},
         \texttt{eng\_Latn}), because several scheduled languages are written in
         more than one script. Kashmiri, Manipuri and Sindhi accordingly carry
         dual-script registry entries.
-  \item \textbf{Joiner preservation.} Script normalisation must preserve zero-width joiners and
+  \item \textbf{Joiner preservation:} Script normalisation must preserve zero-width joiners and
         non-joiners, which are semantically significant in Indic scripts; naive
         control-character stripping corrupts valid text.
-  \item \textbf{Script-fraction cleaning.} Corpus cleaning must enforce a minimum fraction of
+  \item \textbf{Script-fraction cleaning:} Corpus cleaning must enforce a minimum fraction of
         letters in the expected script, so that mined pairs with the wrong
         language on one side are removed.
-  \item \textbf{Held-out human references.} Evaluation must always use real human references held out
+  \item \textbf{Held-out human references:} Evaluation must always use real human references held out
         from training, never teacher output, regardless of what the student was
         trained on. This is what makes the comparison in
         Section~\ref{sec:headtohead} fair.
-  \item \textbf{Reserved tokenizer tags.} Tokenizer language tags must be reserved for all 22
+  \item \textbf{Reserved tokenizer tags:} Tokenizer language tags must be reserved for all 22
         scheduled languages from the first training run, so that token
         identifiers remain stable when languages are added later and previously
         trained models need not be re-tokenised.
-  \item \textbf{BLEU is not comparable across languages.} Agglutinative
+  \item \textbf{BLEU is not comparable across languages:} Agglutinative
         languages such as Malayalam and Tamil score low in absolute BLEU for
         morphological reasons; only the student/teacher ratio is comparable
         across directions.

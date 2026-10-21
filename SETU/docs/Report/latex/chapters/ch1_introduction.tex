@@ -101,34 +101,33 @@ produces the better compact student at matched size; to cover a substantial
 subset of the twenty-two scheduled languages in both directions and extend
 coverage to every Indic-to-Indic pair without training a quadratic number of
 models; and to expose the resulting engine through interfaces that a
-non-specialist can actually use.
+non-specialist can actually use. Stated as measurable targets, the objectives
+are as follows.
 
-Stated as measurable targets, the objectives are:
-
-\begin{enumerate}[label=\textbf{O\arabic*.}, leftmargin=0.75in]
-  \item \textbf{Quality.} Each student shall achieve a BLEU score at least
+\begin{enumerate}[label=\textbf{\arabic*.}, leftmargin=0.55in]
+  \item \textbf{Quality:} Each student shall achieve a BLEU score at least
         80\,\% of its teacher's BLEU on the same held-out evaluation set, i.e.\
         $\text{BLEU}_{\text{student}} / \text{BLEU}_{\text{teacher}} \geq 0.80$.
-  \item \textbf{Latency.} Translation of a single sentence shall complete in
+  \item \textbf{Latency:} Translation of a single sentence shall complete in
         under 500\,ms on ARM-class CPU hardware, with no GPU and no accelerator.
-  \item \textbf{Size.} The deployable quantised artifact for one direction shall
+  \item \textbf{Size:} The deployable quantised artifact for one direction shall
         not exceed 200\,MB.
-  \item \textbf{Offline operation.} Inference shall succeed with all network
+  \item \textbf{Offline operation:} Inference shall succeed with all network
         sockets disabled; no user text shall leave the device.
-  \item \textbf{Empirical finding.} The preference-distillation hypothesis shall
+  \item \textbf{Empirical finding:} The preference-distillation hypothesis shall
         be tested against a sequence-level knowledge distillation baseline at
         matched student size, on identical data, with evaluation on real human
         references, and the outcome reported whichever way it falls.
-  \item \textbf{Coverage and extensibility.} A substantial subset of the
+  \item \textbf{Coverage and extensibility:} A substantial subset of the
         scheduled languages shall be supported bidirectionally, all
         Indic-to-Indic pairs shall be reachable, and adding a new language shall
         be a configuration and data change rather than a code change.
 \end{enumerate}
 
-Objectives O2, O3 and O4 are met by every trained direction without exception.
-Objective O1 is met by 14 of 22 directions; the remaining eight fall between
-0.755 and 0.787, and Chapter~\ref{ch:results} analyses why. Objective O5
-produced a refutation of the project's own founding hypothesis. Objective O6 is
+Objectives 2, 3 and 4 are met by every trained direction without exception.
+Objective 1 is met by 14 of 22 directions; the remaining eight fall between
+0.755 and 0.787, and Chapter~\ref{ch:results} analyses why. Objective 5
+produced a refutation of the project's own founding hypothesis. Objective 6 is
 met in full: all twenty-two scheduled languages are supported bidirectionally.
 
 \section{Purpose, Scope and Applicability}
@@ -165,7 +164,7 @@ conditions and reports the outcome.
 \subsection{Scope}
 \label{subsec:scope}
 
-\textbf{Methodology.} The system distils the ungated rotary IndicTrans2
+\textbf{Methodology:} The system distils the ungated rotary IndicTrans2
 distilled-200M checkpoints into 52.6-million-parameter Marian sequence-to-sequence
 students, one per direction, using sequence-level knowledge distillation on
 teacher one-best output. Students are quantised post-training to INT8 and INT4
@@ -173,21 +172,21 @@ ONNX and executed by ONNX Runtime. Evaluation uses sacreBLEU (BLEU and chrF)
 against real human references held out from the training corpus, with the
 student/teacher BLEU ratio as the headline metric.
 
-\textbf{Languages delivered.} All twenty-two scheduled languages (Assamese,
+\textbf{Languages delivered:} All twenty-two scheduled languages (Assamese,
 Bengali, Bodo, Dogri, Gujarati, Hindi, Kannada, Kashmiri, Konkani, Maithili,
 Malayalam, Manipuri, Marathi, Nepali, Odia, Punjabi, Sanskrit, Santali, Sindhi,
 Tamil, Telugu and Urdu), each paired bidirectionally with English, giving 44
 trained directions. Every Indic-to-Indic pair among them is served by chaining
 two students through English.
 
-\textbf{Assumptions.} The work assumes that the ungated distilled-200M teacher is
+\textbf{Assumptions:} The work assumes that the ungated distilled-200M teacher is
 an acceptable quality ceiling; that Samanantar, though web-mined and noisy, is
 representative enough for distillation; that the student architecture and its
 16{,}000-token vocabulary are sized correctly for the data volume available; and
 that x86 CPU latency measurements are a reasonable proxy for ARM behaviour.
 Each assumption is examined in Chapter~\ref{ch:results}.
 
-\textbf{Limitations, stated up front.} The project is text-to-text only; speech
+\textbf{Limitations, stated up front:} The project is text-to-text only; speech
 input and output are out of scope. The quality ratio is bounded by the ungated 200M teacher, which is itself weaker than
 the gated one-billion-parameter flagship. Reported ratios are computed on an
 internal Samanantar development slice rather than on FLORES-200, so they are
@@ -200,7 +199,7 @@ kernel.
 \subsection{Applicability}
 \label{subsec:applicability}
 
-\textbf{Direct applications.} In rural healthcare, a doctor or ASHA worker can
+\textbf{Direct applications:} In rural healthcare, a doctor or ASHA worker can
 converse with a patient across a language boundary on a handset with no
 connectivity. In defence and border operations, patrol units operating beyond
 cellular coverage can translate without transmitting anything. In education,
@@ -210,7 +209,7 @@ entitlement documents can be translated at a gram panchayat counter. In disaster
 relief, field workers can communicate with affected communities during the exact
 window in which the network is down.
 
-\textbf{Indirect contributions.} The distillation pipeline is not
+\textbf{Indirect contributions:} The distillation pipeline is not
 Indic-specific; the same configuration-driven process applies to any
 language family with a strong teacher and a weak-reference parallel corpus. The
 controlled comparison between preference distillation and sequence-level

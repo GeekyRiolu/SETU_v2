@@ -58,21 +58,21 @@ and two invalid inputs.
 \subsubsection{Translation Engine}
 
 \begin{bullets}
-\item \textbf{Direct translation.} \emph{Input:} \texttt{src=hi, tgt=en},\newline \dev{भारत एक विशाल देश है।}. \emph{Expected:} Fluent English translation. \emph{Actual:} \textit{``India is a vast country.''}. \emph{Verdict:} pass.
-\item \textbf{Identical source and target.} \emph{Input:} \texttt{src=hi, tgt=hi} (identical languages). \emph{Expected:} Rejected with HTTP 400 / \texttt{ValueError}. \emph{Actual:} HTTP 400: \textit{source and target are both `hi'}. \emph{Verdict:} pass.
-\item \textbf{Unknown language code.} \emph{Input:} \texttt{src=xx, tgt=en} (unknown language code). \emph{Expected:} Rejected: unknown language code. \emph{Actual:} \texttt{ValueError} raised; request refused. \emph{Verdict:} pass.
-\item \textbf{Empty input.} \emph{Input:} Empty string input. \emph{Expected:} Empty output, no exception. \emph{Actual:} \texttt{""} returned; no exception. \emph{Verdict:} pass.
-\item \textbf{Over-length input.} \emph{Input:} Sentence exceeding \texttt{max\_seq\_len}. \emph{Expected:} Truncated and translated, not crashed. \emph{Actual:} Truncated to the limit; translation returned. \emph{Verdict:} pass.
+\item \textbf{Direct translation:} \emph{Input:} \texttt{src=hi, tgt=en},\newline \dev{भारत एक विशाल देश है।}. \emph{Expected:} Fluent English translation. \emph{Actual:} \textit{``India is a vast country.''}. \emph{Verdict:} pass.
+\item \textbf{Identical source and target:} \emph{Input:} \texttt{src=hi, tgt=hi} (identical languages). \emph{Expected:} Rejected with HTTP 400 / \texttt{ValueError}. \emph{Actual:} HTTP 400: \textit{source and target are both `hi'}. \emph{Verdict:} pass.
+\item \textbf{Unknown language code:} \emph{Input:} \texttt{src=xx, tgt=en} (unknown language code). \emph{Expected:} Rejected: unknown language code. \emph{Actual:} \texttt{ValueError} raised; request refused. \emph{Verdict:} pass.
+\item \textbf{Empty input:} \emph{Input:} Empty string input. \emph{Expected:} Empty output, no exception. \emph{Actual:} \texttt{""} returned; no exception. \emph{Verdict:} pass.
+\item \textbf{Over-length input:} \emph{Input:} Sentence exceeding \texttt{max\_seq\_len}. \emph{Expected:} Truncated and translated, not crashed. \emph{Actual:} Truncated to the limit; translation returned. \emph{Verdict:} pass.
 \end{bullets}
 
 \subsubsection{Corpus Pipeline}
 
 \begin{bullets}
-\item \textbf{Well-formed pair.} \emph{Input:} Well-formed Hindi--English pair. \emph{Expected:} Retained. \emph{Actual:} Retained. \emph{Verdict:} pass.
-\item \textbf{Length-ratio filter.} \emph{Input:} Pair with length ratio 5:1. \emph{Expected:} Rejected (ratio $>3.0$). \emph{Actual:} Rejected, counted as \texttt{length\_ratio}. \emph{Verdict:} pass.
-\item \textbf{Script-fraction filter.} \emph{Input:} Devanagari source paired with a Tamil ``English'' side. \emph{Expected:} Rejected (script fraction below 0.5). \emph{Actual:} Rejected, counted as \texttt{wrong\_script}. \emph{Verdict:} pass.
-\item \textbf{Joiner preservation.} \emph{Input:} Text containing ZWJ and ZWNJ. \emph{Expected:} Both preserved through normalisation. \emph{Actual:} Both preserved; NFC applied. \emph{Verdict:} pass.
-\item \textbf{Duplicate removal.} \emph{Input:} Duplicate of an earlier pair. \emph{Expected:} Removed. \emph{Actual:} Removed, counted as \texttt{duplicate}. \emph{Verdict:} pass.
+\item \textbf{Well-formed pair:} \emph{Input:} Well-formed Hindi--English pair. \emph{Expected:} Retained. \emph{Actual:} Retained. \emph{Verdict:} pass.
+\item \textbf{Length-ratio filter:} \emph{Input:} Pair with length ratio 5:1. \emph{Expected:} Rejected (ratio $>3.0$). \emph{Actual:} Rejected, counted as \texttt{length\_ratio}. \emph{Verdict:} pass.
+\item \textbf{Script-fraction filter:} \emph{Input:} Devanagari source paired with a Tamil ``English'' side. \emph{Expected:} Rejected (script fraction below 0.5). \emph{Actual:} Rejected, counted as \texttt{wrong\_script}. \emph{Verdict:} pass.
+\item \textbf{Joiner preservation:} \emph{Input:} Text containing ZWJ and ZWNJ. \emph{Expected:} Both preserved through normalisation. \emph{Actual:} Both preserved; NFC applied. \emph{Verdict:} pass.
+\item \textbf{Duplicate removal:} \emph{Input:} Duplicate of an earlier pair. \emph{Expected:} Removed. \emph{Actual:} Removed, counted as \texttt{duplicate}. \emph{Verdict:} pass.
 \end{bullets}
 
 \subsubsection{Training Mechanics}
@@ -81,11 +81,11 @@ These are the property tests. Each asserts something that cannot be verified by
 reading the output of a training run.
 
 \begin{bullets}
-\item \textbf{Frozen DPO reference.} \emph{Input:} DPO reference model is frozen. \emph{Expected:} No parameter of the reference receives a gradient. \emph{Actual:} All reference gradients \texttt{None}. \emph{Verdict:} pass.
-\item \textbf{Loss convergence.} \emph{Input:} Training loss decreases over a short run. \emph{Expected:} Final loss below initial. \emph{Actual:} Loss decreased monotonically. \emph{Verdict:} pass.
-\item \textbf{Padding masked from the loss.} \emph{Input:} Padding is excluded from the loss. \emph{Expected:} Label tensor contains $-100$ at every pad position. \emph{Actual:} Verified for every batch. \emph{Verdict:} pass.
-\item \textbf{EWC penalty at the snapshot.} \emph{Input:} EWC penalty is zero at the snapshot. \emph{Expected:} Penalty $= 0$ at $\theta^{*}$, $>0$ away from it. \emph{Actual:} $0.0$ at snapshot; grows with distance. \emph{Verdict:} pass.
-\item \textbf{All-in-One KD coverage.} \emph{Input:} AIO-KD samples every direction. \emph{Expected:} Coverage report lists all configured directions. \emph{Actual:} All directions sampled. \emph{Verdict:} pass.
+\item \textbf{Frozen DPO reference:} \emph{Input:} DPO reference model is frozen. \emph{Expected:} No parameter of the reference receives a gradient. \emph{Actual:} All reference gradients \texttt{None}. \emph{Verdict:} pass.
+\item \textbf{Loss convergence:} \emph{Input:} Training loss decreases over a short run. \emph{Expected:} Final loss below initial. \emph{Actual:} Loss decreased monotonically. \emph{Verdict:} pass.
+\item \textbf{Padding masked from the loss:} \emph{Input:} Padding is excluded from the loss. \emph{Expected:} Label tensor contains $-100$ at every pad position. \emph{Actual:} Verified for every batch. \emph{Verdict:} pass.
+\item \textbf{EWC penalty at the snapshot:} \emph{Input:} EWC penalty is zero at the snapshot. \emph{Expected:} Penalty $= 0$ at $\theta^{*}$, $>0$ away from it. \emph{Actual:} $0.0$ at snapshot; grows with distance. \emph{Verdict:} pass.
+\item \textbf{All-in-One KD coverage:} \emph{Input:} AIO-KD samples every direction. \emph{Expected:} Coverage report lists all configured directions. \emph{Actual:} All directions sampled. \emph{Verdict:} pass.
 \end{bullets}
 
 \subsection{Integration Testing}
@@ -98,29 +98,29 @@ of one model becomes the input of another.
 \subsubsection{Inference Engine and Pivot Router}
 
 \begin{bullets}
-\item \textbf{Hindi to Bengali via English.} \emph{Input:} \texttt{src=hi, tgt=bn},\newline \dev{भारत एक विशाल देश है।}\newline (no direct model). \emph{Expected:} Route via English; return Bengali. \emph{Actual:} \ben{ভারত একটি বিশাল দেশ।}\newline (\texttt{pivot="en"}, $\approx$57\,ms). \emph{Verdict:} pass.
-\item \textbf{Tamil to Telugu via English.} \emph{Input:} \texttt{src=ta, tgt=te},\newline \tam{இந்தியா ஒரு பெரிய நாடு.}. \emph{Expected:} Route via English; return Telugu. \emph{Actual:} \tel{భారతదేశం ఒక పెద్ద దేశం.}\newline (\texttt{pivot="en"}). \emph{Verdict:} pass.
-\item \textbf{Assamese to Bengali via English.} \emph{Input:} \texttt{src=as, tgt=bn},\newline \ben{ভাৰত এখন ডাঙৰ দেশ।}. \emph{Expected:} Route via English; return Bengali. \emph{Actual:} \ben{ভারত একটি বড় দেশ।}\newline (\texttt{pivot="en"}). \emph{Verdict:} pass.
-\item \textbf{Marathi to Kannada via English.} \emph{Input:} \texttt{src=mr, tgt=kn}. \emph{Expected:} Route via English; return Kannada. \emph{Actual:} Correct Kannada returned, $\approx$50--65\,ms. \emph{Verdict:} pass.
+\item \textbf{Hindi to Bengali via English:} \emph{Input:} \texttt{src=hi, tgt=bn},\newline \dev{भारत एक विशाल देश है।}\newline (no direct model). \emph{Expected:} Route via English; return Bengali. \emph{Actual:} \ben{ভারত একটি বিশাল দেশ।}\newline (\texttt{pivot="en"}, $\approx$57\,ms). \emph{Verdict:} pass.
+\item \textbf{Tamil to Telugu via English:} \emph{Input:} \texttt{src=ta, tgt=te},\newline \tam{இந்தியா ஒரு பெரிய நாடு.}. \emph{Expected:} Route via English; return Telugu. \emph{Actual:} \tel{భారతదేశం ఒక పెద్ద దేశం.}\newline (\texttt{pivot="en"}). \emph{Verdict:} pass.
+\item \textbf{Assamese to Bengali via English:} \emph{Input:} \texttt{src=as, tgt=bn},\newline \ben{ভাৰত এখন ডাঙৰ দেশ।}. \emph{Expected:} Route via English; return Bengali. \emph{Actual:} \ben{ভারত একটি বড় দেশ।}\newline (\texttt{pivot="en"}). \emph{Verdict:} pass.
+\item \textbf{Marathi to Kannada via English:} \emph{Input:} \texttt{src=mr, tgt=kn}. \emph{Expected:} Route via English; return Kannada. \emph{Actual:} Correct Kannada returned, $\approx$50--65\,ms. \emph{Verdict:} pass.
 \end{bullets}
 
 \subsubsection{REST API and Inference Engine}
 
 \begin{bullets}
-\item \textbf{Model discovery endpoint.} \emph{Input:} \texttt{GET /models}. \emph{Expected:} All installed pairs with variant and size. \emph{Actual:} \texttt{count: 22}, each \texttt{int4}, 103.9\,MB. \emph{Verdict:} pass.
-\item \textbf{Language registry endpoint.} \emph{Input:} \texttt{GET /languages}. \emph{Expected:} 22 scheduled languages plus English. \emph{Actual:} 23 entries with ISO, FLORES, script, endonym. \emph{Verdict:} pass.
-\item \textbf{Translation endpoint on a real model.} \emph{Input:} \texttt{POST /translate} with \texttt{ta}\arrowto{}\texttt{en}. \emph{Expected:} Real translation, \texttt{stub:false}. \emph{Actual:} Correct English, $\approx$40--60\,ms, \texttt{stub:false}. \emph{Verdict:} pass.
-\item \textbf{Translation endpoint error handling.} \emph{Input:} \texttt{POST /translate} with an unknown code. \emph{Expected:} HTTP 400 with a descriptive message. \emph{Actual:} HTTP 400 returned. \emph{Verdict:} pass.
-\item \textbf{Browser CORS preflight.} \emph{Input:} CORS preflight from the browser client. \emph{Expected:} Preflight accepted. \emph{Actual:} \texttt{OPTIONS} returns the expected headers. \emph{Verdict:} pass.
+\item \textbf{Model discovery endpoint:} \emph{Input:} \texttt{GET /models}. \emph{Expected:} All installed pairs with variant and size. \emph{Actual:} \texttt{count: 22}, each \texttt{int4}, 103.9\,MB. \emph{Verdict:} pass.
+\item \textbf{Language registry endpoint:} \emph{Input:} \texttt{GET /languages}. \emph{Expected:} 22 scheduled languages plus English. \emph{Actual:} 23 entries with ISO, FLORES, script, endonym. \emph{Verdict:} pass.
+\item \textbf{Translation endpoint on a real model:} \emph{Input:} \texttt{POST /translate} with \texttt{ta}\arrowto{}\texttt{en}. \emph{Expected:} Real translation, \texttt{stub:false}. \emph{Actual:} Correct English, $\approx$40--60\,ms, \texttt{stub:false}. \emph{Verdict:} pass.
+\item \textbf{Translation endpoint error handling:} \emph{Input:} \texttt{POST /translate} with an unknown code. \emph{Expected:} HTTP 400 with a descriptive message. \emph{Actual:} HTTP 400 returned. \emph{Verdict:} pass.
+\item \textbf{Browser CORS preflight:} \emph{Input:} CORS preflight from the browser client. \emph{Expected:} Preflight accepted. \emph{Actual:} \texttt{OPTIONS} returns the expected headers. \emph{Verdict:} pass.
 \end{bullets}
 
 \subsubsection{Full Pipeline}
 
 \begin{bullets}
-\item \textbf{Corpus to evaluation pipeline.} \emph{Input:} Corpus \arrowto{} distil \arrowto{} train \arrowto{} evaluate on a small slice. \emph{Expected:} Runs end to end; a training report is written. \emph{Actual:} Report written with BLEU, chrF and ratio. \emph{Verdict:} pass.
-\item \textbf{Train, quantise and translate offline.} \emph{Input:} Train \arrowto{} export \arrowto{} quantise \arrowto{} translate offline. \emph{Expected:} Quantised model translates with sockets disabled. \emph{Actual:} Translation returned; no network call. \emph{Verdict:} pass.
-\item \textbf{Pair-agnostic pipeline.} \emph{Input:} Same pipeline on a non-default language pair. \emph{Expected:} Pair-agnostic: succeeds without code change. \emph{Actual:} Tamil\arrowto{}English and reverse both succeeded. \emph{Verdict:} pass.
-\item \textbf{CLI and REST parity.} \emph{Input:} CLI and REST for the same request. \emph{Expected:} Identical output from both interfaces. \emph{Actual:} Identical, since both call the same router. \emph{Verdict:} pass.
+\item \textbf{Corpus to evaluation pipeline:} \emph{Input:} Corpus \arrowto{} distil \arrowto{} train \arrowto{} evaluate on a small slice. \emph{Expected:} Runs end to end; a training report is written. \emph{Actual:} Report written with BLEU, chrF and ratio. \emph{Verdict:} pass.
+\item \textbf{Train, quantise and translate offline:} \emph{Input:} Train \arrowto{} export \arrowto{} quantise \arrowto{} translate offline. \emph{Expected:} Quantised model translates with sockets disabled. \emph{Actual:} Translation returned; no network call. \emph{Verdict:} pass.
+\item \textbf{Pair-agnostic pipeline:} \emph{Input:} Same pipeline on a non-default language pair. \emph{Expected:} Pair-agnostic: succeeds without code change. \emph{Actual:} Tamil\arrowto{}English and reverse both succeeded. \emph{Verdict:} pass.
+\item \textbf{CLI and REST parity:} \emph{Input:} CLI and REST for the same request. \emph{Expected:} Identical output from both interfaces. \emph{Actual:} Identical, since both call the same router. \emph{Verdict:} pass.
 \end{bullets}
 
 The CLI and REST parity test deserves a note, because it was added in response
@@ -135,12 +135,12 @@ was wrong. The fix, routing both interfaces through
 \label{subsec:systemtest}
 
 \begin{bullets}
-\item \textbf{Artifact size.} \emph{Target:} $\leq 200$\,MB per direction. \emph{Measured:} 103.9\,MB for all 22 directions. \emph{Verdict:} pass.
-\item \textbf{Inference latency.} \emph{Target:} $<500$\,ms per sentence. \emph{Measured:} Mean 105--202\,ms; p90 141--541\,ms. \emph{Verdict:} pass (one p90 outlier).
-\item \textbf{Offline operation.} \emph{Target:} No network call at inference. \emph{Measured:} All sockets disabled; translation succeeded. \emph{Verdict:} pass.
-\item \textbf{Quality ratio.} \emph{Target:} $\geq 0.80$ of teacher BLEU. \emph{Measured:} 14 of 22 directions; mean 0.838. \emph{Verdict:} Partial.
-\item \textbf{Model health across all directions.} \emph{Target:} Every model produces non-degenerate output. \emph{Measured:} 22 of 22 healthy; no empty, passthrough or collapsed output. \emph{Verdict:} pass.
-\item \textbf{Coverage.} \emph{Target:} All pairs among supported languages reachable. \emph{Measured:} 22 direct plus English-pivoted routes. \emph{Verdict:} pass.
+\item \textbf{Artifact size:} \emph{Target:} $\leq 200$\,MB per direction. \emph{Measured:} 103.9\,MB for all 22 directions. \emph{Verdict:} pass.
+\item \textbf{Inference latency:} \emph{Target:} $<500$\,ms per sentence. \emph{Measured:} Mean 105--202\,ms; p90 141--541\,ms. \emph{Verdict:} pass (one p90 outlier).
+\item \textbf{Offline operation:} \emph{Target:} No network call at inference. \emph{Measured:} All sockets disabled; translation succeeded. \emph{Verdict:} pass.
+\item \textbf{Quality ratio:} \emph{Target:} $\geq 0.80$ of teacher BLEU. \emph{Measured:} 14 of 22 directions; mean 0.838. \emph{Verdict:} Partial.
+\item \textbf{Model health across all directions:} \emph{Target:} Every model produces non-degenerate output. \emph{Measured:} 22 of 22 healthy; no empty, passthrough or collapsed output. \emph{Verdict:} pass.
+\item \textbf{Coverage:} \emph{Target:} All pairs among supported languages reachable. \emph{Measured:} 22 direct plus English-pivoted routes. \emph{Verdict:} pass.
 \end{bullets}
 
 The model-health check was implemented as a dedicated script, \texttt{scripts/translation\_suite.py},
@@ -159,16 +159,16 @@ each. They are reported because the class of defect is instructive: most
 were silent, producing plausible output rather than an error.
 
 \begin{bullets}
-\item \textbf{Padding counted in the training loss.} \emph{Symptom:} Implausibly low loss (0.274); decoder ignored the source entirely. \emph{Caught by:} Loss-plausibility check plus the padding-mask unit test.
-\item \textbf{Leading BOS added to labels.} \emph{Symptom:} Empty translations; BLEU and chrF exactly 0.0. \emph{Caught by:} The corpus-to-evaluation pipeline test.
-\item \textbf{Learning-rate warmup silently ignored.} \emph{Symptom:} Severe underfitting on a from-scratch model. \emph{Caught by:} Training-loss inspection.
-\item \textbf{Missing gradient clipping.} \emph{Symptom:} Collapse to a single repeated phrase at larger data volumes. \emph{Caught by:} Comparison of runs at 120k and 200k sentences.
-\item \textbf{Positional-embedding overflow.} \emph{Symptom:} Crash on sentences longer than the limit. \emph{Caught by:} The over-length input unit test, added as a regression test.
-\item \textbf{CLI ignored the requested language pair.} \emph{Symptom:} Wrong model used; output looked valid. \emph{Caught by:} The CLI and REST parity test.
-\item \textbf{Teacher post-processing deadlock.} \emph{Symptom:} Generation hung indefinitely when decoding $n>1$ candidates. \emph{Caught by:} Teacher smoke test.
-\item \textbf{Package shadowing (\texttt{setu.py} vs the \texttt{setu} package).} \emph{Symptom:} \texttt{python -m setu.\dots} failed on a clean machine. \emph{Caught by:} Module-import test.
-\item \textbf{Missing checkpoint treated as a remote identifier.} \emph{Symptom:} Confusing download error instead of a clear failure. \emph{Caught by:} Quantisation test with an absent checkpoint.
-\item \textbf{Stub and real engines leaked state between tests.} \emph{Symptom:} Order-dependent test failures. \emph{Caught by:} Autouse isolation fixture.
+\item \textbf{Padding counted in the training loss:} \emph{Symptom:} Implausibly low loss (0.274); decoder ignored the source entirely. \emph{Caught by:} Loss-plausibility check plus the padding-mask unit test.
+\item \textbf{Leading BOS added to labels:} \emph{Symptom:} Empty translations; BLEU and chrF exactly 0.0. \emph{Caught by:} The corpus-to-evaluation pipeline test.
+\item \textbf{Learning-rate warmup silently ignored:} \emph{Symptom:} Severe underfitting on a from-scratch model. \emph{Caught by:} Training-loss inspection.
+\item \textbf{Missing gradient clipping:} \emph{Symptom:} Collapse to a single repeated phrase at larger data volumes. \emph{Caught by:} Comparison of runs at 120k and 200k sentences.
+\item \textbf{Positional-embedding overflow:} \emph{Symptom:} Crash on sentences longer than the limit. \emph{Caught by:} The over-length input unit test, added as a regression test.
+\item \textbf{CLI ignored the requested language pair:} \emph{Symptom:} Wrong model used; output looked valid. \emph{Caught by:} The CLI and REST parity test.
+\item \textbf{Teacher post-processing deadlock:} \emph{Symptom:} Generation hung indefinitely when decoding $n>1$ candidates. \emph{Caught by:} Teacher smoke test.
+\item \textbf{Package shadowing (\texttt{setu.py} vs the \texttt{setu} package):} \emph{Symptom:} \texttt{python -m setu.\dots} failed on a clean machine. \emph{Caught by:} Module-import test.
+\item \textbf{Missing checkpoint treated as a remote identifier:} \emph{Symptom:} Confusing download error instead of a clear failure. \emph{Caught by:} Quantisation test with an absent checkpoint.
+\item \textbf{Stub and real engines leaked state between tests:} \emph{Symptom:} Order-dependent test failures. \emph{Caught by:} Autouse isolation fixture.
 \end{bullets}
 
 \needspace{10\baselineskip}

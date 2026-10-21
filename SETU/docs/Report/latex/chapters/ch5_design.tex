@@ -18,6 +18,9 @@ quantised ONNX model and a SentencePiece tokenizer. Everything else in the
 design follows from keeping that boundary clean, because it is what makes the
 deployed artifact small enough and offline enough to satisfy the requirements.
 
+%% heading, text and figure are kept together so the diagram sits under
+%% the section that introduces it
+\needspace{30\baselineskip}
 \section{System Architecture}
 \label{sec:architecture}
 
@@ -30,6 +33,7 @@ then fans out to the four client interfaces.
 % rows, with the serving fan-out below, keeps every label at full size.
 \begin{figure}[H]
 \centering
+\scalebox{0.76}{%
 \begin{tikzpicture}[
    node distance = 8mm and 9mm,
    box/.style  = {rectangle, rounded corners=2pt, draw=black!70, fill=blue!5,
@@ -84,7 +88,7 @@ then fans out to the four client interfaces.
   % round the right-hand edge so the arrow does not cut through the CLI box
   \draw[a] (router.east) -- ++(8mm,0) |- (edgedev.east)
         node[t, align=center, pos=0.42, right, xshift=-1mm]{direct pair\\or via English};
-\end{tikzpicture}
+\end{tikzpicture}}
 \caption{System architecture: \seqkd{} distillation and offline deployment pipeline}
 \label{fig:sysarch}
 \end{figure}
@@ -118,33 +122,33 @@ code exactly.
 Five principles were applied consistently and explain most of the specific
 choices that follow.
 
-\textbf{One direction, one model.} Each translation direction gets its own
+\textbf{One direction, one model:} Each translation direction gets its own
 student. This avoids the cross-lingual interference that multilingual
 distillation frameworks report \cite{ref:aiokd}, permits an independent quality
 gate per direction, and means a collapsed direction can be retrained without
 disturbing any other. The cost is storage, 104\,MB per direction, which the
 English pivot then bounds at $2n$ rather than $n^2$.
 
-\textbf{The teacher lives behind a wall.} \texttt{IndicTrans2Teacher} is the only
+\textbf{The teacher lives behind a wall:} \texttt{IndicTrans2Teacher} is the only
 module permitted to import \texttt{transformers}, \texttt{torch} or
 \texttt{IndicTransToolkit}. A unit test walks the source tree and fails the
 build on any violation. This is what guarantees that the inference path carries
 no training dependencies.
 
-\textbf{Configuration, not code.} The language pair, model dimensions,
+\textbf{Configuration, not code:} The language pair, model dimensions,
 hyperparameters, corpus sources and cleaning thresholds all live in YAML.
 Adding a language is a configuration change and a data fetch. A dedicated test
 verifies that the pipeline is pair-agnostic by running it on a different pair
 end to end.
 
-\textbf{Fail loudly, never silently.} When no model exists for a requested pair
+\textbf{Fail loudly, never silently:} When no model exists for a requested pair
 the engine returns the input unchanged but sets \texttt{stub: true}, so a caller
 can never mistake a passthrough for a translation. When the scorecard has no
 evidence for a target it prints \textsc{unverified} rather than a pass. This
 principle is why the 0.796 ratio in an early report was printed as a failure
 rather than rounded up.
 
-\textbf{Resumability by construction.} Every pipeline stage writes a completion
+\textbf{Resumability by construction:} Every pipeline stage writes a completion
 marker. A multi-hour run interrupted by a disconnection resumes at the stage it
 reached, which matters because teacher distillation over 500{,}000 sentences is
 too expensive to repeat.
@@ -206,20 +210,20 @@ The trainer implements token-level cross-entropy with five components, each
 added in response to an observed failure rather than adopted by convention:
 
 \begin{itemize}
-  \item \textbf{PAD masking.} Label positions corresponding to padding are set
+  \item \textbf{PAD masking:} Label positions corresponding to padding are set
         to $-100$ so that the loss ignores them. Before this fix the model
         received free credit for predicting padding, which produced a
         fake-low loss of 0.274 and a decoder that ignored the source entirely.
-  \item \textbf{Linear warmup and decay.} The warmup length is capped at
+  \item \textbf{Linear warmup and decay:} The warmup length is capped at
         10\,\% of the run. A from-scratch Transformer trained at a constant
         learning rate underfits badly; the configuration option existed but was
         being silently ignored.
-  \item \textbf{Label smoothing (0.1) and dropout (0.2).} Standard regularisers
+  \item \textbf{Label smoothing (0.1) and dropout (0.2):} Standard regularisers
         against overconfidence and memorisation.
-  \item \textbf{Gradient-norm clipping at 1.0.} The single most important
+  \item \textbf{Gradient-norm clipping at 1.0:} The single most important
         stabiliser. Without it, a 200{,}000-sentence run collapsed to a constant
         output while the identical code at 120{,}000 sentences had succeeded: more steps simply meant more opportunities to hit a gradient spike.
-  \item \textbf{Generation safeguards.} Decoding suppresses the PAD, UNK and BOS
+  \item \textbf{Generation safeguards:} Decoding suppresses the PAD, UNK and BOS
         tokens and forbids repeated 3-grams, so output can never be empty and
         cannot degenerate into a repeated phrase.
 \end{itemize}
@@ -394,15 +398,15 @@ inference engine}
 The interfaces themselves are specified below.
 
 \begin{bullets}
-\item \textbf{REST: translate.} Primary translation endpoint. \texttt{POST /translate} with body \texttt{\{source\_lang, target\_lang, text\}}; returns \texttt{\{translated\_text, latency\_ms, pivot, stub\}}. Example request: \texttt{\{"source\_lang":"hi", "target\_lang":"en", "text":"..."\}}.
-\item \textbf{REST: languages.} Language registry. \texttt{GET /languages} $\rightarrow$ 22 scheduled languages plus English, each with ISO code, FLORES code, script and endonym.
-\item \textbf{REST: models.} Model discovery. \texttt{GET /models} $\rightarrow$ \texttt{\{"count": 22, "models": [\{pair, variant, size\_mb\}, ...]\}}.
-\item \textbf{REST: health.} Readiness probe. \texttt{GET /health} $\rightarrow$ \texttt{\{"status":"ok", "stub": false\}}.
-\item \textbf{CLI.} Command-line translation. \texttt{python setu\_cli.py -{}-src hi -{}-tgt en -{}-text "..."}; also \texttt{-{}-file} and standard input, with \texttt{-{}-json} output.
-\item \textbf{Web client.} Browser translator console. Language pickers grouped into available and not-yet-trained, swap control, live latency, on-device badge, curated Indic-to-Indic examples.
-\item \textbf{Offline PWA.} Installable offline client. Service-worker shell caching; functions with no network after first load.
-\item \textbf{Mobile SDK.} Android and iOS wrapper. \texttt{translate(text, srcLang, tgtLang)} over the same engine.
-\item \textbf{Training CLI.} Pipeline entry points. \texttt{setu-data}, \texttt{setu-distill}, \texttt{setu-quantize}, \texttt{setu-eval}, \texttt{setu-report}, and \texttt{scripts/train\_full.py}.
+\item \textbf{REST translate endpoint:} Primary translation endpoint. \texttt{POST /translate} with body \texttt{\{source\_lang, target\_lang, text\}}; returns \texttt{\{translated\_text, latency\_ms, pivot, stub\}}. Example request: \texttt{\{"source\_lang":"hi", "target\_lang":"en", "text":"..."\}}.
+\item \textbf{REST languages endpoint:} Language registry. \texttt{GET /languages} $\rightarrow$ 22 scheduled languages plus English, each with ISO code, FLORES code, script and endonym.
+\item \textbf{REST models endpoint:} Model discovery. \texttt{GET /models} $\rightarrow$ \texttt{\{"count": 22, "models": [\{pair, variant, size\_mb\}, ...]\}}.
+\item \textbf{REST health endpoint:} Readiness probe. \texttt{GET /health} $\rightarrow$ \texttt{\{"status":"ok", "stub": false\}}.
+\item \textbf{CLI:} Command-line translation. \texttt{python setu\_cli.py -{}-src hi -{}-tgt en -{}-text "..."}; also \texttt{-{}-file} and standard input, with \texttt{-{}-json} output.
+\item \textbf{Web client:} Browser translator console. Language pickers grouped into available and not-yet-trained, swap control, live latency, on-device badge, curated Indic-to-Indic examples.
+\item \textbf{Offline PWA:} Installable offline client. Service-worker shell caching; functions with no network after first load.
+\item \textbf{Mobile SDK:} Android and iOS wrapper. \texttt{translate(text, srcLang, tgtLang)} over the same engine.
+\item \textbf{Training CLI:} Pipeline entry points. \texttt{setu-data}, \texttt{setu-distill}, \texttt{setu-quantize}, \texttt{setu-eval}, \texttt{setu-report}, and \texttt{scripts/train\_full.py}.
 \end{bullets}
 
 \subsection{User Interface Design}

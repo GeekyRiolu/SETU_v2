@@ -34,10 +34,10 @@ critically, evaluation on \emph{real human references} held out from
 training, which makes the comparison fair no matter what each system trained on.
 
 \begin{bullets}
-\item \textbf{Naive baseline (S0).} Supervised targets: human references; DPO: no. Naive baseline: train on the data as given.
-\item \textbf{Sequence-level distillation (S1).} Supervised targets: teacher one-best; DPO: no. The standard strong baseline \cite{ref:seqkd}.
-\item \textbf{Preference distillation (S2).} Supervised targets: human references; DPO: yes. The project's original proposal.
-\item \textbf{Distillation then DPO (S3).} Supervised targets: teacher one-best; DPO: yes. Does preference learning help on top of strong distillation?.
+\item \textbf{Naive baseline (S0):} Supervised targets: human references; DPO: no. Naive baseline: train on the data as given.
+\item \textbf{Sequence-level distillation (S1):} Supervised targets: teacher one-best; DPO: no. The standard strong baseline \cite{ref:seqkd}.
+\item \textbf{Preference distillation (S2):} Supervised targets: human references; DPO: yes. The project's original proposal.
+\item \textbf{Distillation then DPO (S3):} Supervised targets: teacher one-best; DPO: yes. Does preference learning help on top of strong distillation?.
 \end{bullets}
 
 \subsection{Result}
@@ -174,13 +174,13 @@ training run. Each is reported because each was diagnosed to a root cause and
 fixed, and because all three produce output that looks superficially reasonable.
 
 \begin{bullets}
-\item \textbf{\#1, out of memory.} \emph{Symptom:} Training died on the first CUDA allocation. \emph{Root cause and fix:} Teacher remained resident on the GPU from the BLEU step while the student allocated. Fix: free the teacher first; reduce batch size from 64 to 32.
-\item \textbf{\#1b, empty output.} \emph{Symptom:} BLEU and chrF exactly 0.0; every translation the empty string. \emph{Root cause and fix:} Three causes: a leading BOS in the labels created a train/generate mismatch; a 32{,}000-token vocabulary left most tokens undertrained; warmup was silently ignored. All three fixed, plus generation safeguards that make empty output impossible.
-\item \textbf{\#2, source-agnostic output.} \emph{Symptom:} Fluent English, but \textit{``The police are investigating the case.''} for every input; loss an implausible 0.274. \emph{Root cause and fix:} Padding was not masked in the loss, so the model earned free credit for predicting PAD. Fix: $-100$ at pad positions, plus label smoothing, dropout and more data.
-\item \textbf{\#3, \textbf{First success}.} \emph{Symptom:} BLEU 13.42, chrF 37.85, ratio 0.438; correct idiomatic output. \emph{Root cause and fix:} The pad-loss fix plus scaling to 120{,}000 sentences. Loss an honest 3.39.
-\item \textbf{\#4, collapse.} \emph{Symptom:} BLEU 0.03; \textit{``What is the''} for every input, at 200{,}000 sentences on the same code that worked at 120{,}000. \emph{Root cause and fix:} No gradient clipping. More data means more steps and more chances to hit a gradient spike; run \#3 was lucky. Fix: clip gradient norm at 1.0.
-\item \textbf{\#5, stable.} \emph{Symptom:} BLEU 18.60, chrF 45.40, ratio 0.654. \emph{Root cause and fix:} Clipping resolved the collapse, the last major training bug.
-\item \textbf{\#6, plateau.} \emph{Symptom:} BLEU 18.64, ratio 0.657 at 250{,}000 sentences: flat against \#5. \emph{Root cause and fix:} Data volume had saturated for reference targets. This is what motivated the \seqkd{} comparison, and it is a reportable result in its own right.
+\item \textbf{\#1, out of memory:} \emph{Symptom:} Training died on the first CUDA allocation. \emph{Root cause and fix:} Teacher remained resident on the GPU from the BLEU step while the student allocated. Fix: free the teacher first; reduce batch size from 64 to 32.
+\item \textbf{\#1b, empty output:} \emph{Symptom:} BLEU and chrF exactly 0.0; every translation the empty string. \emph{Root cause and fix:} Three causes: a leading BOS in the labels created a train/generate mismatch; a 32{,}000-token vocabulary left most tokens undertrained; warmup was silently ignored. All three fixed, plus generation safeguards that make empty output impossible.
+\item \textbf{\#2, source-agnostic output:} \emph{Symptom:} Fluent English, but \textit{``The police are investigating the case.''} for every input; loss an implausible 0.274. \emph{Root cause and fix:} Padding was not masked in the loss, so the model earned free credit for predicting PAD. Fix: $-100$ at pad positions, plus label smoothing, dropout and more data.
+\item \textbf{\#3, \textbf{First success}:} \emph{Symptom:} BLEU 13.42, chrF 37.85, ratio 0.438; correct idiomatic output. \emph{Root cause and fix:} The pad-loss fix plus scaling to 120{,}000 sentences. Loss an honest 3.39.
+\item \textbf{\#4, collapse:} \emph{Symptom:} BLEU 0.03; \textit{``What is the''} for every input, at 200{,}000 sentences on the same code that worked at 120{,}000. \emph{Root cause and fix:} No gradient clipping. More data means more steps and more chances to hit a gradient spike; run \#3 was lucky. Fix: clip gradient norm at 1.0.
+\item \textbf{\#5, stable:} \emph{Symptom:} BLEU 18.60, chrF 45.40, ratio 0.654. \emph{Root cause and fix:} Clipping resolved the collapse, the last major training bug.
+\item \textbf{\#6, plateau:} \emph{Symptom:} BLEU 18.64, ratio 0.657 at 250{,}000 sentences: flat against \#5. \emph{Root cause and fix:} Data volume had saturated for reference targets. This is what motivated the \seqkd{} comparison, and it is a reportable result in its own right.
 \end{bullets}
 
 Run \#2 is the most instructive failure in the project. A training loss of 0.274
@@ -200,9 +200,9 @@ source-independent output, a ``stock news sentence'' returned regardless of
 input.
 
 \begin{bullets}
-\item \textbf{Telugu\arrowto{}English.} At a learning rate of $5\times10^{-4}$ the supervised loss was 3.13 and the ratio 0.036; retrained at $3\times10^{-4}$ the ratio reached \textbf{0.817}.
-\item \textbf{Malayalam\arrowto{}English.} At a learning rate of $5\times10^{-4}$ the supervised loss was 3.96 and the ratio 0.013; retrained at $3\times10^{-4}$ the ratio reached \textbf{0.898}.
-\item \textbf{English\arrowto{}Malayalam.} At a learning rate of $5\times10^{-4}$ the supervised loss was n/a and the ratio 0.570; retrained at $3\times10^{-4}$ the ratio reached \textbf{0.863}.
+\item \textbf{Telugu\arrowto{}English:} At a learning rate of $5\times10^{-4}$ the supervised loss was 3.13 and the ratio 0.036; retrained at $3\times10^{-4}$ the ratio reached \textbf{0.817}.
+\item \textbf{Malayalam\arrowto{}English:} At a learning rate of $5\times10^{-4}$ the supervised loss was 3.96 and the ratio 0.013; retrained at $3\times10^{-4}$ the ratio reached \textbf{0.898}.
+\item \textbf{English\arrowto{}Malayalam:} At a learning rate of $5\times10^{-4}$ the supervised loss was n/a and the ratio 0.570; retrained at $3\times10^{-4}$ the ratio reached \textbf{0.863}.
 \end{bullets}
 
 The diagnosis rests on a controlled observation: Tamil\arrowto{}English
@@ -217,10 +217,10 @@ direction from 0.570 to 0.863.
 
 Two operational lessons follow, and both are now defaults.
 
-\textbf{Use $3\times10^{-4}$.} The higher rate offers no measured benefit and
+\textbf{Use $3\times10^{-4}$:} The higher rate offers no measured benefit and
 carries a real risk of total loss of a multi-hour run.
 
-\textbf{Training loss is a reliable collapse indicator.} Healthy runs settle at
+\textbf{Training loss is a reliable collapse indicator:} Healthy runs settle at
 a final supervised loss of 1.5 to 2.3; collapsed runs sit at 3 to 4. This is a
 cheap, early signal, available long before evaluation, and it is now
 checked before a run is allowed to proceed to quantisation.
@@ -307,19 +307,19 @@ method is not biased towards translating into English}
 
 Three observations follow.
 
-\textbf{Direction symmetry holds.} Across all eleven languages,
+\textbf{Direction symmetry holds:} Across all eleven languages,
 English\arrowto{}Indic averages 0.850 and Indic\arrowto{}English averages 0.825.
 The two directions are close, which suggests the method is not biased towards
 translating into English, a common asymmetry in multilingual systems.
 
-\textbf{The near-misses are under-converged, not unstable.} All eight near-miss
+\textbf{The near-misses are under-converged, not unstable:} All eight near-miss
 directions have supervised losses of 2.00 to 2.32, at the upper end of the
 healthy band of 1.5 to 2.3, whereas the passing directions cluster between 1.46
 and 1.95. The pattern points to insufficient training rather than instability,
 which means the cheap remedies (beam search at evaluation, more epochs, more
 distilled data) are the appropriate ones.
 
-\textbf{BLEU understates agglutinative languages.} English\arrowto{}Malayalam
+\textbf{BLEU understates agglutinative languages:} English\arrowto{}Malayalam
 \emph{passes} the target at 0.863 while scoring only 5.2 BLEU, because its
 teacher scores just 6.1. Malayalam's agglutinative morphology packs into single
 orthographic words what English expresses in several, so n-gram overlap is
@@ -371,10 +371,10 @@ near-miss rather than discounted.
 \label{subsec:dod}
 
 \begin{bullets}
-\item \textbf{Quality.} Student / teacher BLEU ratio, against a threshold of $\geq 0.80$. \emph{Result:} 14 of 22 directions; mean 0.838, median 0.855, best 0.955. \emph{Status: partial.}
-\item \textbf{Latency.} Milliseconds per sentence, quantised, against a threshold of $<500$\,ms. \emph{Result:} Mean 105--202\,ms; p90 141--541\,ms. \emph{Status: met.}
-\item \textbf{Size.} Quantised artifact, INT4, against a threshold of $\leq 200$\,MB. \emph{Result:} 103.9\,MB, every direction. \emph{Status: met.}
-\item \textbf{Offline.} Inference with networking disabled, against a threshold of zero network calls. \emph{Result:} Succeeds for every direction. \emph{Status: met.}
+\item \textbf{Quality:} Student / teacher BLEU ratio, against a threshold of $\geq 0.80$. \emph{Result:} 14 of 22 directions; mean 0.838, median 0.855, best 0.955. \emph{Status: partial.}
+\item \textbf{Latency:} Milliseconds per sentence, quantised, against a threshold of $<500$\,ms. \emph{Result:} Mean 105--202\,ms; p90 141--541\,ms. \emph{Status: met.}
+\item \textbf{Size:} Quantised artifact, INT4, against a threshold of $\leq 200$\,MB. \emph{Result:} 103.9\,MB, every direction. \emph{Status: met.}
+\item \textbf{Offline:} Inference with networking disabled, against a threshold of zero network calls. \emph{Result:} Succeeds for every direction. \emph{Status: met.}
 \end{bullets}
 
 Three of the four targets pass without exception across all 22 directions.
@@ -392,16 +392,16 @@ This section examines what the models actually produce.
 \label{subsec:simplesentences}
 
 \begin{bullets}
-\item \textbf{hi \arrowto{} en.} \dev{भारत एक विशाल देश है।} $\rightarrow$ India is a vast country.
-\item \textbf{hi \arrowto{} en.} \dev{मुझे किताबें पढ़ना पसंद है।} $\rightarrow$ I love reading books.
-\item \textbf{hi \arrowto{} en.} \dev{आपकी मदद के लिए बहुत धन्यवाद।} $\rightarrow$ Thank you so much for your help.
-\item \textbf{en \arrowto{} hi.} Water is essential for life $\rightarrow$ \dev{जीवन के लिए पानी आवश्यक है।}
-\item \textbf{en \arrowto{} hi.} This is a very beautiful garden $\rightarrow$ \dev{यह एक बहुत ही सुंदर उद्यान है।}
-\item \textbf{bn \arrowto{} en.} \ben{ভারত একটি বড় দেশ।} $\rightarrow$ India is a big country.
-\item \textbf{mr \arrowto{} en.} \dev{मला पुस्तके वाचायला आवडतात।} $\rightarrow$ I love reading books.
-\item \textbf{ml \arrowto{} en.} \mal{ഇന്ത്യ ഒരു വലിയ രാജ്യമാണ്.} $\rightarrow$ India is a big country.
-\item \textbf{te \arrowto{} en.} \tel{భారతదేశం ఒక పెద్ద దేశం.} $\rightarrow$ India is a big country.
-\item \textbf{en \arrowto{} ml.} Water is essential for life $\rightarrow$\newline
+\item \textbf{hi \arrowto{} en:} \dev{भारत एक विशाल देश है।} $\rightarrow$ India is a vast country.
+\item \textbf{hi \arrowto{} en:} \dev{मुझे किताबें पढ़ना पसंद है।} $\rightarrow$ I love reading books.
+\item \textbf{hi \arrowto{} en:} \dev{आपकी मदद के लिए बहुत धन्यवाद।} $\rightarrow$ Thank you so much for your help.
+\item \textbf{en \arrowto{} hi:} Water is essential for life $\rightarrow$ \dev{जीवन के लिए पानी आवश्यक है।}
+\item \textbf{en \arrowto{} hi:} This is a very beautiful garden $\rightarrow$ \dev{यह एक बहुत ही सुंदर उद्यान है।}
+\item \textbf{bn \arrowto{} en:} \ben{ভারত একটি বড় দেশ।} $\rightarrow$ India is a big country.
+\item \textbf{mr \arrowto{} en:} \dev{मला पुस्तके वाचायला आवडतात।} $\rightarrow$ I love reading books.
+\item \textbf{ml \arrowto{} en:} \mal{ഇന്ത്യ ഒരു വലിയ രാജ്യമാണ്.} $\rightarrow$ India is a big country.
+\item \textbf{te \arrowto{} en:} \tel{భారతదేశం ఒక పెద్ద దేశం.} $\rightarrow$ India is a big country.
+\item \textbf{en \arrowto{} ml:} Water is essential for life $\rightarrow$\newline
 \mal{ജീവിതത്തിന് വെള്ളം അത്യന്താപേക്ഷിതമാണ്.}
 \end{bullets}
 
@@ -451,10 +451,10 @@ sense. This is a genuine error and matches Telugu's position in the scorecard.
 \label{subsec:errors}
 
 \begin{bullets}
-\item \textbf{Repetition.} \textit{``India is a country that is a big country''} (or\arrowto{}en); \textit{``life of life''} (gu\arrowto{}en). \emph{Interpretation:} The decoder re-enters a high-probability phrase. The 3-gram repetition block catches the worst cases but not all.
-\item \textbf{Untranslated idiom.} \textit{o'clock} transliterated as \ory{ନଅ ଓକ୍ଲାରେ} (or), \kan{ಒಂಬತ್ತು ಓಕ್ಲಾಕ್ಗೆ} (kn). \emph{Interpretation:} The token is rare in the distilled corpus, so the student falls back to transliteration.
-\item \textbf{Lexical slip.} hi\arrowto{}en renders \dev{ढलना} as ``collapsed'' instead of ``set''; a Marathi round trip turns \textit{sunset} into \textit{sunrise}. \emph{Interpretation:} Polysemy resolved incorrectly; a 52\,M student has limited lexical disambiguation capacity.
-\item \textbf{Dropped modifier.} Kannada omits ``fifteen percent'' in a reported-speech sentence. \emph{Interpretation:} Information loss under a long dependency; the weakest Kannada behaviour, matching its 0.763 ratio.
+\item \textbf{Repetition:} \textit{``India is a country that is a big country''} (or\arrowto{}en); \textit{``life of life''} (gu\arrowto{}en). \emph{Interpretation:} The decoder re-enters a high-probability phrase. The 3-gram repetition block catches the worst cases but not all.
+\item \textbf{Untranslated idiom:} \textit{o'clock} transliterated as \ory{ନଅ ଓକ୍ଲାରେ} (or), \kan{ಒಂಬತ್ತು ಓಕ್ಲಾಕ್ಗೆ} (kn). \emph{Interpretation:} The token is rare in the distilled corpus, so the student falls back to transliteration.
+\item \textbf{Lexical slip:} hi\arrowto{}en renders \dev{ढलना} as ``collapsed'' instead of ``set''; a Marathi round trip turns \textit{sunset} into \textit{sunrise}. \emph{Interpretation:} Polysemy resolved incorrectly; a 52\,M student has limited lexical disambiguation capacity.
+\item \textbf{Dropped modifier:} Kannada omits ``fifteen percent'' in a reported-speech sentence. \emph{Interpretation:} Information loss under a long dependency; the weakest Kannada behaviour, matching its 0.763 ratio.
 \end{bullets}
 
 A round-trip test (English to the target language and back) was also run.

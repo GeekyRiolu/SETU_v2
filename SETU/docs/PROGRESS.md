@@ -352,6 +352,25 @@ balancing, EWC anti-forgetting, device resolution, scorecard.
 
 ## 10. Session changelog
 
+- **2026-10-21 (cont.) (objective numbering, colon labels, architecture placement)** -
+  Four more review fixes. **(1) The objectives are numbered 1 to 6,** not `O1` to `O6`, and
+  the lead-in sentence that was sitting alone as an indented one-line paragraph was folded
+  into the end of the paragraph above it. The outcomes in Chapter 9 that answer those
+  objectives one for one are numbered the same way, and the four prose references to
+  `O1`--`O6` were renumbered. **(2) Every topic label ends in a colon, not a full stop.**
+  214 labels changed across all nine chapters and the back matter, so a run-in heading
+  reads "**Languages delivered:** All twenty-two ..." rather than "**Languages
+  delivered.** All ...". Eight labels that already carried an internal colon were reworded
+  instead of gaining a second one (`Stage 1: Teacher distillation.` became
+  `Stage 1, teacher distillation:`, and the four `REST: x.` labels became
+  `REST x endpoint:`). **(3) The System Architecture heading sits with its diagram.** The
+  figure filled the whole text block, so the heading and its paragraph were stranded on the
+  previous page; scaling the diagram to 0.76 lets all three share a page, with the
+  four-layer discussion flowing underneath.
+
+  Build: **110 pages**, zero undefined references, zero overfull boxes above 5 pt, no
+  stranded headings. All deliverables regenerated.
+
 - **2026-10-21 (cont.) (literature as prose, last identifier labels, Gantt alignment)** -
   Five follow-ups from a second review pass. **(1) Each surveyed paper is one paragraph
   again,** not a bullet list, and each is substantially longer: what the paper does, what
