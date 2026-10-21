@@ -17,12 +17,12 @@ reach at least 80\,\% of their teacher's BLEU; the remaining eight fall between
 \label{subsec:outcomes}
 
 \begin{bullets}
-\item \textbf{O1, Ratio $\geq 0.80$.} 14 of 22 directions; mean 0.838, median 0.855, best 0.955. \emph{Verdict: partially met.}
-\item \textbf{O2, Latency $<500$\,ms.} Mean 105--202\,ms; only one p90 outlier. \emph{Verdict: met.}
-\item \textbf{O3, Size $\leq 200$\,MB.} 103.9\,MB for every direction, 48\,\% under budget. \emph{Verdict: met.}
-\item \textbf{O4, Fully offline.} Verified with all sockets disabled, for every direction. \emph{Verdict: met.}
-\item \textbf{O5, Test the distillation hypothesis.} Hypothesis refuted under controlled conditions: \seqkd{} 17.09 BLEU against 11.10 for DPO. \emph{Verdict: met.}
-\item \textbf{O6, Coverage and extensibility.} All 22 languages both ways; 44 models serve 506 directions via English pivot; adding a language is a configuration change. \emph{Verdict: met.}
+\item \textbf{Ratio $\geq 0.80$.} 14 of 22 directions; mean 0.838, median 0.855, best 0.955. \emph{Verdict: partially met.}
+\item \textbf{Latency $<500$\,ms.} Mean 105--202\,ms; only one p90 outlier. \emph{Verdict: met.}
+\item \textbf{Size $\leq 200$\,MB.} 103.9\,MB for every direction, 48\,\% under budget. \emph{Verdict: met.}
+\item \textbf{Fully offline.} Verified with all sockets disabled, for every direction. \emph{Verdict: met.}
+\item \textbf{Test the distillation hypothesis.} Hypothesis refuted under controlled conditions: \seqkd{} 17.09 BLEU against 11.10 for DPO. \emph{Verdict: met.}
+\item \textbf{Coverage and extensibility.} All 22 languages both ways; 44 models serve 506 directions via English pivot; adding a language is a configuration change. \emph{Verdict: met.}
 \end{bullets}
 
 \subsection{Principal Contributions}
@@ -67,45 +67,34 @@ routinely encountered and rarely published.
 \subsection{Limitations}
 \label{sec:limits}
 
-The project states its limitations plainly, because several of them bound how
+The project states its limitations plainly, because each of them bounds how
 the results should be read.
 
-\textbf{Eight directions fall short of the quality target}, at ratios between
-0.755 and 0.787. Their supervised losses cluster at 2.00 to 2.32, the upper end
-of the healthy band, which indicates under-convergence rather than instability.
+\begin{bullets}
+\item \textbf{Eight directions fall short of the quality target,} at ratios
+between 0.755 and 0.787. Their supervised losses cluster at 2.00 to 2.32, the
+upper end of the healthy band, which indicates under-convergence rather than
+instability.
 
-\textbf{The teacher caps the ceiling.} The ungated distilled-200M teacher scores
-only 27 to 29 BLEU on these slices. A student at 0.806 of that is a student at
-roughly 80\,\% of a model that is itself well below the gated one-billion-parameter
-flagship. Raising the ceiling requires teacher access, not more student
-training.
+\item \textbf{The teacher caps the ceiling.} The ungated distilled-200M teacher
+scores only 27 to 29 BLEU on these slices, so a student at 0.806 of that sits
+at roughly four fifths of a model that is itself well below the gated
+one-billion-parameter flagship. Raising the ceiling requires teacher access,
+not more student training.
 
-\textbf{The reported ratios are not benchmark numbers.} They come from an
+\item \textbf{The reported ratios are not benchmark numbers.} They come from an
 internal 500-sentence Samanantar development slice, and the teacher's own score
-varies between slices (27.08 to 28.91 for Hindi\arrowto{}English alone). The
-figures are internally comparable but should not be set beside published
-IndicTrans2 results. FLORES-200 rescoring is required for that and is the first
-item of future work.
+varies between slices (27.08 to 28.91 for Hindi\arrowto{}English alone). BLEU
+also understates the agglutinative languages: English\arrowto{}Malayalam passes
+at a ratio of 0.863 on 5.2 BLEU. The figures are internally comparable but
+should not be set beside published IndicTrans2 results without FLORES-200
+rescoring under COMET.
 
-\textbf{BLEU is the wrong metric for several covered languages.}
-English\arrowto{}Malayalam passes at a ratio of 0.863 on 5.2 BLEU, because
-Malayalam's agglutinative morphology defeats n-gram overlap. Some of the
-near-misses, particularly the Tamil and Malayalam directions, may already
-pass under COMET.
-
-\textbf{ARM latency is projected, not measured.} All timings were taken on x86
-CPUs. The target is ARM Cortex-A55 class hardware, and although the margin is
-large (roughly 150\,ms against a 500\,ms budget), the figure remains
+\item \textbf{ARM latency is projected, not measured.} All timings were taken
+on x86 CPUs. The target is ARM Cortex-A55 class hardware, and although the
+margin is large, roughly 150\,ms against a 500\,ms budget, the figure remains
 unverified on the intended silicon.
-
-\textbf{INT4 is INT4 in name only.} The ONNX Runtime CPU execution provider has
-no true 4-bit kernel, so INT4 and INT8 land within 0.7\,MB of each other. Real
-4-bit storage would require a different runtime.
-
-\textbf{Pivot error is unquantified.} Indic-to-Indic translations pass through
-two models and may accumulate error from both. The pivot was verified to
-function correctly and produce sensible output, but no systematic BLEU
-evaluation of pivoted pairs against direct references was performed.
+\end{bullets}
 
 \section{Applications}
 \label{sec:applications}
@@ -145,72 +134,28 @@ choose.
 \section{Future Scope}
 \label{sec:future}
 
-\subsection{Completing the Current Work}
-\label{subsec:completing}
-
-\textbf{Rescore every direction on FLORES-200 with COMET.} This is the highest
-priority, because it converts the internal ratios into publishable, comparable
-numbers, and because COMET may reclassify several agglutinative-language
-near-misses as passes. The infrastructure exists: \texttt{setu-eval} already
-implements FLORES-200 and IN22 loaders, COMET scoring and paired-bootstrap
-significance testing.
-
-\textbf{Close the eight near-misses.} Three levers are available, in increasing
-order of cost: beam search at evaluation time, additional supervised epochs, and
-more distilled data. The under-convergence signature in the losses suggests all
-three would help.
-
-\textbf{Measure latency on real ARM hardware.} A Raspberry Pi 4 or a Cortex-A55
-board would convert a projected figure into a measured one.
-
-\textbf{Quantify pivot degradation.} Evaluate pivoted Indic-to-Indic pairs
-against real references to establish how much quality the second hop costs.
-
-\subsection{Extending the System}
-\label{subsec:extending}
-
-\textbf{Extend beyond the Eighth Schedule.} All twenty-two scheduled languages
-are delivered, so the next step outward is the widely spoken non-scheduled
-languages and the major regional dialects. The architecture needs no change: the
-pipeline is verified pair-agnostic, and adding a language remains a
-configuration and data change rather than a rewrite.
-
-\textbf{Distil from a stronger teacher.} The single most effective remaining
-lever on quality. At a ratio of 0.806 against a 27-BLEU teacher, the student is
-near its current ceiling; the gated one-billion-parameter IndicTrans2 flagship
-would raise the entire curve.
-
-\textbf{Consolidate directions with All-in-One KD.} Both the All-in-One KD and
-Elastic Weight Consolidation mechanisms are implemented and tested but have not
-been exercised on full multilingual data. A single multilingual student would
-reduce device storage from $n \times 104$\,MB to one artifact, at the risk of
-cross-lingual interference that per-direction training currently avoids.
-
-\textbf{Add a true 4-bit runtime.} A backend with genuine INT4 kernels would
-roughly halve the artifact again, bringing a direction under 60\,MB and making
-several languages resident on a phone simultaneously.
-
-\subsection{Longer-Term Directions}
-\label{subsec:longterm}
-
-\textbf{Speech input and output.} The literature surveyed in
-Chapter~\ref{ch:literature} shows cascaded ASR-then-MT still outperforming
-end-to-end speech translation in low-resource settings \cite{ref:iwslt}. An
-offline speech front-end over \setu{}'s existing text engine would extend the
-system to users who cannot type in their own script, which, for several of
-the target populations, is the majority.
-
-\textbf{Revisit preference learning on clean targets.} The refuted hypothesis
-tested DPO on noisy human references. The S3 configuration, sequence-level
-distillation followed by DPO on \emph{teacher-derived} preferences, was
-designed but not run at scale. Whether preference learning helps on top of a
-strong distilled base remains genuinely open, and the existing DPO
-implementation makes it a training run rather than an engineering project.
-
-\textbf{Publish the finding.} The \seqkd{}-versus-DPO comparison, the data
-scaling curve, the collapse analysis and the systems contribution together
-constitute a paper. The plan, with result tables already filled from the runs
-reported in Chapter~\ref{ch:results}, is maintained in the repository.
+The immediate work is to rescore every direction on FLORES-200 with COMET,
+which converts the internal ratios into publishable, comparable numbers and may
+reclassify several agglutinative-language near-misses as passes; the
+infrastructure already exists in \texttt{setu-eval}. Alongside it, the eight
+near-misses should be closed with the three levers their under-convergence
+signature points to, in increasing order of cost: beam search at evaluation
+time, additional supervised epochs, and more distilled data. Latency should
+then be measured on real ARM hardware rather than projected from x86, and the
+cost of the second hop in pivoted Indic-to-Indic translation quantified against
+real references. Beyond that, the single most effective remaining lever on
+quality is a stronger teacher: at 0.806 against a 27-BLEU teacher the student
+is near its current ceiling, and the gated one-billion-parameter IndicTrans2
+flagship would lift the entire curve. The All-in-One KD and Elastic Weight
+Consolidation mechanisms are implemented and tested but have not been exercised
+on full multilingual data; consolidating the per-direction students into one
+multilingual model would cut device storage from $n \times 104$\,MB to a single
+artifact, at the risk of the cross-lingual interference that per-direction
+training currently avoids. A runtime with genuine 4-bit kernels would halve the
+artifact again, and the architecture is already pair-agnostic, so widening
+coverage beyond the Eighth Schedule to the major non-scheduled languages and
+regional dialects remains a configuration and data change rather than a
+rewrite.
 
 \section{Closing Remarks}
 \label{sec:closing}

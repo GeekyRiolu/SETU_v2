@@ -352,6 +352,44 @@ balancing, EWC anti-forgetting, device resolution, scorecard.
 
 ## 10. Session changelog
 
+- **2026-10-21 (report: abstract, citations, bullet labels, diagram placement)** - Nine
+  changes, all from a review pass over the typeset PDF.
+  **(1) The abstract is two paragraphs on one page.** It was three paragraphs spilling onto
+  a second page; the problem statement and the deciding experiment are now one paragraph
+  and the delivered system the other, at 12/18 leading.
+  **(2) Literature entries carry full citations.** All twenty now spell out every author
+  rather than "et al." and give the venue exactly as the reference list does, so the two
+  agree line for line.
+  **(3) Every diagram sits under the section that introduces it.** The four figures that
+  had been floated to `[t]` went back to `[H]`, and the seven Chapter 3 diagrams were each
+  pinned with a `\needspace` large enough to carry the heading, its paragraph and the
+  figure together. Three were slightly resized to make that fit: the use case diagram from
+  0.88 to 0.70 of the text height, the sequence diagram from 0.80 to 0.72, and the activity
+  diagram's scalebox from 0.84 to 0.74. All seven headings and figures now share a page.
+  **(4) No bullet is labelled with a bare identifier any more.** Every `UR-n`, `SR-n`,
+  `FR-n`, `NFR-n`, `DR-n`, `UT-n`, `IT-n`, `ST-n`, `Rn`, `Dn` and `On` label became a
+  descriptive topic, 118 labels in all, so a bullet reads "**Reject identical languages:**
+  ..." rather than "**FR-3:** ...". Where an identifier is tied to a figure it survives
+  as a parenthetical (milestones `M0`-`M9`, PERT activities `A`-`K`, systems `S0`-`S3`),
+  because the Gantt, the PERT network and the head-to-head charts label their nodes with
+  them. The six prose cross-references that pointed at test identifiers were rewritten to
+  name the test instead.
+  **(5) The data flow diagram is on a real grid.** Its nodes had been chained with
+  `right=of`, so each column shifted by the previous node's width; they now sit at explicit
+  coordinates with one shared text width, and the two evaluator feeds no longer overlap.
+  **(6) Code listings lost their frame and background tint.** The syntax colouring, line
+  numbers and captions are unchanged.
+  **(7) Future scope is a single paragraph** and the Longer-Term Directions subsection is
+  gone. **(8) Limitations cut from seven items to four,** with the BLEU-metric caveat folded
+  into the benchmark-comparability one. **(9) Section 5.3 has a diagram:** the four client
+  surfaces over the FastAPI service, the shared inference engine and the 44 ONNX students,
+  with the command-line tool shown bypassing HTTP.
+
+  Build: **109 pages**, zero undefined references, zero overfull boxes above 5 pt, no
+  stranded headings, no tables. Every remaining part-empty page is a chapter end, a
+  front-matter list end or a section boundary. PDF, LaTeX zip, both print sets (85 mono /
+  24 colour) and the Word version (20 figures) regenerated.
+
 - **2026-10-11 (cont.) (chapter list format, algorithm numbering, Word export)** - Five
   changes. **(1) The report-organisation list** in Section 1.4 now reads "Chapter 2 -
   Literature Survey: Reviews twenty papers ..." rather than "Chapter 2, Literature Survey,

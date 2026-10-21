@@ -335,7 +335,63 @@ conflicting new task.
 \subsection{External Interfaces}
 \label{subsec:extinterface}
 
-The system exposes the following external interfaces.
+Figure~\ref{fig:interfaces} shows how the four client surfaces reach the
+models. Every one of them resolves to the same inference engine, so behaviour
+cannot drift between them: the REST service is the only network-facing
+component, and the command-line tool bypasses it by linking the engine
+directly.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+   cl/.style   = {rectangle, rounded corners=2pt, draw=black!70, fill=blue!6,
+                  text width=28mm, minimum height=11mm, align=center,
+                  font=\small, inner sep=3pt},
+   svc/.style  = {rectangle, rounded corners=2pt, draw=black!70, fill=green!8,
+                  text width=96mm, minimum height=13mm, align=center,
+                  font=\small, inner sep=3pt},
+   eng/.style  = {rectangle, rounded corners=2pt, draw=black!70, fill=orange!10,
+                  text width=96mm, minimum height=13mm, align=center,
+                  font=\small, inner sep=3pt},
+   st/.style   = {rectangle, rounded corners=2pt, draw=black!70, fill=violet!8,
+                  text width=96mm, minimum height=11mm, align=center,
+                  font=\small, inner sep=3pt},
+   a/.style    = {-{Stealth[length=2.6mm]}, draw=black!75},
+   t/.style    = {font=\scriptsize, inner sep=2pt, fill=white}]
+
+  \def\rA{0} \def\rB{-2.1} \def\rC{-4.0} \def\rD{-5.9}
+
+  \node[cl] (web)  at (-5.0,\rA) {Web client\\[1pt]\scriptsize Next.js};
+  \node[cl] (pwa)  at (-1.67,\rA) {Offline PWA\\[1pt]\scriptsize service worker};
+  \node[cl] (sdk)  at ( 1.67,\rA) {Mobile SDK\\[1pt]\scriptsize Android / iOS};
+  \node[cl] (cli)  at ( 5.0,\rA) {Command line\\[1pt]\scriptsize \texttt{setu\_cli.py}};
+
+  \node[svc] (api) at (-1.67,\rB)
+        {FastAPI service\\[1pt]\scriptsize
+         \texttt{POST /translate} $\cdot$ \texttt{GET /languages} $\cdot$
+         \texttt{GET /models} $\cdot$ \texttt{GET /health}};
+  \node[eng] (eng) at (-1.67,\rC)
+        {Inference engine\\[1pt]\scriptsize
+         English-pivot router $\cdot$ per-pair engine cache $\cdot$ stub fallback};
+  \node[st]  (mod) at (-1.67,\rD)
+        {44 INT4 ONNX students $+$ SentencePiece tokenizers\\[1pt]\scriptsize
+         103.9\,MB per direction, loaded from disk};
+
+  % all three network clients sit above the service box, so they drop straight
+  \draw[a] (web.south) -- (web.south |- api.north);
+  \draw[a] (pwa.south) -- (pwa.south |- api.north);
+  \draw[a] (sdk.south) -- (sdk.south |- api.north);
+  \draw[a] (api) -- (eng);
+  \draw[a] (eng) -- (mod);
+  % the CLI links the engine directly, with no HTTP in the path
+  \draw[a, dashed, black!60] (cli.south) -- ++(0,-8mm) -| node[t, pos=0.25]{in process} (eng.east);
+\end{tikzpicture}
+\caption{External interface design: four client surfaces over one shared
+inference engine}
+\label{fig:interfaces}
+\end{figure}
+
+The interfaces themselves are specified below.
 
 \begin{bullets}
 \item \textbf{REST: translate.} Primary translation endpoint. \texttt{POST /translate} with body \texttt{\{source\_lang, target\_lang, text\}}; returns \texttt{\{translated\_text, latency\_ms, pivot, stub\}}. Example request: \texttt{\{"source\_lang":"hi", "target\_lang":"en", "text":"..."\}}.
@@ -421,10 +477,10 @@ directions that used them. This costs 23 vocabulary slots and buys a guarantee:
 token identifiers do not shift when a language is added, so previously trained
 models remain valid and no re-tokenisation is ever required.
 
+\needspace{18\baselineskip}
 \section{Algorithm Design}
 \label{sec:algorithms}
 
-\needspace{9\baselineskip}
 \subsection{Algorithm 1: Sequence-Level Knowledge Distillation}
 \label{subsec:alg1}
 
@@ -458,7 +514,7 @@ ceiling. Line~9's $-100$ masking is what keeps the loss honest. Line~12
 evaluates on human references even though training used teacher targets, which
 is what makes the numbers comparable with a reference-trained baseline.
 
-\needspace{9\baselineskip}
+\needspace{16\baselineskip}
 \subsection{Algorithm 2: English-Pivot Routing}
 \label{subsec:alg2}
 
@@ -487,7 +543,7 @@ are cheap after the first call. Line~13 is the honesty guarantee: when nothing
 can translate the request the input is returned unchanged and explicitly marked,
 never presented as a translation.
 
-\needspace{9\baselineskip}
+\needspace{16\baselineskip}
 \subsection{Algorithm 3: Progressive Quantisation}
 \label{subsec:alg3}
 
@@ -506,7 +562,7 @@ never presented as a translation.
 \item write \texttt{quantize\_report.json}; package the chosen variant with its tokenizer
 \end{algsteps}
 
-\needspace{9\baselineskip}
+\needspace{16\baselineskip}
 \subsection{Algorithm 4: Preference Pair Generation (Reported Baseline)}
 \label{subsec:alg4}
 

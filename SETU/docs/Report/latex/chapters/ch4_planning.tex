@@ -23,8 +23,7 @@ responsibility within the team.
 \subsection{Work Breakdown Structure}
 \label{subsec:wbs}
 
-The project decomposes into nine engineering milestones, M0 through M8, followed
-by a hardening and delivery milestone. Each milestone is a single commit with a
+The project decomposes into ten engineering milestones, M0 through M9. Each milestone is a single commit with a
 defined completion criterion, so that progress is verifiable rather than
 self-reported. The breakdown below gives, for each item, the work it covers and the
 evidence required to close it.
@@ -32,27 +31,27 @@ evidence required to close it.
 The Phase~1 milestones are as follows.
 
 \begin{bullets}
-\item \textbf{M0, scaffold.} Package layout, four core data objects, YAML configuration with the 22-language registry, CLI, passthrough stub engine. \emph{Evidence:} 7 tests green; CLI runs end to end.
-\item \textbf{M1, data pipeline.} Corpus loading, script normalisation, length and script filtering, deduplication, JSONL output. \emph{Evidence:} 50{,}000 pairs in, 49{,}520 clean pairs out, with a filter breakdown report.
-\item \textbf{M2, teacher integration.} IndicTrans2 behind an abstract interface; a test forbids any other module importing the teacher's dependencies. \emph{Evidence:} Real smoke test producing fluent candidate translations.
-\item \textbf{M3, preference generation.} Teacher $n$-best candidates plus $k$-NN retrieved neighbours, chrF ranking, pair validation. \emph{Evidence:} 500 entries $\rightarrow$ 3{,}494 candidates $\rightarrow$ 2{,}074 validated pairs.
-\item \textbf{M4, sFT and DPO training.} SentencePiece tokenizer, student model, supervised fine-tuning, DPO with a frozen reference, evaluation harness. \emph{Evidence:} DPO measurably outperforms SFT; test enforces the reference stays frozen.
-\item \textbf{M5, quantisation and offline inference.} ONNX export, progressive INT8 and INT4 quantisation, ONNX inference engine, socket-disabling offline assertion. \emph{Evidence:} Size, latency and offline targets all pass.
-\item \textbf{M6, interfaces.} FastAPI REST service, CLI, offline PWA, mobile SDK stubs, all sharing one engine. \emph{Evidence:} 15 interface tests green.
-\item \textbf{M7, all-in-One KD.} Temperature-sampled cross-lingual balancing with a coverage report. \emph{Evidence:} Mechanism proven by test.
-\item \textbf{M8, elastic Weight Consolidation.} Diagonal-Fisher penalty, old-task snapshot, EWC training step. \emph{Evidence:} Measured retention of the old task above naive fine-tuning.
-\item \textbf{M9, hardening and delivery.} Scorecard generator, benchmarks, documentation, dead-code removal. \emph{Evidence:} Full suite green; scorecard reports \textsc{unverified} when evidence is absent.
+\item \textbf{Scaffold (M0).} Package layout, four core data objects, YAML configuration with the 22-language registry, CLI, passthrough stub engine. \emph{Evidence:} 7 tests green; CLI runs end to end.
+\item \textbf{Data pipeline (M1).} Corpus loading, script normalisation, length and script filtering, deduplication, JSONL output. \emph{Evidence:} 50{,}000 pairs in, 49{,}520 clean pairs out, with a filter breakdown report.
+\item \textbf{Teacher integration (M2).} IndicTrans2 behind an abstract interface; a test forbids any other module importing the teacher's dependencies. \emph{Evidence:} Real smoke test producing fluent candidate translations.
+\item \textbf{Preference generation (M3).} Teacher $n$-best candidates plus $k$-NN retrieved neighbours, chrF ranking, pair validation. \emph{Evidence:} 500 entries $\rightarrow$ 3{,}494 candidates $\rightarrow$ 2{,}074 validated pairs.
+\item \textbf{SFT and DPO training (M4).} SentencePiece tokenizer, student model, supervised fine-tuning, DPO with a frozen reference, evaluation harness. \emph{Evidence:} DPO measurably outperforms SFT; test enforces the reference stays frozen.
+\item \textbf{Quantisation and offline inference (M5).} ONNX export, progressive INT8 and INT4 quantisation, ONNX inference engine, socket-disabling offline assertion. \emph{Evidence:} Size, latency and offline targets all pass.
+\item \textbf{Interfaces (M6).} FastAPI REST service, CLI, offline PWA, mobile SDK stubs, all sharing one engine. \emph{Evidence:} 15 interface tests green.
+\item \textbf{All-in-One KD (M7).} Temperature-sampled cross-lingual balancing with a coverage report. \emph{Evidence:} Mechanism proven by test.
+\item \textbf{Elastic Weight Consolidation (M8).} Diagonal-Fisher penalty, old-task snapshot, EWC training step. \emph{Evidence:} Measured retention of the old task above naive fine-tuning.
+\item \textbf{Hardening and delivery (M9).} Scorecard generator, benchmarks, documentation, dead-code removal. \emph{Evidence:} Full suite green; scorecard reports \textsc{unverified} when evidence is absent.
 \end{bullets}
 
 Phase~2 continued with the following work packages.
 
 \begin{bullets}
-\item \textbf{P2-A, \seqkd{} baseline and head-to-head.} Distiller CLI, \texttt{-{}-train-corpus} switch, S0/S1/S2/S3 comparison. \emph{Evidence:} Figure~\ref{fig:h1} filled.
-\item \textbf{P2-B, gPU campaign.} Environment fixes, resumable runners, 22 directions trained bidirectionally. \emph{Evidence:} 22 per-direction reports.
-\item \textbf{P2-C, collapse diagnosis and recovery.} Root-cause the two degenerate students and retrain. \emph{Evidence:} Both recovered to passing ratios.
-\item \textbf{P2-D, english-pivot routing.} Shared router used by REST and CLI alike. \emph{Evidence:} Verified on Hindi--Bengali, Tamil--Telugu, Assamese--Bengali.
-\item \textbf{P2-E, frontend and release.} Next.js client, offline PWA, public model release, quick-start documentation. \emph{Evidence:} Live demo; models downloadable without login.
-\item \textbf{P2-F, report and paper.} This report; paper plan with filled result tables. \emph{Evidence:} Submitted.
+\item \textbf{\seqkd{} baseline and head-to-head.} Distiller CLI, \texttt{-{}-train-corpus} switch, S0/S1/S2/S3 comparison. \emph{Evidence:} Figure~\ref{fig:h1} filled.
+\item \textbf{GPU campaign.} Environment fixes, resumable runners, 22 directions trained bidirectionally. \emph{Evidence:} 22 per-direction reports.
+\item \textbf{Collapse diagnosis and recovery.} Root-cause the two degenerate students and retrain. \emph{Evidence:} Both recovered to passing ratios.
+\item \textbf{English-pivot routing.} Shared router used by REST and CLI alike. \emph{Evidence:} Verified on Hindi--Bengali, Tamil--Telugu, Assamese--Bengali.
+\item \textbf{Frontend and release.} Next.js client, offline PWA, public model release, quick-start documentation. \emph{Evidence:} Live demo; models downloadable without login.
+\item \textbf{Report and paper.} This report; paper plan with filled result tables. \emph{Evidence:} Submitted.
 \end{bullets}
 
 \subsection{Gantt Chart}
@@ -179,17 +178,17 @@ t_e = \frac{a + 4m + b}{6}, \qquad
 The estimates and the resulting expected durations are as follows.
 
 \begin{bullets}
-\item \textbf{A, literature survey and requirements.} No predecessor; $a=4$, $m=6$, $b=9$, giving $t_e=6.17$ weeks and $\sigma^2=0.69$.
-\item \textbf{B, system design.} Follows A; $a=3$, $m=4$, $b=7$, giving $t_e=4.33$ weeks and $\sigma^2=0.44$.
-\item \textbf{C, pipeline implementation (M0--M4).} Follows B; $a=6$, $m=8$, $b=13$, giving $t_e=8.50$ weeks and $\sigma^2=1.36$.
-\item \textbf{D, corpus preparation.} Follows B; $a=3$, $m=4$, $b=8$, giving $t_e=4.50$ weeks and $\sigma^2=0.69$.
-\item \textbf{E, teacher distillation.} Follows C, D; $a=4$, $m=6$, $b=10$, giving $t_e=6.33$ weeks and $\sigma^2=1.00$.
+\item \textbf{Literature survey and requirements (A).} No predecessor; $a=4$, $m=6$, $b=9$, giving $t_e=6.17$ weeks and $\sigma^2=0.69$.
+\item \textbf{System design (B).} Follows A; $a=3$, $m=4$, $b=7$, giving $t_e=4.33$ weeks and $\sigma^2=0.44$.
+\item \textbf{Pipeline implementation (C).} Follows B; $a=6$, $m=8$, $b=13$, giving $t_e=8.50$ weeks and $\sigma^2=1.36$.
+\item \textbf{Corpus preparation (D).} Follows B; $a=3$, $m=4$, $b=8$, giving $t_e=4.50$ weeks and $\sigma^2=0.69$.
+\item \textbf{Teacher distillation (E).} Follows C, D; $a=4$, $m=6$, $b=10$, giving $t_e=6.33$ weeks and $\sigma^2=1.00$.
 \item \textbf{F, student training (\seqkd{}).} Follows E; $a=5$, $m=7$, $b=12$, giving $t_e=7.50$ weeks and $\sigma^2=1.36$.
-\item \textbf{G, collapse diagnosis \& retraining.} Follows F; $a=0$, $m=2$, $b=5$, giving $t_e=2.17$ weeks and $\sigma^2=0.69$.
-\item \textbf{H, quantisation \& ONNX export.} Follows F; $a=2$, $m=3$, $b=5$, giving $t_e=3.17$ weeks and $\sigma^2=0.25$.
-\item \textbf{I, interfaces \& pivot routing.} Follows H; $a=2$, $m=3$, $b=6$, giving $t_e=3.33$ weeks and $\sigma^2=0.44$.
-\item \textbf{J, evaluation \& scorecard.} Follows G, H; $a=1$, $m=2$, $b=4$, giving $t_e=2.17$ weeks and $\sigma^2=0.25$.
-\item \textbf{K, documentation \& report.} Follows I, J; $a=2$, $m=3$, $b=5$, giving $t_e=3.17$ weeks and $\sigma^2=0.25$.
+\item \textbf{Collapse diagnosis \& retraining (G).} Follows F; $a=0$, $m=2$, $b=5$, giving $t_e=2.17$ weeks and $\sigma^2=0.69$.
+\item \textbf{Quantisation \& ONNX export (H).} Follows F; $a=2$, $m=3$, $b=5$, giving $t_e=3.17$ weeks and $\sigma^2=0.25$.
+\item \textbf{Interfaces \& pivot routing (I).} Follows H; $a=2$, $m=3$, $b=6$, giving $t_e=3.33$ weeks and $\sigma^2=0.44$.
+\item \textbf{Evaluation \& scorecard (J).} Follows G, H; $a=1$, $m=2$, $b=4$, giving $t_e=2.17$ weeks and $\sigma^2=0.25$.
+\item \textbf{Documentation \& report (K).} Follows I, J; $a=2$, $m=3$, $b=5$, giving $t_e=3.17$ weeks and $\sigma^2=0.25$.
 \end{bullets}
 
 Figure~\ref{fig:pert} shows the activity network. The critical path is
@@ -269,15 +268,15 @@ The risks identified at planning time are recorded below, together with the
 mitigation applied and, where the risk materialised, what actually happened. Five of the nine anticipated risks occurred.
 
 \begin{bullets}
-\item \textbf{R1, gated access to the teacher checkpoints and the BPCC corpus.} Probability high, impact high. Fall back to ungated rotary checkpoints and the Samanantar corpus. \textbf{Occurred.} Mitigation applied; the cost is a lower quality ceiling, reported explicitly.
-\item \textbf{R2, no GPU available locally.} Probability high, impact high. Use a cloud GPU (Kaggle, Colab) and later a dedicated A40 VM. \textbf{Occurred.} All final training ran on the A40 VM.
-\item \textbf{R3, student fails to reach the quality target.} Probability medium, impact high. Treat data volume, teacher strength and student width as independent levers; report shortfall honestly. \textbf{Partially occurred:} 14 of 22 directions pass.
-\item \textbf{R4, training instability or divergence.} Probability medium, impact high. Gradient clipping, learning-rate warmup, label smoothing; monitor training loss as a collapse indicator. \textbf{Occurred twice}; both recovered (Section~\ref{sec:collapse}).
-\item \textbf{R5, cloud session time limits kill long runs.} Probability high, impact medium. Resumable runners with per-stage completion markers; persist artifacts outside the session. \textbf{Occurred} on Kaggle's 12-hour cap; resumability absorbed it.
-\item \textbf{R6, quantised model exceeds the size budget.} Probability low, impact high. Progressive INT8 then INT4 with per-stage measurement. \textbf{Did not occur:} 103.9\,MB against a 200\,MB budget.
-\item \textbf{R7, inference too slow on CPU.} Probability medium, impact high. ONNX Runtime with greedy decoding at deployment; beam search only offline. \textbf{Did not occur:} mean 105--202\,ms.
-\item \textbf{R8, dependency and environment conflicts.} Probability medium, impact medium. Pin versions; audit the environment before each run. \textbf{Occurred} four times on the VM (Section~\ref{subsec:sw}); each fix folded into the runner.
-\item \textbf{R9, insufficient corpus for low-resource languages.} Probability high, impact medium. Prioritise languages with ungated data and widen the corpus for the lower-resource tail. \textbf{Resolved:} all 22 languages delivered.
+\item \textbf{Gated access to the teacher checkpoints and the BPCC corpus.} Probability high, impact high. Fall back to ungated rotary checkpoints and the Samanantar corpus. \textbf{Occurred.} Mitigation applied; the cost is a lower quality ceiling, reported explicitly.
+\item \textbf{No GPU available locally.} Probability high, impact high. Use a cloud GPU (Kaggle, Colab) and later a dedicated A40 VM. \textbf{Occurred.} All final training ran on the A40 VM.
+\item \textbf{Student fails to reach the quality target.} Probability medium, impact high. Treat data volume, teacher strength and student width as independent levers; report shortfall honestly. \textbf{Partially occurred:} 14 of 22 directions pass.
+\item \textbf{Training instability or divergence.} Probability medium, impact high. Gradient clipping, learning-rate warmup, label smoothing; monitor training loss as a collapse indicator. \textbf{Occurred twice}; both recovered (Section~\ref{sec:collapse}).
+\item \textbf{Cloud session time limits kill long runs.} Probability high, impact medium. Resumable runners with per-stage completion markers; persist artifacts outside the session. \textbf{Occurred} on Kaggle's 12-hour cap; resumability absorbed it.
+\item \textbf{Quantised model exceeds the size budget.} Probability low, impact high. Progressive INT8 then INT4 with per-stage measurement. \textbf{Did not occur:} 103.9\,MB against a 200\,MB budget.
+\item \textbf{Inference too slow on CPU.} Probability medium, impact high. ONNX Runtime with greedy decoding at deployment; beam search only offline. \textbf{Did not occur:} mean 105--202\,ms.
+\item \textbf{Dependency and environment conflicts.} Probability medium, impact medium. Pin versions; audit the environment before each run. \textbf{Occurred} four times on the VM (Section~\ref{subsec:sw}); each fix folded into the runner.
+\item \textbf{Insufficient corpus for low-resource languages.} Probability high, impact medium. Prioritise languages with ungated data and widen the corpus for the lower-resource tail. \textbf{Resolved:} all 22 languages delivered.
 \end{bullets}
 
 \subsection{Team Organisation and Responsibilities}

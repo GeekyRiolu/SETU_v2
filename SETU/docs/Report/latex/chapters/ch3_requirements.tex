@@ -133,6 +133,9 @@ executed by an end user, repeatedly, on a device. An end user never touches a
 training component, and the training components are absent from the deployed
 artifact entirely.
 
+%% heading, text and figure are kept together so the diagram sits under
+%% the section that introduces it
+\needspace{28\baselineskip}
 \subsection{Use Case Diagram}
 \label{subsec:usecase}
 
@@ -140,9 +143,9 @@ Three actors interact with the system. The \textbf{End User} translates text.
 The \textbf{ML Engineer} runs the training pipeline. The \textbf{Edge Device} is
 a secondary actor that hosts the quantised model and executes inference.
 
-\begin{figure}[t]
+\begin{figure}[H]
 \centering
-\includegraphics[width=\textwidth, height=0.88\textheight, keepaspectratio]{figures/use_case.png}
+\includegraphics[width=\textwidth, height=0.70\textheight, keepaspectratio]{figures/use_case.png}
 \caption{Use case diagram: End User, ML Engineer and Edge Device actors}
 \label{fig:usecase}
 \end{figure}
@@ -161,6 +164,9 @@ postcondition.
 \item \textbf{Execute Inference (Edge Device):} Precondition: the quantised model and tokenizer are present locally. Postcondition: a translation is produced with zero network calls.
 \end{bullets}
 
+%% heading, text and figure are kept together so the diagram sits under
+%% the section that introduces it
+\needspace{28\baselineskip}
 \subsection{Sequence Diagram}
 \label{subsec:sequence}
 
@@ -173,12 +179,12 @@ the second. The response carries the summed latency of both hops and a
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=\textwidth, height=0.80\textheight, keepaspectratio]{figures/sequence.png}
+\includegraphics[width=\textwidth, height=0.72\textheight, keepaspectratio]{figures/sequence.png}
 \caption{Sequence diagram: direct translation and the two-hop English pivot}
 \label{fig:sequence}
 \end{figure}
 
-\needspace{10\baselineskip}
+\needspace{26\baselineskip}
 \subsection{Activity Diagram}
 \label{subsec:activity}
 
@@ -188,9 +194,9 @@ everything below executes on the user's device. The two decision points are the
 quality gate (does the student reach 80\,\% of teacher BLEU) and the
 routing decision at inference time.
 
-\begin{figure}[t]
+\begin{figure}[H]
 \centering
-\scalebox{0.84}{%
+\scalebox{0.74}{%
 \begin{tikzpicture}[node distance=6.5mm and 9mm]
   \node[circle, fill=black, minimum size=3.4mm, inner sep=0] (start) {};
   \node[proc, below=of start, minimum width=46mm] (load)  {Load Samanantar corpus (streamed)};
@@ -300,15 +306,16 @@ deployment.
 \begin{figure}[H]
 \centering
 \begin{tikzpicture}[
-   node distance = 9mm and 10mm,
+   % every stage sits on an explicit three-column grid so that the columns
+   % line up exactly; chaining with right=of shifted them by each node's width
    box/.style   = {rectangle, rounded corners=2pt, draw=black!70, fill=blue!5,
-                   text width=31mm, minimum height=13mm, align=center,
+                   text width=30mm, minimum height=13mm, align=center,
                    font=\small, inner sep=3pt},
    db/.style    = {cylinder, shape border rotate=90, aspect=0.18, draw=black!70,
-                   fill=orange!10, text width=27mm, minimum height=13mm,
+                   fill=orange!10, text width=30mm, minimum height=13mm,
                    align=center, font=\small, inner sep=3pt},
    hex/.style   = {signal, signal to=east and west, draw=black!70, fill=green!8,
-                   text width=29mm, minimum height=13mm, align=center,
+                   text width=30mm, minimum height=13mm, align=center,
                    font=\small, inner sep=3pt},
    ev/.style    = {rectangle, rounded corners=2pt, draw=black!70, fill=violet!8,
                    text width=44mm, minimum height=12mm, align=center,
@@ -316,42 +323,48 @@ deployment.
    a/.style     = {-{Stealth[length=2.6mm]}, draw=black!75},
    t/.style     = {font=\scriptsize, inner sep=2pt, fill=white}]
 
-  % row 1
-  \node[db]                       (corpus) {Samanantar\\corpus};
-  \node[box, right=of corpus]     (pre)    {Preprocess\\[1pt]\scriptsize normalise $\cdot$ tokenise $\cdot$ align};
-  \node[hex, right=of pre]        (teach)  {IndicTrans2\\teacher};
-  % row 2
-  \node[db,  below=14mm of corpus] (dist)  {Distilled\\corpus};
-  \node[box, right=of dist]        (train) {SeqKD Trainer};
-  \node[box, right=of train]       (stud)  {52\,M Student};
-  % row 3
-  \node[box, below=14mm of dist]   (quant) {Quantiser\\[1pt]\scriptsize INT4 ONNX $\approx$104\,MB};
-  \node[box, right=of quant]       (eng)   {Inference Engine\\[1pt]\scriptsize + English pivot};
-  \node[box, right=of eng]         (out)   {Translation\\output};
-  % evaluator
-  \node[ev, below=12mm of eng]     (eval)  {Evaluator\\[1pt]\scriptsize student / teacher ratio};
+  \def\colA{0}   \def\colB{4.5}  \def\colC{9.0}
+  \def\rowA{0}   \def\rowB{-2.5} \def\rowC{-5.0} \def\rowD{-7.5}
+
+  % row 1: ingest and distil
+  \node[db]  (corpus) at (\colA,\rowA) {Samanantar\\corpus};
+  \node[box] (pre)    at (\colB,\rowA) {Preprocess\\[1pt]\scriptsize normalise $\cdot$ tokenise $\cdot$ align};
+  \node[hex] (teach)  at (\colC,\rowA) {IndicTrans2\\teacher};
+  % row 2: train
+  \node[db]  (dist)   at (\colA,\rowB) {Distilled\\corpus};
+  \node[box] (train)  at (\colB,\rowB) {SeqKD Trainer};
+  \node[box] (stud)   at (\colC,\rowB) {52\,M Student};
+  % row 3: deploy
+  \node[box] (quant)  at (\colA,\rowC) {Quantiser\\[1pt]\scriptsize INT4 ONNX $\approx$104\,MB};
+  \node[box] (eng)    at (\colB,\rowC) {Inference Engine\\[1pt]\scriptsize + English pivot};
+  \node[box] (out)    at (\colC,\rowC) {Translation\\output};
+  % evaluation branch
+  \node[ev]  (eval)   at (\colB,\rowD) {Evaluator\\[1pt]\scriptsize student / teacher ratio};
 
   \draw[a] (corpus) -- (pre);
   \draw[a] (pre)    -- (teach);
-  \draw[a] (teach.south) -- ++(0,-4mm) -| node[t,pos=0.25]{1-best} (dist.north);
+  \draw[a] (teach.south) -- ++(0,-6mm) -| node[t,pos=0.25]{1-best} (dist.north);
   \draw[a] (dist)   -- (train);
   \draw[a] (train)  -- (stud);
-  \draw[a] (stud.south) -- ++(0,-4mm) -| (quant.north);
+  \draw[a] (stud.south) -- ++(0,-6mm) -| (quant.north);
   \draw[a] (quant)  -- (eng);
   \draw[a] (eng)    -- (out);
 
   % both feeds run down a corridor to the right of the pipeline
-  \coordinate (cA) at ([xshift=16mm]teach.east);
+  \coordinate (cA) at ([xshift=14mm]teach.east);
   \coordinate (cB) at ([xshift= 7mm]stud.east);
-  \draw[a, dashed, black!55] (teach.east) -- (cA) |- (eval.east)
-        node[t, pos=0.62, above]{teacher BLEU};
-  \draw[a, dashed, black!55] (stud.east)  -- (cB) |- ([yshift=3mm]eval.east)
-        node[t, pos=0.62, above]{student BLEU};
+  \draw[a, dashed, black!55] (teach.east) -- (cA) |- ([yshift=-4mm]eval.east)
+        node[t, pos=0.68, below]{teacher BLEU};
+  \draw[a, dashed, black!55] (stud.east)  -- (cB) |- ([yshift=4mm]eval.east)
+        node[t, pos=0.68, above]{student BLEU};
 \end{tikzpicture}
 \caption{Level-1 data flow diagram: corpus to deployed translation}
 \label{fig:dfd}
 \end{figure}
 
+%% heading, text and figure are kept together so the diagram sits under
+%% the section that introduces it
+\needspace{26\baselineskip}
 \subsection{Entity-Relationship Model}
 \label{subsec:er}
 
@@ -402,6 +415,9 @@ and the language registry as YAML.
 \label{fig:er}
 \end{figure}
 
+%% heading, text and figure are kept together so the diagram sits under
+%% the section that introduces it
+\needspace{26\baselineskip}
 \subsection{Class Diagram}
 \label{subsec:class}
 
@@ -475,35 +491,35 @@ This section states what the system must do, independently of how it does it.
 \label{subsec:userreq}
 
 \begin{bullets}
-\item \textbf{UR-1 (End user):} Translate text between any two supported languages without an internet connection.
-\item \textbf{UR-2 (End user):} See the full list of supported languages, each named in its own script, before choosing a direction.
-\item \textbf{UR-3 (End user):} Receive a translation quickly enough for conversational use.
-\item \textbf{UR-4 (End user):} Be assured that the text typed never leaves the device.
-\item \textbf{UR-5 (End user):} Use the system from a browser, a mobile application, a command line or a programmatic API, with identical behaviour.
-\item \textbf{UR-6 (ML engineer):} Train a model for any language pair by changing configuration, without modifying source code.
-\item \textbf{UR-7 (ML engineer):} Resume a multi-hour training run after a disconnection without repeating completed stages.
-\item \textbf{UR-8 (ML engineer):} Obtain an honest quality report, including failure, rather than an optimistic one.
-\item \textbf{UR-9 (Deployer):} Install models on a fresh machine and run the system without training anything.
+\item \textbf{Offline translation (end user):} Translate text between any two supported languages without an internet connection.
+\item \textbf{Language discovery (end user):} See the full list of supported languages, each named in its own script, before choosing a direction.
+\item \textbf{Conversational speed (end user):} Receive a translation quickly enough for conversational use.
+\item \textbf{On-device privacy (end user):} Be assured that the text typed never leaves the device.
+\item \textbf{Identical behaviour across interfaces (end user):} Use the system from a browser, a mobile application, a command line or a programmatic API, with identical behaviour.
+\item \textbf{New pair by configuration (ML engineer):} Train a model for any language pair by changing configuration, without modifying source code.
+\item \textbf{Resumable training (ML engineer):} Resume a multi-hour training run after a disconnection without repeating completed stages.
+\item \textbf{Honest quality reporting (ML engineer):} Obtain an honest quality report, including failure, rather than an optimistic one.
+\item \textbf{Install without training (deployer):} Install models on a fresh machine and run the system without training anything.
 \end{bullets}
 
 \subsection{System Requirements}
 \label{subsec:sysreq}
 
 \begin{itemize}
-  \item \textbf{SR-1.} Python 3.11 or 3.12; Python 3.14 is incompatible with the
+  \item \textbf{Python runtime.} Python 3.11 or 3.12; Python 3.14 is incompatible with the
         teacher's remote modelling code.
-  \item \textbf{SR-2.} \texttt{transformers} at least 4.42 and below 4.54, since
+  \item \textbf{Transformers version.} \texttt{transformers} at least 4.42 and below 4.54, since
         4.54 removed the legacy tuple \texttt{past\_key\_values} cache API that
         the rotary teacher relies on.
-  \item \textbf{SR-3.} PyTorch 2.6 or newer for training, paired with a matching
+  \item \textbf{PyTorch and torchvision.} PyTorch 2.6 or newer for training, paired with a matching
         \texttt{torchvision} build.
-  \item \textbf{SR-4.} ONNX Runtime with the CPU execution provider for
+  \item \textbf{ONNX Runtime.} ONNX Runtime with the CPU execution provider for
         inference; no GPU dependency in the deployed artifact.
-  \item \textbf{SR-5.} A CUDA-capable GPU with at least 16\,GB of memory for
+  \item \textbf{Training accelerator.} A CUDA-capable GPU with at least 16\,GB of memory for
         training a direction.
-  \item \textbf{SR-6.} At least 104\,MB of free storage per translation
+  \item \textbf{Storage per direction.} At least 104\,MB of free storage per translation
         direction on the target device.
-  \item \textbf{SR-7.} Node.js 18 or newer to build the browser client (build
+  \item \textbf{Node.js for the browser build.} Node.js 18 or newer to build the browser client (build
         time only; the exported application is static).
 \end{itemize}
 
@@ -513,18 +529,18 @@ This section states what the system must do, independently of how it does it.
 Each requirement below names the section or test that verifies it.
 
 \begin{bullets}
-\item \textbf{FR-1:} Translate text between supported Indian languages and English in both directions, fully offline. \emph{Verified by} \S\ref{subsec:unittest} and \S\ref{sec:testreports}.
-\item \textbf{FR-2:} Accept plain-text input of up to 512 tokens per request. \emph{Verified by} \S\ref{subsec:unittest}.
-\item \textbf{FR-3:} Reject a request whose source and target language are identical. \emph{Verified by} UT-2.
-\item \textbf{FR-4:} Reject a request containing an unknown language code. \emph{Verified by} UT-3.
-\item \textbf{FR-5:} Route Indic-to-Indic pairs through English when no direct model exists, and report that it did so. \emph{Verified by} IT-1 to IT-3.
-\item \textbf{FR-6:} Expose \texttt{POST /translate}, \texttt{GET /languages}, \texttt{GET /models} and \texttt{GET /health}. \emph{Verified by} \S\ref{sec:interface} and IT-4.
-\item \textbf{FR-7:} Discover every model present on disk at start-up and report its variant and size. \emph{Verified by} IT-4.
-\item \textbf{FR-8:} Generate teacher one-best targets for an arbitrary corpus slice. \emph{Verified by} \S\ref{subsec:mod2}.
-\item \textbf{FR-9:} Train a student on either distilled or reference targets, selectable at run time. \emph{Verified by} \S\ref{subsec:mod3}.
-\item \textbf{FR-10:} Quantise a trained student to INT8 and INT4 ONNX with a per-stage benchmark. \emph{Verified by} \S\ref{subsec:mod4}.
-\item \textbf{FR-11:} Report BLEU, chrF and the student/teacher ratio per direction. \emph{Verified by} \S\ref{sec:testreports}.
-\item \textbf{FR-12:} Support incremental addition of a language by configuration alone. \emph{Verified by} \S\ref{subsec:mod8}.
+\item \textbf{Offline bidirectional translation:} Translate text between supported Indian languages and English in both directions, fully offline. \emph{Verified by} \S\ref{subsec:unittest} and \S\ref{sec:testreports}.
+\item \textbf{Input length limit:} Accept plain-text input of up to 512 tokens per request. \emph{Verified by} \S\ref{subsec:unittest}.
+\item \textbf{Reject identical languages:} Reject a request whose source and target language are identical. \emph{Verified by} the identical-language unit test in \S\ref{subsec:unittest}.
+\item \textbf{Reject unknown language codes:} Reject a request containing an unknown language code. \emph{Verified by} the unknown-code unit test in \S\ref{subsec:unittest}.
+\item \textbf{English-pivot routing:} Route Indic-to-Indic pairs through English when no direct model exists, and report that it did so. \emph{Verified by} the pivot integration tests in \S\ref{subsec:integrationtest}.
+\item \textbf{REST endpoints:} Expose \texttt{POST /translate}, \texttt{GET /languages}, \texttt{GET /models} and \texttt{GET /health}. \emph{Verified by} \S\ref{sec:interface} and the REST integration tests in \S\ref{subsec:integrationtest}.
+\item \textbf{Model discovery at start-up:} Discover every model present on disk at start-up and report its variant and size. \emph{Verified by} the REST integration tests in \S\ref{subsec:integrationtest}.
+\item \textbf{Teacher one-best generation:} Generate teacher one-best targets for an arbitrary corpus slice. \emph{Verified by} \S\ref{subsec:mod2}.
+\item \textbf{Selectable training target:} Train a student on either distilled or reference targets, selectable at run time. \emph{Verified by} \S\ref{subsec:mod3}.
+\item \textbf{Quantisation and export:} Quantise a trained student to INT8 and INT4 ONNX with a per-stage benchmark. \emph{Verified by} \S\ref{subsec:mod4}.
+\item \textbf{Per-direction quality reporting:} Report BLEU, chrF and the student/teacher ratio per direction. \emph{Verified by} \S\ref{sec:testreports}.
+\item \textbf{Incremental language addition:} Support incremental addition of a language by configuration alone. \emph{Verified by} \S\ref{subsec:mod8}.
 \end{bullets}
 
 \subsection{Non-Functional Requirements}
@@ -534,41 +550,41 @@ Each attribute below states the requirement and the outcome actually measured
 against it.
 
 \begin{bullets}
-\item \textbf{NFR-1, performance:} Under 500\,ms per sentence on an ARM-class CPU. \emph{Measured:} mean 105--202\,ms; p90 141--541\,ms, with one outlier.
-\item \textbf{NFR-2, size:} At most 200\,MB per direction after quantisation. \emph{Measured:} 103.9\,MB for every direction.
-\item \textbf{NFR-3, accuracy:} At least 80\,\% of teacher BLEU. \emph{Measured:} 14 of 22 directions, mean ratio 0.838.
-\item \textbf{NFR-4, availability:} Fully functional offline after initial setup. \emph{Measured:} verified with all sockets disabled.
-\item \textbf{NFR-5, privacy:} No user text transmitted during inference. \emph{Measured:} verified by code audit and the offline test.
-\item \textbf{NFR-6, portability:} Runs on x86-64 and ARM, Linux and Android. \emph{Measured:} ONNX Runtime CPU provider on both.
-\item \textbf{NFR-7, maintainability:} A single shared engine behind every interface. \emph{Measured:} \texttt{setu.inference.router}.
-\item \textbf{NFR-8, testability:} An automated suite covering every module. \emph{Measured:} 85 tests.
-\item \textbf{NFR-9, reliability:} Degrade explicitly, never silently. \emph{Measured:} the stub engine reports \texttt{stub:true}, and the scorecard reports \textsc{unverified} without evidence.
+\item \textbf{Performance:} Under 500\,ms per sentence on an ARM-class CPU. \emph{Measured:} mean 105--202\,ms; p90 141--541\,ms, with one outlier.
+\item \textbf{Size:} At most 200\,MB per direction after quantisation. \emph{Measured:} 103.9\,MB for every direction.
+\item \textbf{Accuracy:} At least 80\,\% of teacher BLEU. \emph{Measured:} 14 of 22 directions, mean ratio 0.838.
+\item \textbf{Availability:} Fully functional offline after initial setup. \emph{Measured:} verified with all sockets disabled.
+\item \textbf{Privacy:} No user text transmitted during inference. \emph{Measured:} verified by code audit and the offline test.
+\item \textbf{Portability:} Runs on x86-64 and ARM, Linux and Android. \emph{Measured:} ONNX Runtime CPU provider on both.
+\item \textbf{Maintainability:} A single shared engine behind every interface. \emph{Measured:} \texttt{setu.inference.router}.
+\item \textbf{Testability:} An automated suite covering every module. \emph{Measured:} 85 tests.
+\item \textbf{Reliability:} Degrade explicitly, never silently. \emph{Measured:} the stub engine reports \texttt{stub:true}, and the scorecard reports \textsc{unverified} without evidence.
 \end{bullets}
 
 \subsection{Domain Requirements}
 \label{subsec:domainreq}
 
 \begin{itemize}
-  \item \textbf{DR-1.} Language identification must follow the script-qualified
+  \item \textbf{Script-qualified language codes.} Language identification must follow the script-qualified
         FLORES convention used by IndicTrans2 (\texttt{hin\_Deva},
         \texttt{eng\_Latn}), because several scheduled languages are written in
         more than one script. Kashmiri, Manipuri and Sindhi accordingly carry
         dual-script registry entries.
-  \item \textbf{DR-2.} Script normalisation must preserve zero-width joiners and
+  \item \textbf{Joiner preservation.} Script normalisation must preserve zero-width joiners and
         non-joiners, which are semantically significant in Indic scripts; naive
         control-character stripping corrupts valid text.
-  \item \textbf{DR-3.} Corpus cleaning must enforce a minimum fraction of
+  \item \textbf{Script-fraction cleaning.} Corpus cleaning must enforce a minimum fraction of
         letters in the expected script, so that mined pairs with the wrong
         language on one side are removed.
-  \item \textbf{DR-4.} Evaluation must always use real human references held out
+  \item \textbf{Held-out human references.} Evaluation must always use real human references held out
         from training, never teacher output, regardless of what the student was
         trained on. This is what makes the comparison in
         Section~\ref{sec:headtohead} fair.
-  \item \textbf{DR-5.} Tokenizer language tags must be reserved for all 22
+  \item \textbf{Reserved tokenizer tags.} Tokenizer language tags must be reserved for all 22
         scheduled languages from the first training run, so that token
         identifiers remain stable when languages are added later and previously
         trained models need not be re-tokenised.
-  \item \textbf{DR-6.} BLEU must not be compared across languages. Agglutinative
+  \item \textbf{BLEU is not comparable across languages.} Agglutinative
         languages such as Malayalam and Tamil score low in absolute BLEU for
         morphological reasons; only the student/teacher ratio is comparable
         across directions.

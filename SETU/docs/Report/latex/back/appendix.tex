@@ -38,11 +38,11 @@ Preference Distillation for Compact On-Device Indic Machine Translation}
 \vspace{3pt}
 
 \begin{bullets}
-\item \textbf{Teacher (IndicTrans2 dist-200M)} (n/a). BLEU 28.16, 100.0\,\% of the teacher.
-\item \textbf{S0: SFT on references} (Human references). BLEU 10.95, 38.9\,\% of the teacher.
-\item \textbf{\textbf{S1: \seqkd{}}} (\textbf{Teacher 1-best}). BLEU \textbf{17.09}, \textbf{60.7}\,\% of the teacher.
-\item \textbf{S2: DPO-distill} (References, then DPO). BLEU 11.10, 39.4\,\% of the teacher.
-\item \textbf{S3: \seqkd{} + DPO} (Teacher 1-best, then DPO). \textit{designed; not run at scale}.
+\item \textbf{Teacher (IndicTrans2 distilled-200M).} BLEU 28.16, 100.0\,\% of the teacher.
+\item \textbf{Naive baseline (S0).} Trained on human references. BLEU 10.95, 38.9\,\% of the teacher.
+\item \textbf{Sequence-level distillation (S1).} Trained on \textbf{teacher one-best}. BLEU \textbf{17.09}, \textbf{60.7}\,\% of the teacher.
+\item \textbf{Preference distillation (S2).} References, then DPO. BLEU 11.10, 39.4\,\% of the teacher.
+\item \textbf{Distillation then DPO (S3).} Teacher one-best, then DPO. \textit{designed; not run at scale}.
 \end{bullets}
 
 \noindent\textbf{Quantisation (Hindi\arrowto{}English student)}

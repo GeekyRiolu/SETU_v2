@@ -34,10 +34,10 @@ critically, evaluation on \emph{real human references} held out from
 training, which makes the comparison fair no matter what each system trained on.
 
 \begin{bullets}
-\item \textbf{S0.} Supervised targets: human references; DPO: no. Naive baseline: train on the data as given.
-\item \textbf{S1.} Supervised targets: teacher one-best; DPO: no. The standard strong baseline \cite{ref:seqkd}.
-\item \textbf{S2.} Supervised targets: human references; DPO: yes. The project's original proposal.
-\item \textbf{S3.} Supervised targets: teacher one-best; DPO: yes. Does preference learning help on top of strong distillation?.
+\item \textbf{Naive baseline (S0).} Supervised targets: human references; DPO: no. Naive baseline: train on the data as given.
+\item \textbf{Sequence-level distillation (S1).} Supervised targets: teacher one-best; DPO: no. The standard strong baseline \cite{ref:seqkd}.
+\item \textbf{Preference distillation (S2).} Supervised targets: human references; DPO: yes. The project's original proposal.
+\item \textbf{Distillation then DPO (S3).} Supervised targets: teacher one-best; DPO: yes. Does preference learning help on top of strong distillation?.
 \end{bullets}
 
 \subsection{Result}
@@ -235,7 +235,7 @@ Figure~\ref{fig:scorecard} gives every trained direction, ordered by
 student/teacher BLEU ratio. Eleven languages are covered, each in both
 directions.
 
-\begin{figure}[t]
+\begin{figure}[H]
 \centering
 \begin{tikzpicture}
 \begin{axis}[setubar, height=13.2cm, width=11.2cm,
@@ -331,7 +331,7 @@ pass under a metric that is not overlap-based.
 \subsection{Deployment Metrics: Size and Latency}
 \label{subsec:deploymetrics}
 
-\begin{figure}[t]
+\begin{figure}[H]
 \centering
 \begin{tikzpicture}
 \begin{axis}[setubar, height=12.4cm, width=10.6cm,
