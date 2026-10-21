@@ -77,7 +77,7 @@ and the final report. Both phases are complete.
    bar/.style   = {draw=black!65, fill=blue!25, minimum height=3.4mm, inner sep=0pt},
    act/.style   = {draw=black!65, fill=blue!25, minimum height=3.4mm, inner sep=0pt},
    todo/.style  = {draw=black!65, fill=blue!25, minimum height=3.4mm, inner sep=0pt},
-   lab/.style   = {font=\small, anchor=east},
+   lab/.style   = {font=\small, anchor=west},
    sec/.style   = {font=\small\bfseries, anchor=west},
    ax/.style    = {font=\scriptsize, anchor=south}]
 
@@ -92,7 +92,7 @@ and the final report. Both phases are complete.
   \node[font=\small\itshape, anchor=south] at (5,-0.75) {2026};
 
   % ---- Phase 1 -------------------------------------------------------------
-  \node[sec] at (\L-3.05,1) {Phase 1 (complete)};
+  \node[sec] at (\L-3.28,1) {Phase 1 (complete)};
   \foreach \r/\a/\b/\name in {%
       2/0.45/1.96/{Literature survey and requirements},
       3/2.00/3.97/{System design and pipeline build},
@@ -101,27 +101,27 @@ and the final report. Both phases are complete.
       6/5.47/7.13/{SeqKD student training (52\,M)},
       7/6.29/7.13/{Quantisation and ONNX export},
       8/6.45/7.23/{Interfaces: API, Web, PWA, CLI}} {
-     \node[lab] at (\L,\r) {\name};
+     \node[lab] at (\L-3.28,\r) {\name};
      \node[bar, anchor=west, minimum width={(\b-\a)*1.75cm}] at (\a,\r) {};
   }
-  \node[lab] at (\L,9) {Language coverage: first eleven};
+  \node[lab] at (\L-3.28,9) {Language coverage: first eleven};
   \node[act, anchor=west, minimum width={(7.61-5.47)*1.75cm}] at (5.47,9) {};
-  \node[lab] at (\L,10) {\textit{Interim presentation}};
+  \node[lab] at (\L-3.28,10) {\textit{Interim presentation}};
   \node[diamond, draw=black!70, fill=red!55, minimum size=2.6mm, inner sep=0pt] at (7.35,10) {};
 
   % ---- Phase 2 -------------------------------------------------------------
-  \node[sec] at (\L-3.05,11.6) {Phase 2 (complete)};
-  \node[lab] at (\L,12.6) {Assamese and Punjabi finish};
+  \node[sec] at (\L-3.28,11.6) {Phase 2 (complete)};
+  \node[lab] at (\L-3.28,12.6) {Assamese and Punjabi finish};
   \node[act, anchor=west, minimum width={(7.97-7.29)*1.75cm}] at (7.29,12.6) {};
   \foreach \r/\a/\b/\name in {%
       13.6/8.00/9.45/{Language coverage: all 22 delivered},
       14.6/8.47/9.61/{FLORES and COMET benchmarking},
       15.6/8.63/9.68/{Mobile and edge packaging},
       16.6/9.00/9.77/{Final report and paper write-up}} {
-     \node[lab] at (\L,\r) {\name};
+     \node[lab] at (\L-3.28,\r) {\name};
      \node[todo, anchor=west, minimum width={(\b-\a)*1.75cm}] at (\a,\r) {};
   }
-  \node[lab] at (\L,17.4) {\textit{Final presentation}};
+  \node[lab] at (\L-3.28,17.4) {\textit{Final presentation}};
   \node[diamond, draw=black!70, fill=red!55, minimum size=2.6mm, inner sep=0pt] at (9.87,17.4) {};
 
   % ---- legend --------------------------------------------------------------

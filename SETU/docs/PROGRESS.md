@@ -352,6 +352,27 @@ balancing, EWC anti-forgetting, device resolution, scorecard.
 
 ## 10. Session changelog
 
+- **2026-10-21 (cont.) (literature as prose, last identifier labels, Gantt alignment)** -
+  Five follow-ups from a second review pass. **(1) Each surveyed paper is one paragraph
+  again,** not a bullet list, and each is substantially longer: what the paper does, what
+  \setu{} took from it, and then the drawback, run in with `\textbf{Drawback:}`. The
+  DistilBERT, DPO and IndicTrans2 entries in particular now explain why they shaped the
+  project rather than just naming their result. **(2) The last identifier labels are gone.**
+  The six `P1:`--`P6:` headed paragraphs in the problem statement became a plain bullet
+  list keyed on the sub-problem, and the appendix's `S0:`--`S3:` rows lead with the system
+  name. **(3) Non-functional requirements start a new page,** by request.
+  **(4) The Gantt task names are left-aligned** in one column with the phase headings;
+  they had been anchored east against the chart, so their left edges were ragged.
+  **(5) Three page-break gaps closed:** the empty page before Algorithm 4 (the algorithm
+  `\needspace` was 16 lines, more than the block actually needs to stay whole, now 12),
+  the near-empty page before section 5.5 (the `\needspace` on 5.4.2 was pushing that
+  subsection onto a page of its own), and a two-line orphan at the end of Chapter 2.
+
+  Build: **110 pages**, zero undefined references, zero overfull boxes above 5 pt, no
+  stranded headings, no tables, no identifier-style bullet labels anywhere. Every remaining
+  part-empty page is a chapter end or a section boundary. PDF, zip, print sets
+  (86 mono / 24 colour) and the Word version regenerated.
+
 - **2026-10-21 (report: abstract, citations, bullet labels, diagram placement)** - Nine
   changes, all from a review pass over the typeset PDF.
   **(1) The abstract is two paragraphs on one page.** It was three paragraphs spilling onto

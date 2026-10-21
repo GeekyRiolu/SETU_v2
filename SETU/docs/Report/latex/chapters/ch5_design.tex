@@ -465,7 +465,6 @@ models/<src_flores>-<tgt_flores>/
 Model discovery scans for exactly this layout, which is why dropping a trained
 model directory into place is all that is needed for the API to serve it.
 
-\needspace{8\baselineskip}
 \subsection{The Tokenizer's Reserved Tags}
 \label{subsec:tokenizer}
 
@@ -477,7 +476,7 @@ directions that used them. This costs 23 vocabulary slots and buys a guarantee:
 token identifiers do not shift when a language is added, so previously trained
 models remain valid and no re-tokenisation is ever required.
 
-\needspace{18\baselineskip}
+\needspace{13\baselineskip}
 \section{Algorithm Design}
 \label{sec:algorithms}
 
@@ -514,7 +513,7 @@ ceiling. Line~9's $-100$ masking is what keeps the loss honest. Line~12
 evaluates on human references even though training used teacher targets, which
 is what makes the numbers comparable with a reference-trained baseline.
 
-\needspace{16\baselineskip}
+\needspace{12\baselineskip}
 \subsection{Algorithm 2: English-Pivot Routing}
 \label{subsec:alg2}
 
@@ -543,7 +542,7 @@ are cheap after the first call. Line~13 is the honesty guarantee: when nothing
 can translate the request the input is returned unchanged and explicitly marked,
 never presented as a translation.
 
-\needspace{16\baselineskip}
+\needspace{12\baselineskip}
 \subsection{Algorithm 3: Progressive Quantisation}
 \label{subsec:alg3}
 
@@ -562,7 +561,7 @@ never presented as a translation.
 \item write \texttt{quantize\_report.json}; package the chosen variant with its tokenizer
 \end{algsteps}
 
-\needspace{16\baselineskip}
+\needspace{12\baselineskip}
 \subsection{Algorithm 4: Preference Pair Generation (Reported Baseline)}
 \label{subsec:alg4}
 

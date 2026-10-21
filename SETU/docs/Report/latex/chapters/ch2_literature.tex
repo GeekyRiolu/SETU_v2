@@ -50,113 +50,270 @@ Each entry below gives the paper, its authors and where it appeared, followed
 by what it contributes and where it falls short for this project's purposes.
 
 \paper{1}{DistilBERT, a distilled version of BERT: smaller, faster, cheaper and lighter}{V. Sanh, L. Debut, J. Chaumond, and T. Wolf}{\textit{arXiv preprint} arXiv:1910.01108, 2019}
-\begin{paperpoints}
-\item Halves the layer count of BERT via distillation while retaining about 97\,\% of language-understanding performance, and establishes triple-loss distillation as a practical recipe.
-\item \textbf{Drawback:} demonstrated for encoders on classification, not for autoregressive sequence generation.
-\item A measurable accuracy loss remains on complex tasks.
-\end{paperpoints}
+Introduces a general-purpose language model distilled from BERT during
+pre-training rather than fine-tuning, using a triple objective that combines
+masked language modelling with a distillation loss over the teacher's output
+distribution and a cosine loss that aligns the two hidden spaces. The student
+halves the layer count yet retains about 97\,\% of its teacher's
+language-understanding performance, which established that a compact student
+trained on a teacher's soft targets can approach the teacher at a fraction of
+its size. \setu{} takes two things from this work: the evidence that aggressive
+layer reduction is survivable, and the principle that the training signal
+should come from the teacher rather than from the raw corpus.
+\textbf{Drawback:} the result is demonstrated for encoders on classification
+tasks, not for autoregressive sequence generation, where errors compound across
+decoding steps; and a measurable accuracy loss remains on the more complex
+tasks, so the technique transfers to translation only as a hypothesis to be
+tested, which is what this project does.
+
 \paper{2}{Neural Machine Translation on Mobile Devices}{B. Li, Z. Wang, H. Liu, Y. Jiang, Q. Du, T. Xiao, H. Wang, and J. Zhu}{\textit{IEEE}, 2020}
-\begin{paperpoints}
-\item Compresses NMT models for mobile and edge deployment, cutting memory footprint and inference latency to make real-time on-device translation feasible.
-\item \textbf{Drawback:} the reduction techniques degrade translation quality.
-\item The degradation is most visible on long and syntactically complex sentences.
-\end{paperpoints}
+Addresses the engineering problem of running neural machine translation on
+phones and embedded hardware, combining model compression with runtime
+optimisations to cut both memory footprint and inference latency far enough for
+real-time on-device translation. It is the clearest demonstration that the
+deployment target this project assumes is reachable, and it establishes the
+measurement discipline that matters on edge hardware: report latency and
+artifact size alongside quality rather than quality alone.
+\textbf{Drawback:} the reduction techniques degrade translation quality, and
+the degradation concentrates on long and syntactically complex sentences, which
+are exactly the inputs where a user most needs the translation to be reliable.
+The paper also does not address Indic morphology or the multi-script problem
+that dominates Indian-language translation.
+
 \paper{3}{SMaLL-100: Introducing Shallow Multilingual Machine Translation for Low-Resource Languages}{A. Mohammadshahi, V. Nikoulina, A. B\'{e}rard, C. Brun, J. Henderson, and L. Besacier}{\textit{Springer}, 2020}
-\begin{paperpoints}
-\item A compact multilingual translator covering many low-resource directions with substantially lower memory use and faster inference than M2M-100.
-\item \textbf{Drawback:} quality still trails the large model it compresses, particularly on high-resource pairs where capacity matters.
-\end{paperpoints}
+Distils the 12-billion-parameter M2M-100 multilingual translator into a
+shallow model that keeps wide language coverage while using substantially less
+memory and running considerably faster. It is direct evidence that a
+multilingual translation model can be compressed without abandoning
+low-resource directions, and that the resulting student remains usable for the
+languages that have the least data, which is the population this project
+serves. \textbf{Drawback:} quality still trails the large model it compresses,
+and the gap is widest on high-resource pairs where the extra capacity of the
+teacher genuinely buys something. The compressed model is also still far larger
+than a 200\,MB per-direction budget allows, so the work sets a direction rather
+than a deployable artifact.
+
 \paper{4}{The Tatoeba Translation Challenge -- Realistic Data Sets for Low Resource and Multilingual MT}{J. Tiedemann}{\textit{Proceedings of the Sixth Conference on Machine Translation (WMT)}, 2021}
-\begin{paperpoints}
-\item Releases a benchmark spanning 555 languages, enabling systematic evaluation of low-resource, zero-shot and few-shot translation on realistic data.
-\item \textbf{Drawback:} the data is noisy and inconsistent across languages.
-\item Exploiting it fully still requires large-capacity models.
-\end{paperpoints}
+Releases a translation benchmark spanning 555 languages assembled from the
+Tatoeba collection, deliberately constructed so that evaluation reflects
+realistic rather than curated conditions, and enabling systematic comparison
+across low-resource, zero-shot and few-shot settings. For this project its
+value is methodological: it makes the case that a system claiming broad
+language coverage must be measured on held-out data of the kind it will
+actually meet, not on the cleanest slice available.
+\textbf{Drawback:} the data is noisy and inconsistent in quality from one
+language to the next, so results are not comparable across directions without
+care; and exploiting the full breadth of the benchmark still requires
+large-capacity models, which puts it out of reach of a compact on-device
+student.
+
 \paper{5}{Shallow-to-Deep Training for Neural Machine Translation}{B. Li, Z. Wang, H. Liu, Y. Jiang, Q. Du, T. Xiao, H. Wang, and J. Zhu}{\textit{Proceedings of the 59th Annual Meeting of the Association for Computational Linguistics (ACL)}, 2021}
-\begin{paperpoints}
-\item Introduces incremental shallow-to-deep training, stacking Transformer layers progressively to improve convergence speed and training stability at depth.
-\item \textbf{Drawback:} the final models remain computationally heavy and the staged schedule adds engineering complexity.
-\end{paperpoints}
+Proposes training deep Transformer translation models incrementally,
+beginning with a shallow stack and adding layers progressively so that each new
+block starts from an already-converged state. The schedule improves convergence
+speed and keeps training stable at depths where a from-scratch run would
+diverge, and it supplies a useful observation for this project: the stability of
+a translation model is as much a property of the training schedule as of the
+architecture, a point this project met directly in its own learning-rate
+collapses. \textbf{Drawback:} the final models remain computationally heavy, so
+the method improves how a large model is trained rather than producing a small
+one, and the staged schedule adds engineering complexity that is hard to
+justify for a 52-million-parameter student.
+
 \paper{6}{Nearest Neighbor Knowledge Distillation for Neural Machine Translation}{Z. Yang, R. Sun, and X. Wan}{\textit{IEEE}, 2022}
-\begin{paperpoints}
-\item Uses $k$-nearest-neighbour retrieval over the training set to supply additional supervision, improving quality in low-resource conditions.
-\item \textbf{Drawback:} the datastore is memory-intensive and retrieval slows both training and inference, which is disqualifying for edge deployment.
-\end{paperpoints}
+Augments knowledge distillation for translation with $k$-nearest-neighbour
+retrieval over the training set, so that the student receives supervision not
+only from the teacher's output but also from similar examples retrieved at
+training time. The additional signal improves quality noticeably in
+low-resource conditions, which is the regime that matters for most Indian
+languages, and the idea of enriching a thin training signal with retrieved
+neighbours directly informed this project's preference-generation stage.
+\textbf{Drawback:} the retrieval datastore is memory-intensive and slows both
+training and inference, and an inference-time datastore is disqualifying for
+edge deployment, where the whole artifact must fit inside roughly 200\,MB and
+answer in under half a second.
+
 \paper{7}{Speech-to-Speech Translation Improvements with Self-Supervised Learning}{C. Xu, R. Ye, Q. Dong, C. Zhao, T. Ko, M. Wang, T. Xiao, and J. Zhu}{\textit{IEEE}, 2022}
-\begin{paperpoints}
-\item Combines self-supervised pre-training, multitask learning and synthetic data to obtain large BLEU gains in speech-to-speech translation, especially for low-resource pairs.
-\item \textbf{Drawback:} depends on large-scale pre-training and a multi-stage pipeline that is impractical to deploy on a device.
-\end{paperpoints}
+Combines self-supervised pre-training, multitask learning and synthetic
+data generation to obtain large BLEU gains in speech-to-speech translation,
+with the biggest improvements on low-resource pairs where labelled speech is
+scarce. It demonstrates how far synthetic and self-supervised signal can
+substitute for missing supervision, a question that bears directly on whether
+teacher-generated targets can replace noisy human references.
+\textbf{Drawback:} the approach depends on large-scale pre-training and a
+multi-stage pipeline whose compute and storage requirements make it impractical
+to deploy on a device, and it addresses the speech modality, which is outside
+the text-to-text scope of this project.
+
 \paper{8}{Direct Speech Translation}{Y. Jia, Y. Ding, A. Bapna, C. Cherry, Y. Zhang, A. Conneau, and N. Morioka}{\textit{Springer}, 2023}
-\begin{paperpoints}
-\item Surveys end-to-end speech translation and characterises its principal obstacles: data scarcity, latency and bias.
-\item \textbf{Drawback:} a survey rather than a system; no concrete model or experimental validation is offered.
-\end{paperpoints}
+Surveys end-to-end speech translation and characterises the three
+obstacles that dominate the field: scarcity of paired speech-translation data,
+the latency cost of streaming inference, and systematic bias introduced when
+synthetic or pivoted data stands in for real supervision. The survey is useful
+here as a map of what an offline speech front-end over a text engine would have
+to overcome, and it is the basis for treating speech as future work rather than
+scope. \textbf{Drawback:} it is a survey rather than a system, offering no
+concrete model and no experimental validation, so it frames problems without
+supplying a solution that could be adopted or measured.
+
 \paper{9}{Direct Preference Optimization: Your Language Model is Secretly a Reward Model}{R. Rafailov, A. Sharma, E. Mitchell, C. D. Manning, S. Ermon, and C. Finn}{\textit{Advances in Neural Information Processing Systems (NeurIPS)}, vol.~36, 2023}
-\begin{paperpoints}
-\item Reformulates preference alignment as a simple classification loss over preferred and dispreferred responses, removing the separate reward model and the reinforcement-learning loop of RLHF, with better stability and lower cost.
-\item \textbf{Drawback:} effectiveness depends heavily on the quality and diversity of the preference data; the paper studies alignment of large language models, not distillation into small ones.
-\end{paperpoints}
+Reformulates preference alignment as a simple classification loss over
+pairs of preferred and dispreferred responses, showing that the optimal policy
+of a reward model has a closed form that lets the reward model and the
+reinforcement-learning loop of RLHF be removed entirely. The result is a
+training procedure that is markedly more stable and cheaper to run than PPO
+while reaching comparable alignment quality. This paper is the origin of the
+project's founding hypothesis: if preference learning improves large models so
+cleanly, ranked teacher hypotheses might be a better training signal for a tiny
+translation student than the references themselves.
+\textbf{Drawback:} its effectiveness depends heavily on the quality and
+diversity of the preference data, and it studies alignment of large language
+models rather than distillation into small ones, so nothing in it guarantees
+the method survives a hundredfold reduction in student capacity. This project
+tested that transfer under controlled conditions and found it does not.
+
 \paper{10}{All-in-One Knowledge Distillation Framework for Neural Machine Translation}{Z. Miao, W. Zhang, J. Su, X. Li, J. Luan, Y. Chen, B. Wang, and M. Zhang}{\textit{Proceedings of the 2023 Conference on Empirical Methods in Natural Language Processing (EMNLP)}, 2023}
-\begin{paperpoints}
-\item Distils into several student models simultaneously within one framework, improving training efficiency and enabling scalable multilingual distillation.
-\item \textbf{Drawback:} joint optimisation across students creates gradient conflicts.
-\item Low-resource directions are the ones that lose.
-\end{paperpoints}
+Presents a framework that distils a single teacher into several student
+models at once, sharing the teacher's forward computation across students
+instead of repeating it, which cuts training cost substantially and makes
+multilingual distillation at scale practical. The mechanism, including
+temperature-sampled cross-lingual balancing that stops high-resource directions
+from dominating the batch, is implemented and tested in this project as the
+route to consolidating per-direction students into one multilingual model.
+\textbf{Drawback:} joint optimisation across students creates gradient
+conflicts between directions, and the directions that lose those conflicts are
+the low-resource ones, which is precisely the opposite of what a system for
+Indian languages needs; per-direction training avoids the interference at the
+cost of storage.
+
 \paper{11}{Continual Knowledge Distillation for Neural Machine Translation}{Y. Zhang, P. Li, M. Sun, and Y. Liu}{\textit{Proceedings of the 61st Annual Meeting of the Association for Computational Linguistics (ACL)}, 2023}
-\begin{paperpoints}
-\item Adds new languages to an existing multilingual model incrementally without forgetting previously learned ones, supporting long-lived multilingual deployments.
-\item \textbf{Drawback:} training complexity grows with the number of tasks and the stability-plasticity balance requires careful tuning.
-\end{paperpoints}
+Addresses the problem of adding a new language to an existing
+multilingual translation model without retraining from scratch and without
+degrading the languages already covered, using distillation from the model's
+own earlier state to preserve prior capability. For a system that claims
+extensibility this is the mechanism that makes the claim credible: a new
+language should be a configuration and data change rather than a rewrite, and
+the related Elastic Weight Consolidation machinery in this project serves the
+same purpose. \textbf{Drawback:} training complexity grows with each task
+added, and the stability-plasticity balance, how strongly to anchor old
+parameters against how freely to fit the new language, requires careful tuning
+that the paper does not reduce to a rule.
+
 \paper{12}{IndicTrans2: Towards High-Quality and Accessible Machine Translation Models for All 22 Scheduled Indian Languages}{J. Gala, P. A. Chitale, A. K. Raghavan, V. Gumma, S. Doddapaneni, A. Kumar M, and J. A. Nawale}{\textit{Transactions on Machine Learning Research (TMLR)}, 2023}
-\begin{paperpoints}
-\item Delivers open translation models covering all twenty-two scheduled Indian languages, together with the BPCC corpus and the IN22 benchmark; the current reference point for Indic MT.
-\item \textbf{Drawback:} the flagship models need GPU-class compute and multiple gigabytes of memory, which rules out offline edge deployment.
-\end{paperpoints}
+Delivers open translation models covering all twenty-two scheduled
+Indian languages in both directions, together with the Bharat Parallel Corpus
+Collection used to train them and the IN22 benchmark used to evaluate them, and
+it is the current quality reference point for Indic machine translation. It
+supplies this project with its teacher, its script-qualified FLORES language
+codes, and the quality target against which every student is measured: the
+project gates on the ratio of student BLEU to this teacher's BLEU rather than
+on an absolute score. \textbf{Drawback:} the flagship models hold roughly a
+billion parameters and need GPU-class compute with multiple gigabytes of
+resident memory, which rules out offline edge deployment entirely; the gated
+distribution of the official checkpoints and of BPCC is a further practical
+obstacle, and it is why this project distils from the ungated distilled-200M
+variant and reports the lower ceiling that follows.
+
 \paper{13}{Multilingual Indian Language Neural Machine Translation System Using mT5 Transformer}{A. Jha, H. Y. Patil, S. K. Jindal, and S. M. N. Islam}{\textit{IEEE}, 2023}
-\begin{paperpoints}
-\item Fine-tunes mT5 for Indian-language translation and reports strong BLEU on the directions covered, confirming that large pre-trained multilingual encoders transfer to Indic data.
-\item \textbf{Drawback:} evaluated on only a few languages and built on a large pre-trained backbone, so it scales neither to all 22 languages nor to on-device inference.
-\end{paperpoints}
+Fine-tunes the mT5 multilingual encoder-decoder for Indian-language
+translation and reports strong BLEU on the directions it covers, confirming
+that a large pre-trained multilingual backbone transfers usefully to Indic data
+and that shared representations help the lower-resource languages in the set.
+It is evidence that multilingual transfer is real for this language family,
+which is what makes an English-pivot architecture plausible.
+\textbf{Drawback:} the evaluation extends to only a handful of languages rather
+than the full Eighth Schedule, and the system inherits mT5's size, so it scales
+neither to all twenty-two languages nor to on-device inference; the paper
+reports quality without reporting the memory or latency those numbers cost.
+
 \paper{14}{SETU-DCU Submissions to IWSLT 2024 Low-Resource Speech-to-Text Translation Tasks}{M. Zafar, A. Castaldo, N. Gajakos, P. Nayak, R. Haque, and A. Way}{\textit{Proceedings of the 21st International Conference on Spoken Language Translation (IWSLT)}, 2024}
-\begin{paperpoints}
-\item Shows that cascaded ASR-then-MT pipelines still outperform end-to-end speech translation in genuinely low-resource settings, and reports competitive BLEU.
-\item \textbf{Drawback:} cascading compounds recognition errors into translation errors; end-to-end alternatives remain data-starved.
-\end{paperpoints}
+Reports submissions to the IWSLT 2024 low-resource speech translation
+task and finds that cascaded pipelines, automatic speech recognition followed
+by text translation, still outperform end-to-end speech translation when
+labelled speech data is genuinely scarce, with competitive BLEU across the
+tasks entered. The finding matters here because it means an offline speech
+front-end could be built over this project's existing text engine rather than
+requiring a separate end-to-end model, which is why speech is listed as
+reachable future work. \textbf{Drawback:} cascading compounds recognition
+errors into translation errors, so the pipeline's quality is bounded by the
+weaker of two systems, and the end-to-end alternatives the paper compares
+against remain too data-starved to settle the question.
+
 \paper{15}{Direct Preference Optimization for Neural Machine Translation with Minimum Bayes Risk Decoding}{G. Yang, J. Chen, W. Lin, and B. Byrne}{\textit{Proceedings of the 2024 Conference of the North American Chapter of the Association for Computational Linguistics (NAACL)}, 2024}
-\begin{paperpoints}
-\item Applies DPO to NMT using MBR decoding to construct preference pairs, showing that preference learning can improve translation quality with relatively little data.
-\item \textbf{Drawback:} evaluation does not extend to extremely low-resource languages.
-\item The models studied are far larger than an edge-deployable student.
-\end{paperpoints}
+Applies Direct Preference Optimization to neural machine translation,
+constructing the preference pairs with Minimum Bayes Risk decoding so that the
+preferred candidate is the one closest to the consensus of a sampled set rather
+than one chosen by a separate reward model. The result shows that preference
+learning can improve translation quality with comparatively little preference
+data, and it is the closest published precedent for the hypothesis this project
+set out to test. \textbf{Drawback:} the evaluation does not extend to extremely
+low-resource languages, where reference noise and data scarcity change the
+problem, and the models studied are far larger than an edge-deployable student,
+so the result does not establish that the same gain survives at 52 million
+parameters.
+
 \paper{16}{Multilingual NMT System for English to Low-Resource Indic Languages -- Assamese and Bengali}{K. Kashyap and S. K. Sarma}{\textit{IEEE}, 2024}
-\begin{paperpoints}
-\item A one-to-many multilingual system that improves low-resource quality through shared representations and back-translated synthetic data.
-\item \textbf{Drawback:} synthetic data introduces its own noise.
-\item Coverage is limited to two languages in one direction.
-\end{paperpoints}
+Builds a one-to-many multilingual system translating English into
+Assamese and Bengali, improving quality on both low-resource targets through
+shared multilingual representations and back-translated synthetic data that
+compensates for the thin parallel corpora available. It is a useful existence
+proof that the lower-resource end of the Eighth Schedule is tractable with
+careful data engineering rather than more parameters.
+\textbf{Drawback:} back-translated data introduces noise of its own, and
+training on it risks teaching the model the artefacts of the reverse system;
+coverage is also limited to two languages in a single direction, which leaves
+the general multilingual and Indic-to-Indic problems unaddressed.
+
 \paper{17}{Multilingual Neural Machine Translation System for Indic to Indic Languages}{S. B. Das, D. Panda, T. K. Mishra, B. K. Patra, and A. Ekbal}{\textit{ScienceDirect}, 2024}
-\begin{paperpoints}
-\item Translates directly among several Indic languages using shared models and pivoting, addressing a direction pair largely ignored by English-centric systems.
-\item \textbf{Drawback:} error propagates through the pivot language and accuracy degrades relative to direct models.
-\end{paperpoints}
+Tackles translation directly between Indian languages rather than
+through English, using shared multilingual models and pivoting to cover pairs
+for which no direct parallel corpus exists. It is one of the few papers to take
+the Indic-to-Indic problem seriously, a direction largely ignored by
+English-centric systems and the one that matters most for communication within
+India. The pivoting strategy it describes is the same one this project adopts
+for the pairs it cannot train directly. \textbf{Drawback:} error propagates
+through the pivot language, so accuracy degrades measurably relative to a
+directly trained model, and the paper does not quantify how much of the loss is
+attributable to the second hop, which leaves the cost of pivoting an open
+question that this project also records as unmeasured.
+
 \paper{18}{LLM-based AI-Powered Offline Portable Transcriptor (OPT) -- SURYA-TAC: A Tactical Speech-to-Speech Translation System}{P. S. Bohra and K. Berwal}{\textit{IEEE}, 2024}
-\begin{paperpoints}
-\item Proposes an offline, edge-deployed tactical translation system for use in harsh environments without connectivity, the closest published motivation to this project.
-\item \textbf{Drawback:} largely conceptual, without real-world validation.
-\item Constrained by data scarcity for the target languages.
-\end{paperpoints}
+Proposes an offline, edge-deployed speech-to-speech translation system
+intended for tactical use in environments with no connectivity, and is the
+closest published statement of the motivation behind this project: translation
+that must work where the network does not, on hardware the user already
+carries, without sending anything to a server. It establishes the operational
+case for offline translation independently of the machine-learning argument.
+\textbf{Drawback:} the work is largely conceptual, presented without real-world
+validation or measured quality, latency and size figures, and it is constrained
+by the same data scarcity for the target languages that it sets out to solve,
+so it names the problem more convincingly than it solves it.
+
 \paper{19}{Latency-Aware Simultaneous Machine Translation Using Large Language Models}{B. Fu, M. Liao, K. Fan, C. Li, L. Zhang, Y. Chen, and X. Shi}{\textit{Springer}, 2024}
-\begin{paperpoints}
-\item Introduces latency-aware token generation so that large language models can perform simultaneous translation while maintaining accuracy.
-\item \textbf{Drawback:} computationally expensive and premised on models far too large for a handset.
-\end{paperpoints}
+Introduces latency-aware token generation so that a large language model
+can perform simultaneous translation, deciding when to emit output rather than
+waiting for a complete input, and holds accuracy while bounding the delay. The
+work is a reminder that latency is a first-class quality attribute in
+translation and not an implementation detail, which is why this project gates
+on a measured per-sentence budget alongside BLEU.
+\textbf{Drawback:} the method is computationally expensive and premised on
+models far too large for a handset, so its latency guarantees are relative to a
+baseline that already assumes server-class hardware; nothing in it reduces the
+cost of the model itself.
+
 \paper{20}{Offline English-to-Hindi Statistical Machine Translation System}{S. Gangwar and I. Naim}{\textit{ScienceDirect}, 2024}
-\begin{paperpoints}
-\item Implements genuinely offline English-to-Hindi translation using the Moses SMT toolkit, demonstrating that offline operation is achievable at low cost.
-\item \textbf{Drawback:} statistical MT is substantially weaker than neural approaches.
-\item The system covers a single direction of a single language pair.
-\end{paperpoints}
+Implements genuinely offline English-to-Hindi translation with the Moses
+statistical machine translation toolkit, demonstrating that offline operation
+is achievable on ordinary hardware at low computational cost. It is the only
+surveyed system that actually runs without a network, and it confirms the
+practical demand this project addresses. \textbf{Drawback:} statistical machine
+translation is substantially weaker than neural approaches, particularly on
+long-range reordering and morphology, so the system trades quality for
+offline operation rather than achieving both; and it covers a single direction
+of a single language pair, leaving the multilingual problem untouched. The gap
+between this paper's offline capability and IndicTrans2's quality is precisely
+the gap this project sets out to close.
+
 
 
 \subsection{Discussion of Key Papers}
@@ -330,39 +487,14 @@ number of trained models.
 The overall problem decomposes into six sub-problems, each addressed by an
 identifiable part of the system.
 
-\textbf{P1: Corpus quality.} The available ungated parallel data (Samanantar)
-is web-mined, and contains misaligned pairs, length-ratio anomalies,
-wrong-script segments and duplicates. \emph{Sub-problem:} construct a cleaning
-pipeline that yields a corpus a 52-million-parameter student can learn from.
-Addressed by the Corpus Loader module (Section~\ref{subsec:mod1}).
-
-\textbf{P2: Choice of training signal.} It is not established which signal
-(human references, teacher one-best output, or preference-ranked teacher
-hypotheses) best trains a student an order of magnitude smaller than its
-teacher on noisy data. \emph{Sub-problem:} construct all three and compare them
-under matched conditions. Addressed by the Teacher Distiller and Trainer modules
-and reported in Section~\ref{sec:headtohead}.
-
-\textbf{P3: Training stability.} A Transformer trained from scratch at this
-scale is unstable: three distinct failure modes (empty output, unconditional
-decoding, and mid-training collapse) were encountered. \emph{Sub-problem:}
-identify and eliminate each. Addressed in Section~\ref{sec:runlog}.
-
-\textbf{P4: Deployment footprint.} A 52.6-million-parameter FP32 model
-occupies 411\,MB, over twice the size budget, and decodes too slowly in PyTorch
-on CPU. \emph{Sub-problem:} compress and accelerate without materially losing
-quality. Addressed by the Quantiser module (Section~\ref{subsec:mod4}).
-
-\textbf{P5: Indic-to-Indic coverage.} No ungated Indic-to-Indic teacher exists,
-and training direct models for every pair would require $n(n-1)$ models at
-104\,MB each. \emph{Sub-problem:} serve every pair without quadratic growth.
-Addressed by the English-pivot router (Section~\ref{subsec:mod5}).
-
-\textbf{P6: Extensibility.} Adding a language must not require retraining
-everything or degrade the languages already supported. \emph{Sub-problem:}
-provide a mechanism for incremental expansion with measured retention. Addressed
-by the All-in-One KD and Elastic Weight Consolidation implementations
-(Section~\ref{subsec:mod8}).
+\begin{bullets}
+\item \textbf{Corpus quality.} The available ungated parallel data (Samanantar) is web-mined, and contains misaligned pairs, length-ratio anomalies, wrong-script segments and duplicates. \emph{Sub-problem:} construct a cleaning pipeline that yields a corpus a 52-million-parameter student can learn from. Addressed by the Corpus Loader module (Section~\ref{subsec:mod1}).
+\item \textbf{Choice of training signal.} It is not established which signal (human references, teacher one-best output, or preference-ranked teacher hypotheses) best trains a student an order of magnitude smaller than its teacher on noisy data. \emph{Sub-problem:} construct all three and compare them under matched conditions. Addressed by the Teacher Distiller and Trainer modules and reported in Section~\ref{sec:headtohead}.
+\item \textbf{Training stability.} A Transformer trained from scratch at this scale is unstable: three distinct failure modes (empty output, unconditional decoding, and mid-training collapse) were encountered. \emph{Sub-problem:} identify and eliminate each. Addressed in Section~\ref{sec:runlog}.
+\item \textbf{Deployment footprint.} A 52.6-million-parameter FP32 model occupies 411\,MB, over twice the size budget, and decodes too slowly in PyTorch on CPU. \emph{Sub-problem:} compress and accelerate without materially losing quality. Addressed by the Quantiser module (Section~\ref{subsec:mod4}).
+\item \textbf{Indic-to-Indic coverage.} No ungated Indic-to-Indic teacher exists, and training direct models for every pair would require $n(n-1)$ models at 104\,MB each. \emph{Sub-problem:} serve every pair without quadratic growth. Addressed by the English-pivot router (Section~\ref{subsec:mod5}).
+\item \textbf{Extensibility.} Adding a language must not require retraining everything or degrade the languages already supported. \emph{Sub-problem:} provide a mechanism for incremental expansion with measured retention. Addressed by the All-in-One KD and Elastic Weight Consolidation implementations (Section~\ref{subsec:mod8}).
+\end{bullets}
 
 \section{Proposed Solution}
 \label{sec:proposedsolution}
@@ -449,6 +581,9 @@ student then continues to improve with data: the ratio rises from 0.607 at
 100{,}000 sentences to 0.764 at 250{,}000 and 0.806 at 500{,}000, whereas
 reference-trained students plateau near 0.66 regardless of data volume.
 
+%% the last two lines of this closing paragraph were spilling onto a page of
+%% their own at the end of the chapter
+\enlargethispage{2\baselineskip}
 The DPO implementation is not defective, which is what makes the result
 informative. Its margin accuracy reaches 1.0, meaning it ranks preferred above
 dispreferred candidates perfectly; it consistently improves chrF by one to two
