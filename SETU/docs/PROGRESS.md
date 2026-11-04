@@ -352,6 +352,30 @@ balancing, EWC anti-forgetting, device resolution, scorecard.
 
 ## 10. Session changelog
 
+- **2026-11-04 (KSCST SPP 50th series application pack)** - Downloaded the six files in
+  KSCST's Drive folder (guidelines, proposal format, themes, poster, coordinator
+  instructions, college Excel) and read the Google Form's 204 items. Built
+  `docs/KSCST/build_kscst.py`, which fills KSCST's own Word template rather than
+  imitating it, removes every instruction and example as their rule 8 requires, and
+  splits the result into the three uploads: **01 proposal** (13 pages, 0.83 MB of a 3 MB
+  limit), **02 declaration and endorsement** (4 pages; the endorsement leaves the top of
+  the page clear for department letterhead) and **03 processing-fee page** (1 page). It
+  also writes `START_HERE_form_answers.html`, every form answer in order in the required
+  UPPERCASE with copy buttons, and has `compress` and `receipt` helpers for the signed
+  scans. Theme 4 (AI, Data Science and Digital Technologies), sub-theme NLP and
+  Generative AI. Part B is drawn from the Phase-II report and framed for a five-month
+  KSCST phase (December 2026 to April 2027): Android deployment measured on an ARM
+  Cortex-A55 handset, closing the eight near-miss directions (Kannada to English at
+  0.763 among them), FLORES-200 with COMET, a native-speaker Kannada evaluation on
+  Karnataka public-service text, and a field trial in Bengaluru. 22 IEEE references
+  numbered by first citation, including two real Xiaomi patents on distilling
+  translation models for phones. Draft budget Rs. 10,000 (handset 7,000, cloud GPU
+  2,000, field work 1,000). Personal details live in `~/Downloads/KSCST_SETU/details.json`,
+  outside the public repo; 40 fields (phones, emails, categories, photos, SPP coordinator,
+  payment) are still to fill. Noted for the team: the guidelines list Bangalore Institute
+  of Technology among colleges with a pending Utilisation Certificate from the 49th
+  series, which KSCST says makes a college ineligible until it is cleared.
+
 - **2026-10-21 (cont.) (objective numbering, colon labels, architecture placement)** -
   Four more review fixes. **(1) The objectives are numbered 1 to 6,** not `O1` to `O6`, and
   the lead-in sentence that was sitting alone as an indented one-line paragraph was folded
