@@ -352,6 +352,28 @@ balancing, EWC anti-forgetting, device resolution, scorecard.
 
 ## 10. Session changelog
 
+- **2026-11-05 (Phase-II final presentation)** - Built
+  `docs/Presentation/build_final_ppt.py`, which turns the interim deck
+  (`SETU_updated.pptx`) into the final presentation that follows the department's
+  "9.1 Project Phase-II Final Presentation Template". The output is
+  `~/Downloads/SETU_Phase-II_Final_Presentation.pptx`, with 61 slides in the
+  template's order. Sections the template asks for are added: a one-slide
+  literature summary, problem statement input and output, component design (class
+  diagram and component roles), seven results and performance slides (SeqKD vs DPO,
+  data scaling, 22-direction scorecard, per-language rollup, quantisation, latency,
+  definition of done, sample translations), snapshots, applications, future scope and
+  publications. Text now matches the final report (all 22 languages, 44 models serving
+  506 directions). Every diagram is the report's own version, taken from its Word
+  export into `docs/Presentation/assets/`. Use case, sequence, activity (split into
+  training and inference halves), state chart, data flow and ER each get a slide; the
+  Gantt, PERT, architecture and interface figures are updated too. The snapshots use
+  two web-app screenshots and real CLI and REST output captured from the INT4 models.
+  Older slides that overflowed the corner graphic were refitted, and the algorithm and
+  pseudocode slides were re-laid out without the restarted numbering. Indic text is
+  tagged with Nirmala UI so Bengali renders in PowerPoint on Windows. The publications
+  slide marks the KSCST proposal as "Proposal prepared" and the paper as "In
+  preparation"; update both before presenting if they change.
+
 - **2026-11-04 (KSCST SPP 50th series application pack)** - Downloaded the six files in
   KSCST's Drive folder (guidelines, proposal format, themes, poster, coordinator
   instructions, college Excel) and read the Google Form's 204 items. Built
