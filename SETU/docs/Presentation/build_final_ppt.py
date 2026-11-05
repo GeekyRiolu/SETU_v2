@@ -36,7 +36,6 @@ OUT = sys.argv[2] if len(sys.argv) > 2 else os.path.expanduser(
     "~/Downloads/SETU_Phase-II_Final_Presentation.pptx")
 
 TNR = "Times New Roman"
-MONO = "Courier New"
 BLUE = RGBColor(0x4E, 0x67, 0xC8)      # the deck's title colour
 INK = RGBColor(0x1A, 0x1A, 0x1A)
 MUTED = RGBColor(0x59, 0x59, 0x59)
@@ -79,11 +78,7 @@ def add_run(p, text, size=18, bold=False, italic=False, color=INK, face=TNR):
     if color is not None:
         f.color.rgb = color
     rPr = r._r.get_or_add_rPr()
-    if face == MONO:
-        # leave cs/ea to the theme so Indic text falls back to a script font
-        etree.SubElement(rPr, qn("a:latin")).set("typeface", face)
-    else:
-        _fonts(rPr, face)
+    _fonts(rPr, face)
     return r
 
 
@@ -259,7 +254,7 @@ def table(slide, rows, x, y, w, col_w, row_h=Inches(0.36), size=13, head_size=13
     return shape
 
 
-def terminal(slide, x, y, w, h, title, lines, size=12):
+def terminal(slide, x, y, w, h, title, lines, size=14):
     shp = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, x, y, w, h)
     shp.name = "Terminal"
     shp.adjustments[0] = 0.04
@@ -271,7 +266,7 @@ def terminal(slide, x, y, w, h, title, lines, size=12):
     para(tf, [(title, {"bold": True})], size=size + 1, color=WHITE, before=0, face=TNR)
     for kind, text in lines:
         para(tf, text, size=size, color=TERM_CMD if kind == "$" else TERM_TXT,
-             before=6 if kind == "$" else 1, face=MONO)
+             before=6 if kind == "$" else 1)
     return shp
 
 
@@ -316,6 +311,16 @@ INDIC_FONT = "Nirmala UI"   # ships with Windows; covers every Indic script used
 _RPR_AFTER_CS = ("a:sym", "a:hlinkClick", "a:hlinkMouseOver", "a:rtl", "a:extLst")
 
 
+def one_font(slide):
+    """Times New Roman for every run; Indic runs keep an Indic complex-script font."""
+    for r in slide._element.iter(qn("a:r")):
+        rPr = r.find(qn("a:rPr"))
+        if rPr is None:
+            rPr = etree.Element(qn("a:rPr"))
+            r.insert(0, rPr)
+        _fonts(rPr, TNR)
+
+
 def tag_indic(slide):
     """Point every run holding Indic script at an Indic-capable complex-script font."""
     for r in slide._element.iter(qn("a:r")):
@@ -357,7 +362,7 @@ def code_card(slide, title, lines, y=TOP, h=None, size=15, name="Pseudocode"):
     shp = card(slide, L, y, R - L, h or (BOTTOM - y), title, None, head_size=17, name=name)
     for ln in lines:
         indent = len(ln) - len(ln.lstrip(" "))
-        p = para(shp.text_frame, ln.strip(), size=size, before=4, face=MONO)
+        p = para(shp.text_frame, ln.strip(), size=size, before=4)
         p._p.get_or_add_pPr().set("marL", str(int(Inches(0.3 * indent / 4))))
     return shp
 
@@ -787,7 +792,7 @@ def main():
     ph.left, ph.top, ph.width, ph.height = L, TOP - Inches(0.05), R - L, Inches(0.4)
     tf = fresh(ph.text_frame, anchor=MSO_ANCHOR.TOP, margins=(Inches(0.05), 0))
     para(tf, [("Inference: ", {"bold": True}), "English-pivot routing ",
-              ("(src/setu/inference/router.py)", {"face": MONO, "size": 15})], size=17, before=0)
+              "(src/setu/inference/router.py)"], size=17, before=0)
     for shp in list(impl.shapes):
         if shp.shape_type == 13:
             img = shp.image.blob
@@ -844,7 +849,7 @@ def main():
         "    ignore padding; nudge the student to reduce the difference",
         "    keep the learning rate small and clip large updates",
         "compress the trained student to INT4 and save it",
-    ], size=14.5)
+    ], size=17.5)
     code_card(S[31], "Pseudocode: translate text", [
         "if source and target languages are the same: stop",
         "form the pair name from source and target",
@@ -856,7 +861,7 @@ def main():
         "else:",
         "    return the text unchanged (no model for this pair yet)",
         "show the translation with its latency and on-device badge",
-    ], size=14.5)
+    ], size=17.5)
 
     # ---- results and performance analysis (new)
     r1 = new("Results: SeqKD vs Preference Distillation",
@@ -1148,6 +1153,7 @@ def main():
         sldIdLst.append(sid)
     assert len(set(map(id, order))) == len(order) == len(sldIdLst)
     for s in order:
+        one_font(s)
         tag_indic(s)
 
     prs.save(OUT)

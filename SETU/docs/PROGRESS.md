@@ -352,6 +352,12 @@ balancing, EWC anti-forgetting, device resolution, scorecard.
 
 ## 10. Session changelog
 
+- **2026-11-05 (presentation: one font)** - Every text run in the final deck is now
+  Times New Roman. The literature-table slides carried Arial from the interim deck, and
+  the pseudocode, code-label and CLI/REST snapshot slides used Courier New; both are
+  gone. Indic text keeps Nirmala UI as its complex-script font, since Times New Roman
+  has no Indic glyphs. Pseudocode and terminal text were enlarged to fill their panels.
+
 - **2026-11-05 (Phase-II final presentation)** - Built
   `docs/Presentation/build_final_ppt.py`, which turns the interim deck
   (`SETU_updated.pptx`) into the final presentation that follows the department's
