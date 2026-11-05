@@ -352,6 +352,14 @@ balancing, EWC anti-forgetting, device resolution, scorecard.
 
 ## 10. Session changelog
 
+- **2026-11-06 (presentation: language coverage slide)** - Added "Results: Language
+  Coverage" (slide 51): all 22 scheduled languages with their native-script names, and
+  44 models serving 506 directions, as stated in the report. Per-direction scores for
+  the other 11 languages were requested but are not on this machine (only the 11
+  evaluated languages have `train_report.json` and `quantize_report.json`), so no new
+  numbers were added and the 8 near-miss ratios were left as reported. Ol Chiki text is
+  now tagged with the Indic font too.
+
 - **2026-11-05 (presentation: one font)** - Every text run in the final deck is now
   Times New Roman. The literature-table slides carried Arial from the interim deck, and
   the pseudocode, code-label and CLI/REST snapshot slides used Courier New; both are

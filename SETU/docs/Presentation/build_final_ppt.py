@@ -325,7 +325,8 @@ def tag_indic(slide):
     """Point every run holding Indic script at an Indic-capable complex-script font."""
     for r in slide._element.iter(qn("a:r")):
         t = r.find(qn("a:t"))
-        if t is None or not t.text or not any("ऀ" <= ch <= "෿" for ch in t.text):
+        if t is None or not t.text or not any(0x0900 <= ord(ch) <= 0x0DFF or
+                                              0x1C50 <= ord(ch) <= 0x1C7F for ch in t.text):
             continue
         rPr = r.find(qn("a:rPr"))
         if rPr is None:
@@ -980,6 +981,30 @@ def main():
         "lexical slips; they match each language's scorecard position.",
     ], y=TOP + Inches(3.95), size=14, before=5)
 
+    # ---- language coverage (all 22 scheduled languages, as in the report)
+    cov = new("Results: Language Coverage",
+              "All 22 scheduled languages, each paired both ways with English. Any two of them "
+              "connect through the English pivot.")
+    langs = [("Assamese", "অসমীয়া"), ("Bengali", "বাংলা"), ("Bodo", "बर'"), ("Dogri", "डोगरी"),
+             ("Gujarati", "ગુજરાતી"), ("Hindi", "हिन्दी"), ("Kannada", "ಕನ್ನಡ"), ("Kashmiri", "کٲشُر"),
+             ("Konkani", "कोंकणी"), ("Maithili", "मैथिली"), ("Malayalam", "മലയാളം"),
+             ("Manipuri", "মৈতৈলোন্"), ("Marathi", "मराठी"), ("Nepali", "नेपाली"), ("Odia", "ଓଡ଼ିଆ"),
+             ("Punjabi", "ਪੰਜਾਬੀ"), ("Sanskrit", "संस्कृतम्"), ("Santali", "ᱥᱟᱱᱛᱟᱲᱤ"),
+             ("Sindhi", "سنڌي"), ("Tamil", "தமிழ்"), ("Telugu", "తెలుగు"), ("Urdu", "اردو")]
+    tw_, th_, g_ = Inches(2.13), Inches(0.74), Inches(0.12)
+    for i, (en, native) in enumerate(langs):
+        x = L + (i % 4) * (tw_ + g_)
+        y = TOP + (i // 4) * (th_ + g_)
+        c = card(cov, x, y, tw_, th_, None, None, name=en, anchor=MSO_ANCHOR.MIDDLE)
+        para(c.text_frame, [(en, {"bold": True})], size=15, color=BLUE, before=0,
+             align=PP_ALIGN.CENTER)
+        para(c.text_frame, native, size=14, before=0, align=PP_ALIGN.CENTER)
+    card(cov, L + 2 * (tw_ + g_), TOP + 5 * (th_ + g_), 2 * tw_ + g_, th_, None,
+         [[("44 models, 506 directions: ", {"bold": True, "color": WHITE}),
+           ("both ways with English, and any pair through the English pivot.",
+            {"color": WHITE})]], fill=BLUE, body_size=13, name="Coverage total",
+         anchor=MSO_ANCHOR.MIDDLE)
+
     # ---- snapshots (new)
     sn1 = new("Snapshots: Web Application",
               "Next.js web app running locally. English to Kannada in 86 ms on the INT4 model, "
@@ -1135,7 +1160,7 @@ def main():
              use_case, sequence, activity, state, dfd, er,
              S[17], S[18], pert, S[19], S[20], S[21], S[22], S[23],
              comp_fig, comp, S[24], S[25], S[26], S[27], S[28], S[29], S[30], S[31],
-             S[32], S[33], r1, r2, r3, r4, r5, r6, r7, r8, sn1, sn2, ap,
+             S[32], S[33], r1, r2, r3, r4, r5, r6, r7, r8, cov, sn1, sn2, ap,
              S[34], fut, pub, S[35], S[36], S[37], S[38], S[39]])
     dropped = [S[15], S[16]]     # interim modelling text + small diagrams, now one slide each
     sldIdLst = prs.slides._sldIdLst
