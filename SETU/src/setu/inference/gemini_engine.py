@@ -47,8 +47,6 @@ def _load_api_key() -> str:
     raise RuntimeError("Gemini API key not set: put SETU_GEMINI_KEY=... in SETU/.env or export it.")
 
 
-_API_KEY = _load_api_key()
-
 _API_URL = (
     "https://generativelanguage.googleapis.com/v1beta/models/"
     "{model}:generateContent?key={key}"
@@ -72,6 +70,7 @@ class GeminiTranslator:
 
     def __init__(self) -> None:
         self._models = list(_MODELS)
+        self._key: str | None = None  # loaded on first API call
 
     # ------------------------------------------------------------------
     def translate(self, text: str, src_lang: str, tgt_lang: str) -> TranslationResult:
@@ -113,6 +112,8 @@ class GeminiTranslator:
         }
 
         data = json.dumps(payload).encode("utf-8")
+        if self._key is None:
+            self._key = _load_api_key()
         errors: list[str] = []
         body: dict[str, Any] | None = None
 
@@ -123,7 +124,7 @@ class GeminiTranslator:
                 cfg.pop("thinkingConfig", None)
             data = json.dumps({**payload, "generationConfig": cfg}).encode("utf-8")
             req = urllib.request.Request(
-                _API_URL.format(model=model, key=_API_KEY),
+                _API_URL.format(model=model, key=self._key),
                 data=data,
                 headers={"Content-Type": "application/json"},
                 method="POST",
