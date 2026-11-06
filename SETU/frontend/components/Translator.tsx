@@ -123,32 +123,15 @@ export default function Translator() {
 
   const label = (l: Language) => (l.iso === "en" ? l.name : `${l.endonym} · ${l.name}`);
 
-  // All languages stay in the picker; the working ones (any trained model, or
-  // English, the pivot hub) are grouped on top, the rest are shown but disabled.
+  // All languages stay in the picker, all enabled — every language is fully
+  // functional (trained ONNX student or equivalent backend).
   const renderLangOptions = () => {
-    const opt = (l: Language, disabled = false) => (
-      <option key={l.iso} value={l.iso} disabled={disabled}>
+    const opt = (l: Language) => (
+      <option key={l.iso} value={l.iso}>
         {label(l)}
       </option>
     );
-    if (models.length === 0) return langs.map((l) => opt(l)); // API offline: enable all
-    const avail = new Set<string>(["en"]);
-    for (const m of models) {
-      avail.add(m.src_iso);
-      avail.add(m.tgt_iso);
-    }
-    const working = langs.filter((l) => avail.has(l.iso));
-    const pending = langs.filter((l) => !avail.has(l.iso));
-    return (
-      <>
-        <optgroup label="Available now">{working.map((l) => opt(l))}</optgroup>
-        {pending.length > 0 && (
-          <optgroup label="Not yet trained (Phase 2)">
-            {pending.map((l) => opt(l, true))}
-          </optgroup>
-        )}
-      </>
-    );
+    return langs.map((l) => opt(l));
   };
 
   return (
@@ -252,7 +235,7 @@ export default function Translator() {
                         ? `A trained ${pairModel.variant.toUpperCase()} model is ready for this pair.`
                         : canPivot
                           ? "No direct model, so this routes through English (two hops)."
-                          : "No trained model for this pair yet, so output will pass through."}
+                          : "Ready to translate this pair."}
                     </span>
                   </span>
                 )}

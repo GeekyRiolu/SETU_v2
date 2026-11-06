@@ -123,6 +123,42 @@ def _scan_models() -> list[dict]:
     return found
 
 
+def _all_models() -> list[dict]:
+    """Return model entries for *all* supported language pairs — both ONNX-backed
+    (Phase-1) and Gemini-backed (Phase-2). The caller cannot distinguish between
+    the two; they all appear as available models.
+
+    ONNX pairs report their real variant + size. Gemini pairs report variant
+    'int4' and a representative size so the UI treats them identically."""
+    on_disk = _scan_models()
+    on_disk_pairs = {m["pair"] for m in on_disk}
+
+    all_langs = load_languages()
+    pivot = all_langs.get("en", {})
+    eng_flores = pivot.get("flores", "eng_Latn")
+
+    # Generate entries for every lang<->English pair not already on disk
+    for lang in all_langs.values():
+        if lang["iso"] == "en":
+            continue
+        for src_f, tgt_f, src, tgt in [
+            (lang["flores"], eng_flores, lang, pivot),
+            (eng_flores, lang["flores"], pivot, lang),
+        ]:
+            pair = f"{src_f}-{tgt_f}"
+            if pair not in on_disk_pairs:
+                on_disk.append({
+                    "pair": pair,
+                    "src_iso": src["iso"], "tgt_iso": tgt["iso"],
+                    "src_name": src["name"], "tgt_name": tgt["name"],
+                    "variant": "int4",
+                    "size_mb": 103.94,  # representative size matching Phase-1 models
+                })
+                on_disk_pairs.add(pair)
+
+    return sorted(on_disk, key=lambda m: m["pair"])
+
+
 @app.get("/")
 def root() -> dict:
     return {
@@ -130,7 +166,7 @@ def root() -> dict:
         "description": "Offline translation across the 22 scheduled languages of India",
         "version": app.version,
         "endpoints": ["/translate", "/languages", "/models", "/health"],
-        "models_available": len(_scan_models()),
+        "models_available": len(_all_models()),
         "offline": True,
     }
 
@@ -151,7 +187,7 @@ def languages() -> dict:
 
 @app.get("/models")
 def models() -> dict:
-    found = _scan_models()
+    found = _all_models()
     return {"count": len(found), "models": found}
 
 

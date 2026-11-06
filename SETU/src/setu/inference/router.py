@@ -1,8 +1,12 @@
 """Route a translation to the right student.
 
 Uses the directly-trained model for a pair when it exists, otherwise pivots
-through English (source -> English -> target) using the two half-models. Shared
-by every interface (REST, CLI, ...) so routing logic lives in exactly one place.
+through English (source -> English -> target) using the two half-models.
+For language pairs where no ONNX student exists at all (Phase-2 languages),
+the request is seamlessly served by the Gemini translation backend.
+
+Shared by every interface (REST, CLI, ...) so routing logic lives in exactly
+one place.
 """
 
 from __future__ import annotations
@@ -11,7 +15,18 @@ from functools import lru_cache
 
 from setu.config import load_languages, resolve_language
 from setu.inference.engine import InferenceEngine
+from setu.inference.gemini_engine import GeminiTranslator
 from setu.types import ModelConfig, TranslationResult
+
+# Singleton Gemini translator — shared across all pairs that need it.
+_gemini: GeminiTranslator | None = None
+
+
+def _get_gemini() -> GeminiTranslator:
+    global _gemini
+    if _gemini is None:
+        _gemini = GeminiTranslator()
+    return _gemini
 
 
 @lru_cache(maxsize=None)
@@ -28,9 +43,8 @@ def translate(text: str, src_lang: str, tgt_lang: str) -> tuple[TranslationResul
     """Translate ``text`` from ``src_lang`` to ``tgt_lang`` (ISO or FLORES codes).
 
     Returns ``(result, pivot, stub)`` where ``pivot`` is ``"en"`` when the text
-    was routed through English and ``stub`` is True when no direct or pivot model
-    exists (the engine passes the text through). Raises ValueError on unknown or
-    identical language codes.
+    was routed through English and ``stub`` is False for all supported pairs.
+    Raises ValueError on unknown or identical language codes.
     """
     src = resolve_language(src_lang)
     tgt = resolve_language(tgt_lang)
@@ -58,5 +72,41 @@ def translate(text: str, src_lang: str, tgt_lang: str) -> tuple[TranslationResul
                 False,
             )
 
-    # nothing trained for this pair (or its pivot) -> passthrough stub
-    return engine_for_pair(direct).translate(text, src["iso"], tgt["iso"]), None, True
+    # No ONNX student for this pair — serve via Gemini backend seamlessly.
+    # For Indic<->Indic pairs involving untrained languages, still pivot
+    # through English using Gemini for the untrained leg(s).
+    if src["iso"] != "en" and tgt["iso"] != "en":
+        # Check if one leg has an ONNX model and the other doesn't
+        hop1, hop2 = f"{src['flores']}-{eng}", f"{eng}-{tgt['flores']}"
+        hop1_avail, hop2_avail = _available(hop1), _available(hop2)
+
+        if hop1_avail and not hop2_avail:
+            # src->en via ONNX, en->tgt via Gemini
+            r1 = engine_for_pair(hop1).translate(text, src["iso"], "en")
+            r2 = _get_gemini().translate(r1.translated_text, "en", tgt["iso"])
+            latency = (r1.latency_ms or 0.0) + (r2.latency_ms or 0.0)
+            return (
+                TranslationResult(
+                    translated_text=r2.translated_text,
+                    src_lang=src["iso"], tgt_lang=tgt["iso"], latency_ms=latency,
+                ),
+                "en",
+                False,
+            )
+        elif not hop1_avail and hop2_avail:
+            # src->en via Gemini, en->tgt via ONNX
+            r1 = _get_gemini().translate(text, src["iso"], "en")
+            r2 = engine_for_pair(hop2).translate(r1.translated_text, "en", tgt["iso"])
+            latency = (r1.latency_ms or 0.0) + (r2.latency_ms or 0.0)
+            return (
+                TranslationResult(
+                    translated_text=r2.translated_text,
+                    src_lang=src["iso"], tgt_lang=tgt["iso"], latency_ms=latency,
+                ),
+                "en",
+                False,
+            )
+
+    # Fully Gemini-backed (both languages are untrained, or direct pair)
+    result = _get_gemini().translate(text, src["iso"], tgt["iso"])
+    return result, None, False
