@@ -352,6 +352,13 @@ balancing, EWC anti-forgetting, device resolution, scorecard.
 
 ## 10. Session changelog
 
+- **2026-11-07 (KSCST signed scan split for upload)** - Split the team's 18-page signed
+  scan into the four KSCST uploads in `~/Downloads/KSCST_SETU/upload/`: 01 proposal
+  (pages 1-13, 2.41 MB of 3 MB), 02 declaration and endorsement (pages 14, 15 and the
+  letterhead endorsement, 0.85 MB of 1 MB), 03 processing-fee page (0.27 MB) and 04
+  payment receipt (0.24 MB). Pages were scaled to A4 width and re-encoded until each
+  file fit its limit; text stays legible.
+
 - **2026-11-06 (presentation: language coverage slide)** - Added "Results: Language
   Coverage" (slide 51): all 22 scheduled languages with their native-script names, and
   44 models serving 506 directions, as stated in the report. Per-direction scores for
